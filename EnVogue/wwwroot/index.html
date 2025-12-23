@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EnVogue</title>
+
+    <base href="/" />
+
+    <!-- Bootstrap (dacă îl folosești) -->
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- App styles -->
+    <link rel="stylesheet" href="css/app.css" />
+    <link href="EnVogue.styles.css" rel="stylesheet" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json?v=1.0.2">
+    <meta name="theme-color" content="#0b0f1a">
+
+    <!-- Mobile / iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="EnVogue">
+
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+</head>
+
+<body>
+    <!-- BLazor root -->
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <!-- Error UI -->
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="fileUpload.js"></script>
+
+    <!-- Blazor -->
+    <script src="_framework/blazor.webassembly.js"></script>
+
+    <!-- 🔥 HEADER SCROLL BEHAVIOR -->
+    <script>
+        (function () {
+            let lastScrollTop = 0;
+            const threshold = 10;
+
+            window.addEventListener("scroll", () => {
+                const topBar = document.querySelector(".top-bar");
+                if (!topBar) return;
+
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                if (scrollTop > lastScrollTop + threshold) {
+                    topBar.classList.add("header-hidden");
+                } else if (scrollTop < lastScrollTop - threshold) {
+                    topBar.classList.remove("header-hidden");
+                }
+
+                lastScrollTop = Math.max(scrollTop, 0);
+            }, { passive: true });
+        })();
+    </script>
+
+    <!-- (Optional) Service Worker -->
+    <!--
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('Service Worker registered:', reg.scope))
+                .catch(err => console.error('Service Worker error:', err));
+        }
+    </script>
+    -->
+
+</body>
+</html>

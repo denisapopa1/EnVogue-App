@@ -1,0 +1,14 @@
+﻿<div class="bottom-nav">
+    <button @onclick='() => NavTo("/")'>🏠</button>
+    <button @onclick='() => NavTo("/mycloset")'>👕</button>
+
+    <button class="center-btn" @onclick='() => NavTo("/additem")'>+</button>
+
+    <button @onclick='() => NavTo("/createoutfit")'>🎽</button>
+    <button @onclick='() => NavTo("/favorites")'>❤️</button>
+</div>
+
+@code {
+    [Inject] NavigationManager NavManager { get; set; } = default!;
+    void NavTo(string path) => NavManager.NavigateTo(path);
+}

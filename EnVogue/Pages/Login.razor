@@ -1,0 +1,71 @@
+﻿@page "/login"
+@using EnVogue.Models
+@using System.ComponentModel.DataAnnotations
+@using EnVogue.Services
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+
+    <div class="page-container with-nav" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 100px);">
+        <div class="card animate-fade-in form-limit" style="max-width: 420px; width: 100%;">
+            <div class="center" style="margin-bottom: 24px;">
+                <div class="brand" style="font-size: 28px;">EnVogue</div>
+                <p class="page-subtitle" style="margin-top: 6px;">Your personal fashion assistant</p>
+            </div>
+
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" class="input-field" placeholder="Enter your email" @bind="loginModel.Email" />
+                <ValidationMessage For="@(() => loginModel.Email)" />
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <div style="position: relative; width: 100%;">
+                    <input type="@passwordFieldType" class="input-field" placeholder="Enter your password" @bind="loginModel.Password" style="padding-right: 40px;" />
+                    <button type="button" @onclick="TogglePassword"
+                            style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-2); cursor: pointer;">
+                        @(passwordFieldType == "password" ? "👁️" : "🙈")
+                    </button>
+                </div>
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+
+            <button class="btn-primary" style="width: 100%; margin-bottom: 12px;" type="submit" disabled="@(!formIsValid)">Login</button>
+
+            <div class="center" style="margin-top: 6px;">
+                <a href="/create-account" style="color: var(--text-2); font-size: 14px; text-decoration: none;">Create account</a>
+            </div>
+
+            <div class="center" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-1);">
+                <a href="/home" style="color: var(--text-2); font-size: 14px; text-decoration: none;">Use without an account</a>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+
+@code {
+    private LoginModel loginModel = new();
+
+    private string passwordFieldType = "password";
+
+    private bool formIsValid =>
+        !string.IsNullOrWhiteSpace(loginModel.Email) &&
+        !string.IsNullOrWhiteSpace(loginModel.Password);
+
+    private void TogglePassword()
+    {
+        passwordFieldType = passwordFieldType == "password" ? "text" : "password";
+    }
+
+    private void HandleLogin()
+    {
+        UserState.Login(loginModel.Email!); // SALVEAZĂ UTILIZATORUL
+        NavigationManager.NavigateTo("/home");
+    }
+
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private UserState UserState { get; set; } = default!;
+
+}

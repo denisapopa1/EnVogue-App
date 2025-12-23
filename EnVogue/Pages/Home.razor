@@ -1,0 +1,130 @@
+﻿@page "/home"
+@using EnVogue.Models
+@using EnVogue.Services
+@inject NavigationManager NavigationManager
+@inject WardrobeServices WardrobeService
+
+<div class="page-container with-nav">
+    <!-- HERO -->
+    <div class="home-hero card card-glass animate-fade-in" style="min-height: 180px;">
+        <div class="hero-text">
+            <div class="brand" style="font-size:18px;">EnVogue</div>
+            <h2 style="margin: 4px 0 2px;">Welcome, User 👋</h2>
+            <p class="page-subtitle">Build outfits that match your vibe</p>
+
+            <div class="hero-actions">
+                <a role="button" class="btn-primary" @onclick='() => NavigationManager.NavigateTo("/create-outfit")'>Create outfit</a>
+                <a role="button" class="btn-secondary" @onclick='() => NavigationManager.NavigateTo("/add-item")'>Add item</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+        <div class="stat-pill">
+            <span class="stat-number">@totalItems</span>
+            <span class="stat-label">Items</span>
+        </div>
+        <div class="stat-pill">
+            <span class="stat-number">@favoriteCount</span>
+            <span class="stat-label">Favorites</span>
+        </div>
+        <div class="stat-pill">
+            <span class="stat-number">@categories.Count</span>
+            <span class="stat-label">Categories</span>
+        </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="section">
+        <div class="section-header">
+            <h3 class="section-title">Quick actions</h3>
+        </div>
+
+        <div class="quick-actions">
+            <a role="button" class="qa-btn primary" @onclick='() => NavigationManager.NavigateTo("/create-outfit")'>Auto outfit</a>
+            <a role="button" class="qa-btn" @onclick='() => NavigationManager.NavigateTo("/closet")'>Browse closet</a>
+            <a role="button" class="qa-btn" @onclick='() => NavigationManager.NavigateTo("/favorites")'>Favorites</a>
+        </div>
+    </div>
+
+    <!-- RECENT ITEMS -->
+    <div class="section">
+        <div class="section-header">
+            <h3 class="section-title">Recent items</h3>
+            @if (totalItems > 0)
+            {
+                <a class="link" href="/closet">See all</a>
+            }
+        </div>
+
+        @if (recentItems.Any())
+        {
+            <div class="h-scroll">
+                @foreach (var i in recentItems)
+                {
+                    <div class="tile">
+                        <img src="@i.ImageData" alt="@i.Name" />
+                        <div class="tile-meta">
+                            <span>@i.Category</span>
+                            <small class="page-subtitle">@i.Color</small>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="card card-glass center" style="padding: 16px;">
+                <p class="page-subtitle" style="margin-bottom: 10px;">Your closet is empty</p>
+                <a role="button" class="btn-primary" @onclick='() => NavigationManager.NavigateTo("/add-item")'>Add your first item</a>
+            </div>
+        }
+    </div>
+
+    <!-- INSPIRATION -->
+    <div class="section" style="margin-bottom: 8px;">
+        <div class="section-header">
+            <h3 class="section-title">Inspiration</h3>
+        </div>
+        <div class="chips">
+            <button type="button" class="chip" @onclick='() => GoCreate("Casual")'>Casual</button>
+            <button type="button" class="chip" @onclick='() => GoCreate("Office")'>Office</button>
+            <button type="button" class="chip" @onclick='() => GoCreate("Party")'>Party</button>
+            <button type="button" class="chip" @onclick='() => GoCreate("Minimal")'>Minimal</button>
+            <button type="button" class="chip" @onclick='() => GoCreate("Sporty")'>Sporty</button>
+        </div>
+    </div>
+</div>
+
+<!-- NAV BAR – asigură-te că rămâne pe fiecare pagină -->
+<NavBar CurrentPage="home" />
+
+@code {
+    private List<ClothingItem> recentItems = new();
+    private int totalItems;
+    private int favoriteCount;
+    private HashSet<string> categories = new();
+
+    protected override void OnInitialized()
+    {
+        var all = WardrobeService?.GetAllClothes() ?? new List<ClothingItem>();
+        totalItems = all.Count;
+
+        // Fără timestamp, folosim ultimele din listă ca "recente"
+        recentItems = all.TakeLast(12).Reverse().Take(12).ToList();
+
+        categories = all
+          .Select(c => c.Category ?? "")
+          .Where(c => !string.IsNullOrWhiteSpace(c))
+          .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        favoriteCount = WardrobeService?.GetFavoriteOutfits()?.Count ?? 0;
+    }
+
+    private void GoCreate(string occasion)
+    {
+        // Poți transmite ocazia în querystring mai târziu, acum doar navigăm.
+        NavigationManager.NavigateTo("/create-outfit");
+    }
+}

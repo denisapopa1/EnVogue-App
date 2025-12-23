@@ -1,0 +1,31 @@
+﻿@using EnVogue.Services
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject UserState UserState
+
+@code {
+    private bool ShowTopBar =>
+        !NavigationManager.Uri.Contains("/splash", StringComparison.OrdinalIgnoreCase) &&
+        !NavigationManager.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase) &&
+        !NavigationManager.Uri.Contains("/createaccount", StringComparison.OrdinalIgnoreCase);
+}
+
+@if (ShowTopBar)
+{
+    <div class="top-bar">
+        <div class="brand">EnVogue</div>
+        <button type="button" class="icon-button profile-btn"
+                @onclick='() => NavigationManager.NavigateTo("/profile")'
+                aria-label="Profile">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21a8 8 0 0 0-16 0"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+        </button>
+    </div>
+}
+
+<div class="page-container with-nav">
+    @Body
+</div>

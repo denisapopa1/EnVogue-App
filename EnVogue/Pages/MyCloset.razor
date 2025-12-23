@@ -1,0 +1,105 @@
+﻿@page "/closet"
+@using EnVogue.Models
+@using EnVogue.Services
+@inject NavigationManager NavigationManager
+@inject WardrobeServices WardrobeService
+@implements IDisposable
+
+<div class="page-container with-nav">
+    <div class="profile-header">
+        <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 20px;">My Wardrobe</h2>
+    </div>
+
+    @if (AllItems.Any())
+    {
+        <div class="input-group" style="margin-bottom: 24px;">
+            <input type="text"
+                   class="input-field"
+                   placeholder="🔍 Search by brand, style, color, tags, notes"
+                   value="@Filter.SearchTerm"
+                   @oninput="@((e) => { Filter.SearchTerm = e.Value?.ToString() ?? ""; ApplyFilters(); })" />
+        </div>
+
+        <div class="outfit-grid">
+            @foreach (var item in FilteredItems)
+            {
+                @* La click pe întreg cardul, navigăm către pagina de detalii *@
+                <div class="item-card animate-fade-in" @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
+                    <div class="item-card-image-wrapper">
+                        <img src="@item.ImageData" alt="@item.Name" />
+                    </div>
+                    <div class="item-card-info">
+                        <h3 class="item-card-name">@item.Subcategory</h3>
+                        <p class="item-card-meta">@item.Category • @item.Color</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (!FilteredItems.Any() && !string.IsNullOrEmpty(Filter.SearchTerm))
+        {
+            <p class="center text-muted" style="margin-top: 40px;">No items matched your search.</p>
+        }
+    }
+    else
+    {
+        <div class="card card-glass center" style="padding: 40px; margin-top: 20px;">
+            <div style="margin-bottom: 20px;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1">
+                    <path d="M20 7h-9l-3-3H4v16h16V7z"></path>
+                </svg>
+            </div>
+            <h3 style="margin-bottom: 10px;">Your closet is empty</h3>
+            <p class="text-muted" style="margin-bottom: 24px;">Start building your digital wardrobe by adding your first clothing item.</p>
+            <button class="btn-primary" @onclick='() => NavigationManager.NavigateTo("/add-item")' style="width: auto; padding: 12px 30px;">
+                + Add Your First Item
+            </button>
+        </div>
+    }
+</div>
+
+<NavBar CurrentPage="my-closet" />
+
+@code {
+    private FilterModel Filter = new FilterModel();
+    private List<ClothingItem> AllItems = new List<ClothingItem>();
+    private List<ClothingItem> FilteredItems = new List<ClothingItem>();
+
+    protected override void OnInitialized()
+    {
+        RefreshData();
+        // Ne abonăm la schimbări pentru a actualiza lista în timp real
+        WardrobeService.OnChange += RefreshData;
+    }
+
+    private void RefreshData()
+    {
+        AllItems = WardrobeService.GetAllClothes();
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        var query = AllItems.AsQueryable();
+        var search = Filter.SearchTerm?.Trim().ToLower() ?? "";
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(i =>
+                (i.Category != null && i.Category.ToLower().Contains(search)) ||
+                (i.Subcategory != null && i.Subcategory.ToLower().Contains(search)) ||
+                (i.Color != null && i.Color.ToLower().Contains(search)) ||
+                (i.Style != null && i.Style.ToLower().Contains(search))
+            );
+        }
+
+        FilteredItems = query.ToList();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        // Dezabonare pentru a evita memory leaks
+        WardrobeService.OnChange -= RefreshData;
+    }
+}

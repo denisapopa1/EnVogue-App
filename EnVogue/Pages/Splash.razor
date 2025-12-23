@@ -1,0 +1,21 @@
+﻿@page "/"
+
+<div class="splash-container">
+    <div class="splash-content">
+        <img src="Images/logo.png" alt="EnVogue Logo" class="splash-logo" />
+        <p class="tagline">Your intelligent fashion assistant</p>
+    </div>
+</div>
+
+@code {
+    [Inject] NavigationManager NavManager { get; set; } = default!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Task.Delay(5000); 
+            NavManager.NavigateTo("/login");
+        }
+    }
+}

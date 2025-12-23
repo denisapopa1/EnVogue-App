@@ -1,0 +1,194 @@
+﻿@page "/favorites"
+@using EnVogue.Models
+@using EnVogue.Services
+@implements IDisposable
+
+<div class="page-container with-nav">
+    <div class="profile-header"><h2>Favorites</h2></div>
+
+    <div class="input-group" style="margin-bottom: 20px;">
+        <input type="text"
+               class="input-field"
+               placeholder="🔍 Search items by color, category, season, or style in favorites"
+               value="@Filter.SearchTerm"
+               @oninput="@((e) => { Filter.SearchTerm = e.Value?.ToString() ?? ""; ApplyFilters(); })" />
+    </div>
+    @if (!string.IsNullOrEmpty(Filter.SearchTerm))
+    {
+        <h3 style="margin-bottom: 12px; font-size: 18px;">Filtered Items:</h3>
+        @if (FilteredItems.Any())
+        {
+            <div class="outfit-grid" style="margin-bottom: 20px;">
+                @foreach (var item in FilteredItems)
+                {
+                    <div class="item-tile" style="border: 1px solid var(--accent);">
+                        <img src="@item.ImageData" alt="@item.Name" />
+                        <p style="font-size: 12px; text-align: center;">@item.Name</p>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="card card-glass center" style="padding: 28px; margin-bottom: 20px;">
+                <p class="text-muted">No favorite items match the search term.</p>
+            </div>
+        }
+    }
+
+
+    @if (!favoriteOutfits.Any())
+    {
+        <div class="card card-glass center animate-fade-in" style="padding: 28px;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.5" style="margin: 0 auto 12px;">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <h3 style="margin-bottom: 6px;">No favorites yet</h3>
+            <p class="page-subtitle" style="margin-bottom: 16px;">Save your favorite outfits to see them here</p>
+            <button class="btn-primary" @onclick='() => NavigationManager.NavigateTo("/create-outfit")'>Create Your First Outfit</button>
+        </div>
+    }
+    else
+    {
+        @if (string.IsNullOrEmpty(Filter.SearchTerm))
+        {
+            <h3 style="margin-bottom: 12px; font-size: 18px;">Favorite Outfits:</h3>
+        }
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+            @foreach (var outfit in favoriteOutfits)
+            {
+                <div class="card" style="padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 style="font-size: 16px; font-weight: 600;">@outfit.Name</h3>
+                        <button @onclick="() => RemoveFromFavorites(outfit.Id)" style="background: none; border: none; color: var(--accent); cursor: pointer;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <p class="page-subtitle" style="margin-bottom: 10px;">@outfit.Occasion</p>
+
+                    @if (outfit.Items.Any())
+                    {
+                        <div class="outfit-grid">
+                            @foreach (var item in outfit.Items)
+                            {
+                                <div><img src="@item.ImageData" alt="@item.Name" /></div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<NavBar CurrentPage="favorites" />
+@code {
+    [Inject] NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] WardrobeServices WardrobeService { get; set; } = default!;
+
+    // --- VARIABILE PENTRU OUTFIT-URI ---
+    private List<Outfit> favoriteOutfits = new();
+
+    // --- VARIABILE PENTRU FILTRARE ARTIcole ---
+    private FilterModel Filter = new FilterModel();
+    private IEnumerable<ClothingItem> AllItemsInFavorites = new List<ClothingItem>(); // Lista tuturor articolelor din outfit-urile favorite
+    private IEnumerable<ClothingItem> FilteredItems = new List<ClothingItem>();      // Lista articolelor după filtrare
+
+    // Păstrăm listele, deși nu le folosim în UI, pentru a ne asigura că ApplyFilters nu dă erori de referință
+    private List<string> AllCategories = new List<string> { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
+    private List<string> AllSeasons = new List<string> { "Summer", "Winter", "Spring", "Autumn" };
+    private List<string> AllStyles = new List<string> { "Casual", "Elegant", "Sport", "Business" };
+    private List<string> AvailableSubcategories = new List<string>(); // Păstrăm și SubcategoryMap pentru căutarea textului liber
+
+    // Logica complexă nu mai este necesară, dar este păstrată pentru compatibilitatea cu câmpurile de model
+    private Dictionary<string, List<string>> SubcategoryMap = new Dictionary<string, List<string>>
+    {
+        { "Tops", new List<string> { "T-shirt", "Blouse", "Hoodie", "Sweater" } },
+        { "Bottoms", new List<string> { "Jeans", "Trousers", "Skirt", "Shorts" } },
+        { "Dress", new List<string> { "Cocktail", "Maxi", "Mini", "Evening" } },
+        { "Outerwear", new List<string> { "Jacket", "Coat", "Blazer", "Vest" } },
+        { "Shoes", new List<string> { "Sneakers", "Boots", "Sandals", "Heels" } },
+        { "Accessories", new List<string> { "Scarf", "Belt", "Jewelry", "Hat" } }
+    };
+
+    protected override void OnInitialized()
+    {
+        favoriteOutfits = WardrobeService.GetFavoriteOutfits();
+
+        // 💡 COLECTEAZĂ TOATE ARTICOLELE UNICE DIN OUTFIT-URILE FAVORITE
+        AllItemsInFavorites = favoriteOutfits
+            .SelectMany(o => o.Items) // Platizează toate articolele
+            .DistinctBy(i => i.Id)    // Păstrează doar articolele unice
+            .ToList();
+
+        FilteredItems = AllItemsInFavorites;
+        // Nu mai apelăm UpdateAvailableSubcategories pentru că nu ne interesează UI-ul
+
+        WardrobeService.OnChange += StateHasChanged;
+    }
+
+    private void RemoveFromFavorites(string outfitId)
+    {
+        WardrobeService.ToggleFavorite(outfitId);
+
+        // Reîncărcă datele și re-filtrează lista de articole favorite
+        favoriteOutfits = WardrobeService.GetFavoriteOutfits();
+        AllItemsInFavorites = favoriteOutfits
+            .SelectMany(o => o.Items)
+            .DistinctBy(i => i.Id)
+            .ToList();
+
+        ApplyFilters();
+    }
+
+    // Logica dependentă OnCategoryFilterChanged și UpdateAvailableSubcategories nu mai este necesară/apelată
+    // pentru că nu avem select-uri, dar o poți șterge sau lăsa dacă vrei să păstrezi structura.
+
+    // 💡 METODA DE FILTRARE (Acum filtrează doar pe SearchTerm)
+    private void ApplyFilters()
+    {
+        // 1. Reîncarcă lista de bază în cazul în care un outfit a fost adăugat/șters
+        AllItemsInFavorites = favoriteOutfits
+            .SelectMany(o => o.Items)
+            .DistinctBy(i => i.Id)
+            .ToList();
+
+        var query = AllItemsInFavorites.AsQueryable();
+        var searchTerm = Filter.SearchTerm?.Trim().ToLower() ?? "";
+
+        // --- Căutare Text Liberă (pe toate câmpurile) ---
+        if (!string.IsNullOrEmpty(searchTerm))
+        {
+            query = query.Where(i =>
+                (i.Name != null && i.Name.ToLower().Contains(searchTerm)) ||
+                (i.Category != null && i.Category.ToLower().Contains(searchTerm)) ||
+                (i.Subcategory != null && i.Subcategory.ToLower().Contains(searchTerm)) ||
+                (i.Color != null && i.Color.ToLower().Contains(searchTerm)) ||
+                (i.Season != null && i.Season.ToLower().Contains(searchTerm)) ||
+                (i.Style != null && i.Style.ToLower().Contains(searchTerm))
+            );
+        }
+        else
+        {
+            // Dacă nu există termen de căutare, afișăm o listă goală de articole filtrate
+            // pentru a afișa lista completă de outfit-uri în continuare.
+            FilteredItems = new List<ClothingItem>();
+            StateHasChanged();
+            return;
+        }
+
+        FilteredItems = query.ToList();
+
+        // Actualizăm starea pentru a forța reafișarea
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        WardrobeService.OnChange -= StateHasChanged;
+    }
+}

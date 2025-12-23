@@ -1,0 +1,32 @@
+﻿@page "/profile"
+@using EnVogue.Services
+@inject UserState UserState
+@inject NavigationManager Nav
+
+@if (!UserState.IsLoggedIn)
+{
+    <div class="page-container with-nav center">
+        <p>You are not logged in.</p>
+        <button class="btn btn-primary" @onclick="@(() => Nav.NavigateTo("/login"))">Go to login</button>
+    </div>
+}
+else
+{
+    <div class="page-container with-nav">
+        <h2>My Profile</h2>
+        <div class="card card-glass" style="padding: 20px; border-radius: 16px;">
+            <p><strong>Email:</strong> @UserState.Email</p>
+            <button class="btn-primary" style="margin-top: 16px;" @onclick="Logout">Logout</button>
+        </div>
+    </div>
+}
+
+
+
+@code {
+    void Logout()
+    {
+        UserState.Logout();
+        Nav.NavigateTo("/login");
+    }
+}
