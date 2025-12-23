@@ -23,19 +23,18 @@
         <div class="outfit-grid">
             @foreach (var item in FilteredItems)
             {
-                @* La click pe întreg cardul, navigăm către pagina de detalii *@
-                <div class="item-card animate-fade-in" @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
-                    <div class="item-card-image-wrapper">
+                <div class="wardrobe-card animate-fade-in" @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
+                    <div class="card-image-container">
                         <img src="@item.ImageData" alt="@item.Name" />
                     </div>
-                    <div class="item-card-info">
-                        <h3 class="item-card-name">@item.Subcategory</h3>
-                        <p class="item-card-meta">@item.Category • @item.Color</p>
+                    <div class="card-content">
+                        <h3 class="brand-title">@item.Subcategory</h3>
+                        <p class="item-meta">@item.Category • @item.Color</p>
                     </div>
                 </div>
             }
         </div>
-
+    
         @if (!FilteredItems.Any() && !string.IsNullOrEmpty(Filter.SearchTerm))
         {
             <p class="center text-muted" style="margin-top: 40px;">No items matched your search.</p>

@@ -5,73 +5,275 @@
 @inject NavigationManager Nav
 
 <div class="page-container with-nav">
-    @* HEADER CU BUTOANE DE ACȚIUNE - Adaptat designului tău *@
+    @* Top Bar *@
     <div class="top-detail-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
         <button class="icon-button-top" @onclick='() => Nav.NavigateTo("/closet")'>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
         </button>
-        <h2 class="brand" style="font-size: 20px; margin: 0;">Item Details</h2>
-        <div style="display: flex; gap: 10px;">
-            @* Buton Edit *@
-            <button class="icon-button-top" style="color: var(--info);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-            </button>
-            @* Buton Delete - Corectat RZ9980 *@
-            <button class="icon-button-top" style="color: var(--error);" @onclick="HandleDelete">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                </svg>
-            </button>
+
+        <h2 class="brand" style="font-size: 20px; margin: 0;">@(isEditing ? "Editing Item" : "Item Details")</h2>
+
+        @* Secțiune Butoane Stilate *@
+        <div style="display: flex; gap: 15px; align-items: center;">
+            @if (isEditing)
+            {
+                @* Buton OK / Salvare *@
+                <button class="action-btn-large btn-success" title="Save Changes" @onclick="SaveChanges">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+
+                @* Buton CANCEL / Anulare *@
+                <button class="action-btn-large btn-cancel" title="Cancel" @onclick="CancelEdit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            }
+            else
+            {
+                @* Buton EDIT *@
+                <button class="action-btn-large btn-edit" title="Edit Item" @onclick="() => isEditing = true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </button>
+
+                @* Buton DELETE *@
+                <button class="action-btn-large btn-delete" title="Delete Item" @onclick="HandleDelete">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            }
         </div>
     </div>
 
     @if (item != null)
     {
         <div class="center animate-fade-in" style="margin-bottom: 30px;">
-            <img src="@item.ImageData" class="detail-main-img" style="width: 100%; max-width: 400px; border-radius: var(--radius-lg); box-shadow: var(--shadow-2); border: 1px solid var(--border-1);" />
+            <img src="@item.ImageData" style="width: 100%; max-width: 500px; border-radius: var(--radius-lg); box-shadow: var(--shadow-2); border: 1px solid var(--border-1);" />
         </div>
 
-        @* Secțiune Informații - Stil Card Glass *@
-        <div class="card card-glass animate-fade-in">
+        <div class="card card-glass animate-fade-in" style="max-width: 600px; margin: 0 auto;">
             <h3 style="font-size: 16px; margin-bottom: 20px; color: var(--accent);">👕 Basic Information</h3>
+
             <div style="display: flex; flex-direction: column; gap: 16px;">
-                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-1); padding-bottom: 12px;">
+                @* Category *@
+                <div class="detail-row">
                     <span class="text-muted">Category</span>
-                    <span style="font-weight: 600;">@item.Category • @item.Subcategory</span>
+                    @if (isEditing)
+                    {
+                        <select class="input-field-small centered-select" @onchange="OnCategoryChanged">
+                            @foreach (var cat in Categories)
+                            {
+                                <option value="@cat" selected="@(cat == item.Category)">@cat</option>
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        <span class="info-val">@item.Category</span>
+                    }
                 </div>
-                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-1); padding-bottom: 12px;">
-                    <span class="text-muted">Color</span>
-                    <span style="font-weight: 600;">@item.Color</span>
+
+                @* Subcategory *@
+                <div class="detail-row">
+                    <span class="text-muted">Subcategory</span>
+                    @if (isEditing)
+                    {
+                        <select class="input-field-small centered-select" @bind="item.Subcategory">
+                            @foreach (var sub in GetSubcategories(item.Category))
+                            {
+                                <option value="@sub" selected="@(sub == item.Subcategory)">@sub</option>
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        <span class="info-val">@item.Subcategory</span>
+                    }
                 </div>
-                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-1); padding-bottom: 12px;">
+
+                @* Season *@
+                <div class="detail-row">
                     <span class="text-muted">Season</span>
-                    <span style="font-weight: 600;">@item.Season</span>
+                    @if (isEditing)
+                    {
+                        <select class="input-field-small centered-select" @bind="item.Season">
+                            @foreach (var s in Seasons)
+                            {
+                                <option value="@s" selected="@(s == item.Season)">@s</option>
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        <span class="info-val">@item.Season</span>
+                    }
                 </div>
-                <div style="display: flex; justify-content: space-between; padding-bottom: 4px;">
-                    <span class="text-muted">Style</span>
-                    <span style="font-weight: 600;">@(string.IsNullOrEmpty(item.Style) ? "N/A" : item.Style)</span>
+
+                @* Color *@
+                <div class="detail-row">
+                    <span class="text-muted">Color</span>
+                    @if (isEditing)
+                    {
+                        <input type="text" class="input-field-small centered-input" @bind="item.Color" />
+                    }
+                    else
+                    {
+                        <span class="info-val">@item.Color</span>
+                    }
                 </div>
             </div>
         </div>
     }
 </div>
 
+<style>
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-1);
+    }
+
+    .info-val {
+        font-weight: 600;
+        color: var(--text-1);
+    }
+
+    /* --- Stil Butoane Mari Stilate --- */
+    .action-btn-large {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        border: 1px solid var(--border-2);
+        background: var(--glass-strong);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        color: var(--text-1);
+        backdrop-filter: blur(8px);
+    }
+
+    .btn-edit:hover {
+        background: rgba(34, 211, 238, 0.15);
+        border-color: var(--info);
+        color: var(--info);
+        box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+    }
+
+    .btn-delete:hover {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: var(--error);
+        color: var(--error);
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-success:hover {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: var(--success);
+        color: var(--success);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--text-2);
+    }
+
+    .action-btn-large svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* --- Stiluri Input-uri --- */
+    .input-field-small {
+        background: var(--bg-1);
+        border: 1px solid var(--border-2);
+        color: var(--text-1);
+        border-radius: 8px;
+        padding: 6px 12px;
+        min-width: 160px;
+        outline: none;
+    }
+
+    .centered-select {
+        text-align: center;
+        text-align-last: center;
+    }
+
+    .centered-input {
+        text-align: center;
+    }
+
+    select.input-field-small option {
+        background: #111;
+        color: white;
+        text-align: center;
+    }
+</style>
+
 @code {
     [Parameter] public string ItemId { get; set; } = "";
     private ClothingItem? item;
+    private bool isEditing = false;
 
-    protected override void OnInitialized()
+    private List<string> Categories = new() { "Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Accessories" };
+    private List<string> Seasons = new() { "Spring", "Summer", "Autumn", "Winter", "All Seasons" };
+    private Dictionary<string, List<string>> SubcategoryMap = new()
     {
-        item = WardrobeService.GetAllClothes().FirstOrDefault(i => i.Id == ItemId);
-        if (item == null) Nav.NavigateTo("/closet");
+        { "Tops", new() { "T-shirt", "Shirt", "Blouse", "Hoodie", "Sweater" } },
+        { "Bottoms", new() { "Jeans", "Trousers", "Skirt", "Shorts" } },
+        { "Dresses", new() { "Casual Dress", "Evening Dress", "Maxi Dress" } },
+        { "Outerwear", new() { "Jacket", "Coat", "Blazer" } },
+        { "Shoes", new() { "Sneakers", "Boots", "Sandals", "Heels" } },
+        { "Accessories", new() { "Scarf", "Belt", "Jewelry", "Hat" } }
+    };
+
+    protected override void OnInitialized() => LoadItemData();
+
+    private void LoadItemData()
+    {
+        var original = WardrobeService.GetAllClothes().FirstOrDefault(i => i.Id == ItemId);
+        if (original != null)
+        {
+            // Cream o clonă a obiectului pentru a permite anularea (Cancel)
+            item = new ClothingItem
+            {
+                Id = original.Id,
+                Category = original.Category,
+                Subcategory = original.Subcategory,
+                Color = original.Color,
+                ImageData = original.ImageData,
+                Season = original.Season
+            };
+        }
     }
 
-    private void HandleDelete()
+    private void OnCategoryChanged(ChangeEventArgs e)
     {
-        WardrobeService.RemoveClothingItem(ItemId);
-        Nav.NavigateTo("/closet");
+        if (item != null)
+        {
+            item.Category = e.Value?.ToString() ?? "";
+            item.Subcategory = GetSubcategories(item.Category).FirstOrDefault() ?? "";
+        }
     }
+
+    private List<string> GetSubcategories(string category) =>
+        SubcategoryMap.ContainsKey(category) ? SubcategoryMap[category] : new List<string>();
+
+    private void CancelEdit() { LoadItemData(); isEditing = false; }
+
+    private void SaveChanges() { if (item != null) { WardrobeService.UpdateClothingItem(item); isEditing = false; } }
+
+    private void HandleDelete() { WardrobeService.RemoveClothingItem(ItemId); Nav.NavigateTo("/closet"); }
 }

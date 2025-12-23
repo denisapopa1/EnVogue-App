@@ -808,3 +808,147 @@ button, [type="button"], [type="submit"] {
 .body-wrapper {
     padding-top: 64px; /* EXACT cât header-ul */
 }
+//* Containerul grilă responsiv */
+.outfit-grid {
+    display: grid;
+    /* Implicit pentru ecrane mari (Web): 3 coloane */
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Stilul Box-ului Alb (stil minimalist ca în mostră) */
+.wardrobe-card {
+    background: #FFFFFF;
+    border-radius: 28px; /* Margini pronunțate ca în imagine */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centrează elementele pe axa orizontală */
+    text-align: center; /* Centrează textul în interiorul containerelor */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+.wardrobe-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(219, 39, 119, 0.15);
+}
+
+/* Containerul Pozei - Poză centrată în "box" */
+.card-image-container {
+    width: 100%;
+    aspect-ratio: 1;
+    padding: 15px; /* Creează efectul de ramă albă în jurul pozei */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F9FAFB; /* Fundal foarte deschis pentru zona pozei */
+}
+
+.card-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Sau 'contain' dacă vrei să vezi toată poza fără crop */
+    border-radius: 20px;
+}
+
+/* Conținutul de sub poză */
+.card-content {
+    padding: 12px 18px 18px 18px;
+    background: white;
+}
+
+.brand-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: #111827;
+    margin: 0;
+}
+
+.item-meta {
+    font-size: 14px;
+    color: #6B7280;
+    margin: 4px 0 8px 0;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+
+/* --- RESPONSIVITATE (Media Queries) --- */
+
+/* Pentru tablete și telefoane (mai mic de 992px) */
+@media (max-width: 992px) {
+    .outfit-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 pe rând pe Mobile */
+        gap: 12px;
+        padding: 12px;
+    }
+    
+    .brand-title { font-size: 15px; }
+    .item-meta { font-size: 12px; }
+}
+
+/* Pentru telefoane foarte mici (opțional, sub 480px) */
+@media (max-width: 480px) {
+    .wardrobe-card {
+        border-radius: 20px;
+    }
+}
+
+/* Stilul pentru butoanele de acțiune rotunde și mari */
+.action-btn-large {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--border-2);
+    background: var(--glass-strong);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-1);
+    backdrop-filter: blur(8px);
+}
+
+/* Efecte specifice pe culori */
+.btn-edit:hover {
+    background: rgba(34, 211, 238, 0.2);
+    border-color: var(--info);
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.4);
+    color: var(--info);
+}
+
+.btn-delete:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: var(--error);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    color: var(--error);
+}
+
+.btn-success:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: var(--success);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    color: var(--success);
+}
+
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--text-2);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+/* Mărire iconițe în interior */
+.action-btn-large svg {
+    width: 22px;
+    height: 22px;
+}
