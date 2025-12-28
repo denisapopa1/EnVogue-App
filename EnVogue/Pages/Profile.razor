@@ -1,32 +1,67 @@
 ﻿@page "/profile"
 @using EnVogue.Services
+@using EnVogue.Shared
 @inject UserState UserState
 @inject NavigationManager Nav
+@inject NotificationService Toast
 
-@if (!UserState.IsLoggedIn)
-{
-    <div class="page-container with-nav center">
-        <p>You are not logged in.</p>
-        <button class="btn btn-primary" @onclick="@(() => Nav.NavigateTo("/login"))">Go to login</button>
-    </div>
-}
-else
-{
-    <div class="page-container with-nav">
-        <h2>My Profile</h2>
-        <div class="card card-glass" style="padding: 20px; border-radius: 16px;">
-            <p><strong>Email:</strong> @UserState.Email</p>
-            <button class="btn-primary" style="margin-top: 16px;" @onclick="Logout">Logout</button>
+<div class="page-container with-nav">
+    @if (!UserState.IsLoggedIn)
+    {
+        <div class="center-content animate-fade-in" style="padding: 40px; text-align: center;">
+            <p style="margin-bottom: 20px; opacity: 0.7;">You are not logged in.</p>
+            <button class="btn-primary" @onclick="@(() => Nav.NavigateTo("/login"))">Go to Login</button>
         </div>
-    </div>
-}
+    }
+    else
+    {
+        <h2 style="margin-bottom: 24px; font-weight: 800;">My Profile</h2>
 
+        <div class="card card-glass animate-fade-in" style="padding: 24px; border-radius: 20px;">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                <div style="width: 56px; height: 56px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; font-weight: 700; box-shadow: 0 4px 12px rgba(231, 76, 116, 0.3);">
+                    @UserState.Email.Substring(0, 1).ToUpper()
+                </div>
+                <div>
+                    <p style="margin: 0; opacity: 0.5; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Account</p>
+                    <p style="margin: 0; font-weight: 600; font-size: 17px;">@UserState.Email</p>
+                </div>
+            </div>
 
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;" />
+
+            <button class="btn-primary"
+                    style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;"
+                    @onclick="HandleLogoutRequest">
+                Logout
+            </button>
+        </div>
+    }
+</div>
+
+@* 💡 Dialogul stă în afara containerelor principale pentru a evita erorile de randare *@
+<ConfirmDialog IsVisible="showLogoutConfirm"
+               Title="Logout"
+               Message="Are you sure you want to log out of your EnVogue account?"
+               ConfirmText="Logout"
+               CancelText="Stay"
+               ConfirmButtonClass="btn-confirm-accent"
+               OnConfirm="ConfirmLogout"
+               OnCancel="() => showLogoutConfirm = false" />
 
 @code {
-    void Logout()
+    private bool showLogoutConfirm = false;
+
+    private void HandleLogoutRequest()
+    {
+        showLogoutConfirm = true;
+    }
+
+    private void ConfirmLogout()
     {
         UserState.Logout();
+        showLogoutConfirm = false;
+        Toast.Show("Logged out successfully", "success");
         Nav.NavigateTo("/login");
     }
 }

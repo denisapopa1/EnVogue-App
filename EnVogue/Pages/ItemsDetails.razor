@@ -163,7 +163,25 @@
         </div>
     }
 </div>
+@* 💡 DIALOGURILE SE PUN AICI, LA FINAL, IN AFARA ORICARUI DIV *@
 
+<ConfirmDialog IsVisible="showDeleteConfirm"
+               Title="Delete Item"
+               Message="This action cannot be undone. Permanently remove this item?"
+               ConfirmText="Delete"
+               CancelText="Keep it"
+               ConfirmButtonClass="btn-delete-modal"
+               OnConfirm="ConfirmDelete"
+               OnCancel="() => showDeleteConfirm = false" />
+
+<ConfirmDialog IsVisible="showDiscardConfirm"
+               Title="Discard Changes"
+               Message="You have unsaved changes. Are you sure you want to revert?"
+               ConfirmText="Discard"
+               CancelText="Keep Editing"
+               ConfirmButtonClass="btn-accent-modal"
+               OnConfirm="ConfirmDiscard"
+               OnCancel="() => showDiscardConfirm = false" />
 <style>
     .detail-row {
         display: flex;
@@ -256,6 +274,8 @@
     [Parameter] public string ItemId { get; set; } = "";
     private ClothingItem? item;
     private bool isEditing = false;
+    private bool showDeleteConfirm = false; // 💡 Adaugă această variabilă
+    private bool showDiscardConfirm = false;
 
     private List<string> Categories = new() { "Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Accessories" };
     private List<string> Seasons = new() { "Spring", "Summer", "Autumn", "Winter", "All Seasons" };
@@ -304,7 +324,28 @@
     private List<string> GetSubcategories(string category) =>
         SubcategoryMap.ContainsKey(category) ? SubcategoryMap[category] : new List<string>();
 
-    private void CancelEdit() { LoadItemData(); isEditing = false; }
+    // Actualizează metoda CancelEdit pentru a folosi dialogul
+    private void CancelEdit()
+    {
+        var original = WardrobeService.GetAllClothes().FirstOrDefault(i => i.Id == ItemId);
+
+        // Verificăm dacă s-a schimbat ceva față de original
+        if (original != null && item != null && (
+            item.Brand != original.Brand ||
+            item.Color != original.Color ||
+            item.Category != original.Category ||
+            item.Subcategory != original.Subcategory ||
+            item.Style != original.Style ||
+            item.Season != original.Season))
+        {
+            showDiscardConfirm = true; // Arătăm dialogul de confirmare
+        }
+        else
+        {
+            isEditing = false;
+            LoadItemData();
+        }
+    }
 
     private void SaveChanges() { 
         if (item != null) {
@@ -313,10 +354,21 @@
             isEditing = false;
         }
     }
-
-    private void HandleDelete() { 
+    private void HandleDelete()
+    {
+        showDeleteConfirm = true; // 💡 Doar afișăm dialogul, nu ștergem încă
+    }
+    private void ConfirmDelete()
+    {
         WardrobeService.RemoveClothingItem(ItemId);
-        Toast.Show("Item removed", "error");
-        Nav.NavigateTo("/closet"); 
+        showDeleteConfirm = false;
+        Toast.Show("Item removed", "error"); // Feedback vizual roșu
+        Nav.NavigateTo("/closet");
+    }
+    private void ConfirmDiscard()
+    {
+        showDiscardConfirm = false;
+        isEditing = false;
+        LoadItemData(); // Revenim la datele inițiale
     }
 }

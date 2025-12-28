@@ -6,12 +6,25 @@
 @implements IDisposable
 
 <div class="page-container with-nav">
-    <div class="card card-glass animate-fade-in form-limit">
+    @* --- TOP BAR CU BUTON DE CANCEL --- *@
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto;">
+        <button class="icon-button-top" @onclick="HandleCancel" style="background: none; border: none; cursor: pointer; color: var(--text-1); padding: 8px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+        </button>
+        <h2 class="brand" style="font-size: 20px; margin: 0;">Add New Item</h2>
+        <div style="width: 40px;"></div> @* Spacer pentru centrare *@
+    </div>
+
+    <div class="card card-glass animate-fade-in form-limit" style="max-width: 500px; margin: 0 auto;">
         <h3 class="center" style="margin-bottom: 10px;">Upload a Photo</h3>
         <p class="page-subtitle center" style="margin-bottom: 16px;">Take or upload a photo of your clothing item</p>
+
         <input type="file" id="fileInput" accept="image/*" style="display: none;" @ref="fileInput" />
 
-        <div class="dropzone" @onclick="TriggerFileInput">
+        <div class="dropzone" @onclick="TriggerFileInput" style="cursor: pointer;">
             @if (string.IsNullOrEmpty(imagePreview))
             {
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" style="margin: 0 auto 12px;">
@@ -28,11 +41,12 @@
                 <p style="margin-top: 10px; color: var(--accent); font-weight: 600;">Click to change</p>
             }
         </div>
-        @* Brand Field cu spațiere corectată *@
+
         <div class="input-group" style="margin-top: 24px;">
             <label>Brand</label>
             <input type="text" class="input-field" @bind="brand" placeholder="e.g. Zara, Nike, Gucci..." />
         </div>
+
         <div class="input-group">
             <label>Category</label>
             <select class="input-field" @onchange="OnCategoryChanged">
@@ -46,10 +60,6 @@
         <div class="input-group">
             <label>Subcategory</label>
             <select class="input-field" @bind="subcategory" disabled="@(!AvailableSubcategories.Any())">
-                @if (!AvailableSubcategories.Any())
-                {
-                    <option value="" disabled>Select a main category first</option>
-                }
                 @foreach (var sub in AvailableSubcategories)
                 {
                     <option value="@sub">@sub</option>
@@ -68,17 +78,6 @@
         </div>
 
         <div class="input-group">
-            <label>Style (Optional)</label>
-            <select class="input-field" @bind="style">
-                <option value="">None / Not specified</option>
-                @foreach (var s in Styles)
-                {
-                    <option value="@s">@s</option>
-                }
-            </select>
-        </div>
-
-        <div class="input-group">
             <label>Color</label>
             <input type="text" class="input-field" placeholder="E.g., Blue, Red, Black" @bind="color" />
         </div>
@@ -89,13 +88,21 @@
 
 <NavBar CurrentPage="home" />
 
+@* 💡 DIALOGUL INTEGRAT CORECT *@
+<ConfirmDialog IsVisible="showDiscardConfirm"
+               Title="Discard Item?"
+               Message="You have unsaved details. Are you sure you want to go back?"
+               ConfirmText="Discard"
+               CancelText="Stay"
+               ConfirmButtonClass="btn-delete-modal"
+               OnConfirm="ConfirmDiscard"
+               OnCancel="() => showDiscardConfirm = false" />
+
 @code {
     private List<string> MainCategories = new List<string> { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
     private List<string> Seasons = new List<string> { "Summer", "Winter", "Spring", "Autumn" };
     private List<string> Styles = new List<string> { "Casual", "Elegant", "Sport", "Business" };
-
-    private Dictionary<string, List<string>> SubcategoryMap = new Dictionary<string, List<string>>
-    {
+    private Dictionary<string, List<string>> SubcategoryMap = new Dictionary<string, List<string>> {
         { "Tops", new List<string> { "T-shirt", "Blouse", "Hoodie", "Sweater" } },
         { "Bottoms", new List<string> { "Jeans", "Trousers", "Skirt", "Shorts" } },
         { "Dress", new List<string> { "Cocktail", "Maxi", "Mini", "Evening" } },
@@ -104,8 +111,7 @@
         { "Accessories", new List<string> { "Scarf", "Belt", "Jewelry", "Hat" } }
     };
 
-    // Variabile de stare
-    private string brand = ""; // 💡 Fix: Am adăugat variabila locală
+    private string brand = "";
     private string category = "Tops";
     private string subcategory = "";
     private string season = "Summer";
@@ -113,6 +119,7 @@
     private string color = "";
     private string imagePreview = "";
     private List<string> AvailableSubcategories = new List<string>();
+    private bool showDiscardConfirm = false;
 
     private ElementReference fileInput;
     private DotNetObjectReference<AddItem>? objRef;
@@ -129,6 +136,24 @@
         }
     }
 
+    private void HandleCancel()
+    {
+        if (!string.IsNullOrWhiteSpace(brand) || !string.IsNullOrWhiteSpace(color) || !string.IsNullOrWhiteSpace(imagePreview))
+        {
+            showDiscardConfirm = true;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/closet");
+        }
+    }
+
+    private void ConfirmDiscard()
+    {
+        showDiscardConfirm = false;
+        NavigationManager.NavigateTo("/closet");
+    }
+
     private void OnCategoryChanged(ChangeEventArgs e)
     {
         category = e.Value?.ToString() ?? "Tops";
@@ -138,43 +163,27 @@
 
     private void SaveItem()
     {
-        if (string.IsNullOrEmpty(imagePreview) || string.IsNullOrEmpty(category) || string.IsNullOrEmpty(subcategory))
+        if (string.IsNullOrEmpty(imagePreview))
         {
-            // OPȚIONAL: Notificare de eroare dacă lipsesc date
-            Toast.Show("Please upload a photo and select a category", "error");
+            Toast.Show("Please upload a photo first", "error");
             return;
         }
-
-        var item = new ClothingItem
+        WardrobeService.AddClothingItem(new ClothingItem
         {
-            Brand = brand, // 💡 Salvăm brandul aici
+            Brand = brand,
             Category = category,
             Subcategory = subcategory,
             Season = season,
             Style = style,
             Color = color,
-            ImageData = imagePreview,
-       
-        };
-
-        WardrobeService.AddClothingItem(item);
-        // 💡 ADAUGĂ ACEASTĂ LINIE ÎNAINTE DE NAVIGARE
-        Toast.Show("Item added to your wardrobe!");
+            ImageData = imagePreview
+        });
+        Toast.Show("Item added successfully!", "success");
         NavigationManager.NavigateTo("/closet");
     }
 
-    private async Task TriggerFileInput()
-    {
-        await JSRuntime.InvokeVoidAsync("fileUpload.triggerFileInput", "fileInput");
-    }
-
-    [JSInvokable]
-    public void OnFileSelected(string base64Data)
-    {
-        imagePreview = base64Data;
-        StateHasChanged();
-    }
-
+    private async Task TriggerFileInput() => await JSRuntime.InvokeVoidAsync("fileUpload.triggerFileInput", "fileInput");
+    [JSInvokable] public void OnFileSelected(string base64Data) { imagePreview = base64Data; StateHasChanged(); }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -183,9 +192,5 @@
             await JSRuntime.InvokeVoidAsync("fileUpload.initializeFileInput", "fileInput", objRef);
         }
     }
-
-    public void Dispose()
-    {
-        objRef?.Dispose();
-    }
+    public void Dispose() => objRef?.Dispose();
 }

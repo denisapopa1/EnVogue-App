@@ -1,0 +1,110 @@
+﻿@if (IsVisible)
+{
+    <div class="modal-backdrop">
+        <div class="modal-card card-glass animate-slide-up">
+            <div class="modal-icon">
+                @if (ConfirmButtonClass == "btn-danger-modal")
+                {
+                    @* Iconiță Roșie pentru Ștergere *@
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                }
+                else
+                {
+                    @* Iconiță Roz pentru Logout *@
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+                    </svg>
+                }
+            </div>
+
+            <h3 style="margin: 10px 0; color: white;">@Title</h3>
+            <p style="opacity: 0.7; margin-bottom: 25px; color: white;">@Message</p>
+
+            <div class="modal-actions">
+                <button class="btn-cancel-modal" @onclick="OnCancel">@CancelText</button>
+                @* 💡 Aici clasa se schimbă dinamic *@
+                <button class="btn-base-modal @ConfirmButtonClass" @onclick="OnConfirm">@ConfirmText</button>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+    }
+
+    .modal-card {
+        width: 85%;
+        max-width: 350px;
+        padding: 32px;
+        text-align: center;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 28px;
+        background: rgba(30, 30, 40, 0.98);
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    /* Stil de bază pentru ambele butoane de confirmare */
+    .btn-base-modal {
+        flex: 1;
+        padding: 14px;
+        border-radius: 14px;
+        border: none;
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    /* 🔴 Varianta ROȘIE (pentru Delete) */
+    .btn-danger-modal {
+        background: #ef4444;
+    }
+
+    /* 💖 Varianta ROZ (pentru Logout / Success) */
+    .btn-accent-modal {
+        background: var(--accent);
+    }
+
+    .btn-cancel-modal {
+        flex: 1;
+        padding: 14px;
+        border-radius: 14px;
+        border: none;
+        background: rgba(255,255,255,0.1);
+        color: white;
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+
+    // 💡 Trimite "btn-danger-modal" pentru roșu sau "btn-accent-modal" pentru roz
+    [Parameter] public string ConfirmButtonClass { get; set; } = "btn-accent-modal";
+
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}
