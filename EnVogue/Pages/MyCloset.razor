@@ -248,20 +248,33 @@
         UpdateSubcategories(); // 💡 Curățare subcategorii la reset
         ApplyFilters();
     }
-
     private void ApplyFilters()
     {
         var query = AllItems.AsQueryable();
+
+        // --- LOGICA DE CĂUTARE INTELIGENTĂ ---
         var search = Filter.SearchTerm?.Trim().ToLower() ?? "";
 
         if (!string.IsNullOrEmpty(search))
         {
-            query = query.Where(i =>
-                (i.Subcategory != null && i.Subcategory.ToLower().Contains(search)) ||
-                (i.Color != null && i.Color.ToLower().Contains(search))
-            );
+            // Spargem căutarea în cuvinte (ex: "red t shirt" devine ["red", "t", "shirt"])
+            // Înlocuim cratimele cu spațiu pentru a trata "t-shirt" ca "t shirt"
+            var searchTerms = search.Replace("-", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var term in searchTerms)
+            {
+                query = query.Where(i =>
+                    (i.Brand != null && i.Brand.ToLower().Contains(term)) ||
+                    (i.Category != null && i.Category.ToLower().Contains(term)) ||
+                    (i.Subcategory != null && i.Subcategory.ToLower().Replace("-", " ").Contains(term)) ||
+                    (i.Color != null && i.Color.ToLower().Contains(term)) ||
+                    (i.Style != null && i.Style.ToLower().Contains(term)) ||
+                    (i.Season != null && i.Season.ToLower().Contains(term))
+                );
+            }
         }
 
+        // --- RESTUL FILTRELOR (Rămân neschimbate) ---
         if (Filter.SelectedCategory != "All")
             query = query.Where(i => i.Category.Equals(Filter.SelectedCategory, StringComparison.OrdinalIgnoreCase));
 
@@ -277,9 +290,10 @@
         if (Filter.Style != "All" && !string.IsNullOrEmpty(Filter.Style))
             query = query.Where(i => i.Style.Equals(Filter.Style, StringComparison.OrdinalIgnoreCase));
 
+        // --- SORTARE ---
         query = Filter.SortBy switch
         {
-            "Brand" => query.OrderBy(i => i.Brand), // Sortează alfabetic A-Z după numele brandului
+            "Brand" => query.OrderBy(i => string.IsNullOrEmpty(i.Brand) ? "ZZZ" : i.Brand),
             "Newest" => query.OrderByDescending(i => i.Id),
             "Oldest" => query.OrderBy(i => i.Id),
             _ => query.OrderByDescending(i => i.Id)
@@ -288,6 +302,5 @@
         FilteredItems = query.ToList();
         StateHasChanged();
     }
-
     public void Dispose() => WardrobeService.OnChange -= RefreshData;
 }
