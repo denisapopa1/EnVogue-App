@@ -123,7 +123,10 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 14px;
+    margin-bottom: 20px;
+}
+.dropzone + .input-group {
+    margin-top: 24px;
 }
 
     .input-group label {
@@ -947,8 +950,193 @@ button, [type="button"], [type="submit"] {
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
 }
 
-/* Mărire iconițe în interior */
-.action-btn-large svg {
-    width: 22px;
-    height: 22px;
+.reset-link {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 13px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Panoul de opțiuni (Poza 3) */
+.filter-panel-content {
+    background: var(--card-bg);
+    border: 1px solid var(--border-2);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.panel-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-2);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.pills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.option-pill {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid transparent;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+    .option-pill.selected {
+        background: var(--accent);
+        box-shadow: 0 4px 10px rgba(219, 39, 119, 0.3);
+    }
+
+/* Animatie */
+.animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* Containerul de căutare pentru a permite iconița în interior */
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-svg {
+    position: absolute;
+    left: 12px;
+    width: 18px;
+    height: 18px;
+    color: var(--text-2);
+    opacity: 0.7;
+}
+
+.input-field-modern {
+    width: 100%;
+    padding: 10px 15px 10px 40px; /* Spațiu la stânga pentru iconiță */
+    background: var(--bg-1);
+    border: 1px solid var(--border-2);
+    border-radius: 12px;
+    color: white;
+    outline: none;
+}
+
+.action-bar-pills {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.action-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff; /* Forțează textul alb */
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+.filter-svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-2);
+}
+
+.action-pill.active {
+    border-color: #DB2777; /* Roz accent */
+    background: rgba(219, 39, 119, 0.1);
+}
+    .action-pill.active .filter-svg {
+        color: var(--accent);
+    }
+
+.icon-chevron-down {
+    font-size: 10px;
+    margin-left: 5px;
+    font-style: normal;
+    opacity: 0.5;
+}
+.icon-svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.8;
+}
+
+/* Stilul panoului expandabil */
+.filter-panel-content {
+    background: #111827; /* Fundal închis solid sau glassmorphism */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 18px;
+    margin-bottom: 25px;
+}
+
+.panel-label {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+/* Pastilele de selecție (Pills) */
+.pills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pill-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff; /* Forțează textul alb */
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+    .pill-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .pill-btn.active {
+        background: #DB2777;
+        border-color: #DB2777;
+        box-shadow: 0 4px 15px rgba(219, 39, 119, 0.3);
+    }
+
+.reset-link {
+    color: #DB2777;
+    background: none;
+    border: none;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-left: auto;
 }

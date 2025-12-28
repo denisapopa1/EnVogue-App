@@ -8,49 +8,169 @@
 <div class="page-container with-nav">
     <div class="profile-header">
         <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 20px;">My Wardrobe</h2>
+
     </div>
 
     @if (AllItems.Any())
     {
-        <div class="input-group" style="margin-bottom: 24px;">
-            <input type="text"
-                   class="input-field"
-                   placeholder="🔍 Search by brand, style, color, tags, notes"
-                   value="@Filter.SearchTerm"
-                   @oninput="@((e) => { Filter.SearchTerm = e.Value?.ToString() ?? ""; ApplyFilters(); })" />
+        @* 1. BARA DE CĂUTARE *@
+        <div class="search-container-modern" style="margin-bottom: 12px;">
+            <div class="search-input-wrapper">
+                <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" class="input-field-modern" placeholder="Search by brand, style, color..."
+                       value="@Filter.SearchTerm" @oninput="@((e) => { Filter.SearchTerm = e.Value?.ToString() ?? ""; ApplyFilters(); })" />
+            </div>
         </div>
 
-        <div class="outfit-grid">
-            @foreach (var item in FilteredItems)
+        @* 2. BARA DE ACTION *@
+        <div class="action-bar-pills">
+            <button class="action-pill @(isFilterOpen ? "active" : "")" @onclick="ToggleFilter">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                </svg>
+                <span>Filters</span>
+                <span class="chevron">@(isFilterOpen ? "▲" : "▼")</span>
+            </button>
+
+            <button class="action-pill @(isSortOpen ? "active" : "")" @onclick="ToggleSort">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+                <span>Sort</span>
+                <span class="chevron">@(isSortOpen ? "▲" : "▼")</span>
+            </button>
+
+            @if (Filter.SelectedCategory != "All" || Filter.SelectedSeason != "All" || Filter.Style != "All" || !string.IsNullOrEmpty(Filter.Color))
             {
-                <div class="wardrobe-card animate-fade-in" @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
-                    <div class="card-image-container">
-                        <img src="@item.ImageData" alt="@item.Name" />
+                <button class="reset-link" @onclick="ResetFilters">Reset</button>
+            }
+        </div>
+
+        @* 3. PANOURI EXPANDABILE *@
+        <div class="expandable-panels">
+            @if (isFilterOpen)
+            {
+                <div class="filter-panel-content animate-slide-down card-glass">
+                    @* CATEGORIE *@
+                    <div class="filter-section">
+                        <p class="panel-label">Category</p>
+                        <div class="pills-grid">
+                            <button class="pill-btn @(Filter.SelectedCategory == "All" ? "active" : "")" @onclick='() => SetCategory("All")'>All</button>
+                            @foreach (var cat in AllCategories)
+                            {
+                                <button class="pill-btn @(Filter.SelectedCategory == cat ? "active" : "")" @onclick='() => SetCategory(cat)'>@cat</button>
+                            }
+                        </div>
                     </div>
-                    <div class="card-content">
-                        <h3 class="brand-title">@item.Subcategory</h3>
-                        <p class="item-meta">@item.Category • @item.Color</p>
+
+                    @* 💡 SUBCATEGORIE - Reparată *@
+                    @if (Filter.SelectedCategory != "All" && AvailableSubcategories.Any())
+                    {
+                        <div class="filter-section" style="margin-top: 20px;">
+                            <p class="panel-label">Type of @Filter.SelectedCategory</p>
+                            <div class="pills-grid">
+                                <button class="pill-btn @(string.IsNullOrEmpty(Filter.Subcategory) ? "active" : "")" @onclick='() => SetSubcategory("")'>Any Type</button>
+                                @foreach (var sub in AvailableSubcategories)
+                                {
+                                    <button class="pill-btn @(Filter.Subcategory == sub ? "active" : "")" @onclick='() => SetSubcategory(sub)'>@sub</button>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @* SEZON *@
+                    <div class="filter-section" style="margin-top: 20px;">
+                        <p class="panel-label">Season</p>
+                        <div class="pills-grid">
+                            <button class="pill-btn @(Filter.SelectedSeason == "All" ? "active" : "")" @onclick='() => SetSeason("All")'>All Seasons</button>
+                            @foreach (var season in new[] { "Summer", "Winter", "Spring", "Autumn" })
+                            {
+                                <button class="pill-btn @(Filter.SelectedSeason == season ? "active" : "")" @onclick='() => SetSeason(season)'>@season</button>
+                            }
+                        </div>
+                    </div>
+
+                    @* STIL *@
+                    <div class="filter-section" style="margin-top: 20px;">
+                        <p class="panel-label">Style</p>
+                        <div class="pills-grid">
+                            <button class="pill-btn @(Filter.Style == "All" ? "active" : "")" @onclick='() => SetStyle("All")'>Any Style</button>
+                            @foreach (var style in new[] { "Elegant", "Casual", "Sport", "Business"})
+                            {
+                                <button class="pill-btn @(Filter.Style == style ? "active" : "")" @onclick='() => SetStyle(style)'>@style</button>
+                            }
+                        </div>
+                    </div>
+
+                    @* CULOARE *@
+                    <div class="filter-section" style="margin-top: 20px;">
+                        <p class="panel-label">Color</p>
+                        <div class="pills-grid">
+                            <button class="pill-btn @(string.IsNullOrEmpty(Filter.Color) ? "active" : "")" @onclick='() => SetColor("")'>All Colors</button>
+                            @foreach (var color in PopularColors)
+                            {
+                                <button class="pill-btn @(Filter.Color == color ? "active" : "")" @onclick='() => SetColor(color)'>
+                                    <span class="color-dot" style="background: @color.ToLower();"></span> @color
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (isSortOpen)
+            {
+                <div class="filter-panel-content animate-slide-down card-glass">
+                    <p class="panel-label">Sort Order</p>
+                    <div class="pills-grid">
+                        <button class="pill-btn @(Filter.SortBy == "Newest" ? "active" : "")" @onclick='() => SetSort("Newest")'>Newest First</button>
+                        <button class="pill-btn @(Filter.SortBy == "Oldest" ? "active" : "")" @onclick='() => SetSort("Oldest")'>Oldest First</button>
+                        <button class="pill-btn @(Filter.SortBy == "Brand" ? "active" : "")" @onclick='() => SetSort("Brand")'>By Brand</button>
                     </div>
                 </div>
             }
         </div>
-    
-        @if (!FilteredItems.Any() && !string.IsNullOrEmpty(Filter.SearchTerm))
-        {
-            <p class="center text-muted" style="margin-top: 40px;">No items matched your search.</p>
-        }
+
+        @* GRILA DE HAINE *@
+        <div class="outfit-grid" style="margin-top: 20px;">
+            @foreach (var item in FilteredItems)
+            {
+                <div class="wardrobe-card animate-fade-in" @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
+                    <div class="card-image-container">
+                        <img src="@item.ImageData" alt="@item.Subcategory" />
+                    </div>
+
+                    <div class="card-content">
+                        @* Brandul devine titlul principal, cu font îngroșat *@
+                        <h3 class="brand-title" style="font-weight: 700; font-size: 15px; margin-bottom: 2px;">
+                            @(string.IsNullOrWhiteSpace(item.Brand) ? item.Subcategory : item.Brand)
+                        </h3>
+                        @* Detaliile secundare cu font mai mic *@
+                        <p class="item-meta" style="font-size: 12px; opacity: 0.8;">@item.Subcategory • @item.Color</p>
+                    </div>
+                </div>
+            }
+        </div>
     }
     else
     {
-        <div class="card card-glass center" style="padding: 40px; margin-top: 20px;">
-            <div style="margin-bottom: 20px;">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1">
-                    <path d="M20 7h-9l-3-3H4v16h16V7z"></path>
+        @* EMPTY STATE - Restaurat la designul din image_ff27d4.png *@
+        <div class="card card-glass center" style="padding: 60px; margin-top: 40px;">
+            <div style="margin-bottom: 30px; opacity: 0.5;">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M22 19V9a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2zM6 7V5a2 2 0 012-2h8a2 2 0 012 2v2" />
                 </svg>
             </div>
-            <h3 style="margin-bottom: 10px;">Your closet is empty</h3>
-            <p class="text-muted" style="margin-bottom: 24px;">Start building your digital wardrobe by adding your first clothing item.</p>
-            <button class="btn-primary" @onclick='() => NavigationManager.NavigateTo("/add-item")' style="width: auto; padding: 12px 30px;">
+            <h2 style="font-weight: 700; margin-bottom: 15px;">Your closet is empty</h2>
+            <p class="text-muted" style="margin-bottom: 30px; max-width: 300px; margin-left: auto; margin-right: auto;">
+                Start building your digital wardrobe by adding your favorite items.
+            </p>
+            <button class="btn-primary" @onclick='() => NavigationManager.NavigateTo("/add-item")' style="width: auto; padding: 15px 40px;">
                 + Add Your First Item
             </button>
         </div>
@@ -60,20 +180,72 @@
 <NavBar CurrentPage="my-closet" />
 
 @code {
-    private FilterModel Filter = new FilterModel();
+    private FilterModel Filter = new FilterModel { SelectedCategory = "All", SelectedSeason = "All", Style = "All", SortBy = "Newest", Subcategory = "" };
     private List<ClothingItem> AllItems = new List<ClothingItem>();
     private List<ClothingItem> FilteredItems = new List<ClothingItem>();
+    private List<string> AllCategories = new() { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
+    private List<string> PopularColors = new() { "Black", "White", "Blue", "Red", "Beige", "Green" };
+    private List<string> AvailableSubcategories = new List<string>();
+
+    private Dictionary<string, List<string>> SubcategoryMap = new()
+    {
+        { "Tops", new() { "T-shirt", "Blouse", "Sweater", "Hoodie" } },
+        { "Bottoms", new() { "Jeans", "Trousers", "Skirt", "Shorts" } },
+        { "Dress", new() { "Mini", "Maxi", "Cocktail", "Evening" } },
+        { "Outerwear", new() { "Jacket", "Coat", "Blazer", "Vest"} },
+        { "Shoes", new() { "Sneakers", "Boots", "Heels", "Sandals"} },
+        { "Accessories", new() { "Scarf", "Belt", "Jewelry", "Hat" } }
+    };
+
+    private bool isFilterOpen = false;
+    private bool isSortOpen = false;
 
     protected override void OnInitialized()
     {
         RefreshData();
-        // Ne abonăm la schimbări pentru a actualiza lista în timp real
+        UpdateSubcategories(); // 💡 Inițializare la pornire
         WardrobeService.OnChange += RefreshData;
     }
 
     private void RefreshData()
     {
         AllItems = WardrobeService.GetAllClothes();
+        ApplyFilters();
+    }
+
+    private void ToggleFilter() { isFilterOpen = !isFilterOpen; isSortOpen = false; }
+    private void ToggleSort() { isSortOpen = !isSortOpen; isFilterOpen = false; }
+
+    private void SetCategory(string cat)
+    {
+        Filter.SelectedCategory = cat;
+        Filter.Subcategory = "";
+        UpdateSubcategories();
+        ApplyFilters();
+    }
+
+    private void UpdateSubcategories()
+    {
+        if (SubcategoryMap.ContainsKey(Filter.SelectedCategory))
+        {
+            AvailableSubcategories = SubcategoryMap[Filter.SelectedCategory];
+        }
+        else
+        {
+            AvailableSubcategories = new List<string>();
+        }
+    }
+
+    private void SetSubcategory(string sub) { Filter.Subcategory = sub; ApplyFilters(); }
+    private void SetColor(string color) { Filter.Color = color; ApplyFilters(); }
+    private void SetSeason(string season) { Filter.SelectedSeason = season; ApplyFilters(); }
+    private void SetStyle(string style) { Filter.Style = style; ApplyFilters(); }
+    private void SetSort(string sort) { Filter.SortBy = sort; ApplyFilters(); }
+
+    private void ResetFilters()
+    {
+        Filter = new FilterModel { SelectedCategory = "All", SelectedSeason = "All", Style = "All", SortBy = "Newest" };
+        UpdateSubcategories(); // 💡 Curățare subcategorii la reset
         ApplyFilters();
     }
 
@@ -85,20 +257,37 @@
         if (!string.IsNullOrEmpty(search))
         {
             query = query.Where(i =>
-                (i.Category != null && i.Category.ToLower().Contains(search)) ||
                 (i.Subcategory != null && i.Subcategory.ToLower().Contains(search)) ||
-                (i.Color != null && i.Color.ToLower().Contains(search)) ||
-                (i.Style != null && i.Style.ToLower().Contains(search))
+                (i.Color != null && i.Color.ToLower().Contains(search))
             );
         }
+
+        if (Filter.SelectedCategory != "All")
+            query = query.Where(i => i.Category.Equals(Filter.SelectedCategory, StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrEmpty(Filter.Subcategory))
+            query = query.Where(i => i.Subcategory == Filter.Subcategory);
+
+        if (!string.IsNullOrEmpty(Filter.Color))
+            query = query.Where(i => i.Color.Contains(Filter.Color, StringComparison.OrdinalIgnoreCase));
+
+        if (Filter.SelectedSeason != "All")
+            query = query.Where(i => i.Season.Equals(Filter.SelectedSeason, StringComparison.OrdinalIgnoreCase));
+
+        if (Filter.Style != "All" && !string.IsNullOrEmpty(Filter.Style))
+            query = query.Where(i => i.Style.Equals(Filter.Style, StringComparison.OrdinalIgnoreCase));
+
+        query = Filter.SortBy switch
+        {
+            "Brand" => query.OrderBy(i => i.Brand), // Sortează alfabetic A-Z după numele brandului
+            "Newest" => query.OrderByDescending(i => i.Id),
+            "Oldest" => query.OrderBy(i => i.Id),
+            _ => query.OrderByDescending(i => i.Id)
+        };
 
         FilteredItems = query.ToList();
         StateHasChanged();
     }
 
-    public void Dispose()
-    {
-        // Dezabonare pentru a evita memory leaks
-        WardrobeService.OnChange -= RefreshData;
-    }
+    public void Dispose() => WardrobeService.OnChange -= RefreshData;
 }

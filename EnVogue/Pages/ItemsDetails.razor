@@ -122,11 +122,40 @@
                     <span class="text-muted">Color</span>
                     @if (isEditing)
                     {
-                        <input type="text" class="input-field-small centered-input" @bind="item.Color" />
+                        <input type="text" class="input-field-small centered-input" @bind="item.Color" placeholder="e.g. Red, Blue..." />
                     }
                     else
                     {
-                        <span class="info-val">@item.Color</span>
+                        <span class="info-val">@(string.IsNullOrWhiteSpace(item.Color) ? "Not specified" : item.Color)</span>
+                    }
+                </div>
+                @* Style Row *@
+                <div class="detail-row">
+                    <span class="text-muted">Style</span>
+                    @if (isEditing)
+                    {
+                        <select class="input-field-small centered-select" @bind="item.Style">
+                            @foreach (var style in Styles)
+                            {
+                                <option value="@style">@style</option>
+                            }
+                        </select>
+                    }
+                    else
+                    {
+                        @* Verificăm dacă stilul este gol sau "None" *@
+                        <span class="info-val">@(string.IsNullOrWhiteSpace(item.Style) || item.Style == "None" ? "Not specified" : item.Style)</span>
+                    }
+                </div>
+                <div class="detail-row">
+                    <span class="text-muted">Brand</span>
+                    @if (isEditing)
+                    {
+                        <input type="text" class="input-field-small centered-input" @bind="item.Brand" placeholder="Enter brand..." />
+                    }
+                    else
+                    {
+                        <span class="info-val">@(string.IsNullOrWhiteSpace(item.Brand) ? "Not specified" : item.Brand)</span>
                     }
                 </div>
             </div>
@@ -229,6 +258,7 @@
 
     private List<string> Categories = new() { "Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Accessories" };
     private List<string> Seasons = new() { "Spring", "Summer", "Autumn", "Winter", "All Seasons" };
+    private List<string> Styles = new() { "Not specified", "Elegant", "Casual", "Sport", "Business" }; // 💡 ADAUGĂ ACEASTĂ LINIE
     private Dictionary<string, List<string>> SubcategoryMap = new()
     {
         { "Tops", new() { "T-shirt", "Shirt", "Blouse", "Hoodie", "Sweater" } },
@@ -254,7 +284,9 @@
                 Subcategory = original.Subcategory,
                 Color = original.Color,
                 ImageData = original.ImageData,
-                Season = original.Season
+                Season = original.Season,
+                Style = original.Style,// 💡 ADAUGĂ ACEASTĂ LINIE
+                Brand = original.Brand
             };
         }
     }

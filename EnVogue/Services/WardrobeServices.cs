@@ -227,6 +227,7 @@ namespace EnVogue.Services
                 OnChange?.Invoke();
             }
         }
+
     }
 
 }

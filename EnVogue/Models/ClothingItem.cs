@@ -16,6 +16,9 @@
         public string ImageData { get; set; } = "";
         public DateTime AddedDate { get; set; } = DateTime.Now;
         public List<string> Tags { get; set; } = new();
+        public bool IsFavorite { get; set; } = false;
+        public string Brand { get; set; } = ""; // 💡 Noua proprietate
+
     }
 
     public class Outfit

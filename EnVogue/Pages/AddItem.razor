@@ -1,16 +1,14 @@
 ﻿@page "/add-item"
 @inject IJSRuntime JSRuntime
-
 @using EnVogue.Services
+@using EnVogue.Models
 @implements IDisposable
 
 <div class="page-container with-nav">
-    
     <div class="card card-glass animate-fade-in form-limit">
         <h3 class="center" style="margin-bottom: 10px;">Upload a Photo</h3>
         <p class="page-subtitle center" style="margin-bottom: 16px;">Take or upload a photo of your clothing item</p>
-        <input type="file" id="fileInput" accept="image/*" style="display: none;" @ref="fileInput" @onchange="OnFileChange" />
-
+        <input type="file" id="fileInput" accept="image/*" style="display: none;" @ref="fileInput" />
 
         <div class="dropzone" @onclick="TriggerFileInput">
             @if (string.IsNullOrEmpty(imagePreview))
@@ -29,10 +27,12 @@
                 <p style="margin-top: 10px; color: var(--accent); font-weight: 600;">Click to change</p>
             }
         </div>
-
-        @* ------------------- CÂMPURI NOI ȘI LOGICA DEPENDENTĂ ------------------- *@
-
-        <div class="input-group" style="margin-top: 16px;">
+        @* Brand Field cu spațiere corectată *@
+        <div class="input-group" style="margin-top: 24px;">
+            <label>Brand</label>
+            <input type="text" class="input-field" @bind="brand" placeholder="e.g. Zara, Nike, Gucci..." />
+        </div>
+        <div class="input-group">
             <label>Category</label>
             <select class="input-field" @onchange="OnCategoryChanged">
                 @foreach (var cat in MainCategories)
@@ -82,18 +82,13 @@
             <input type="text" class="input-field" placeholder="E.g., Blue, Red, Black" @bind="color" />
         </div>
 
-        <button class="btn-primary" style="width: 100%;" @onclick="SaveItem">Save Item</button>
-        @* ------------------------------------------------------------------------- *@
+        <button class="btn-primary" style="width: 100%; margin-top: 20px;" @onclick="SaveItem">Save Item</button>
     </div>
 </div>
-
 
 <NavBar CurrentPage="home" />
 
 @code {
-    // ------------------- Logica Componentei și Datele Noi -------------------
-
-    // --- Definirea Listelor de Opțiuni ---
     private List<string> MainCategories = new List<string> { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
     private List<string> Seasons = new List<string> { "Summer", "Winter", "Spring", "Autumn" };
     private List<string> Styles = new List<string> { "Casual", "Elegant", "Sport", "Business" };
@@ -108,26 +103,24 @@
         { "Accessories", new List<string> { "Scarf", "Belt", "Jewelry", "Hat" } }
     };
 
-    // --- Variabile de Stare (Actualizate) ---
-    private string category = "Tops"; // Valoare inițială
-    private string subcategory = ""; // Variabila nouă
-    private string season = "Summer"; // Variabila nouă
-    private string style = ""; // Variabila nouă
-    private List<string> AvailableSubcategories = new List<string>();
-
-    // --- Variabile Existente ---
+    // Variabile de stare
+    private string brand = ""; // 💡 Fix: Am adăugat variabila locală
+    private string category = "Tops";
+    private string subcategory = "";
+    private string season = "Summer";
+    private string style = "";
     private string color = "";
     private string imagePreview = "";
+    private List<string> AvailableSubcategories = new List<string>();
+
     private ElementReference fileInput;
     private DotNetObjectReference<AddItem>? objRef;
 
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
     [Inject] private WardrobeServices WardrobeService { get; set; } = default!;
-    // JSRuntime este injectat în partea de sus.
 
     protected override void OnInitialized()
     {
-        // Inițializează lista de subcategorii pentru valoarea inițială a categoriei ("Tops")
         if (SubcategoryMap.ContainsKey(category))
         {
             AvailableSubcategories = SubcategoryMap[category];
@@ -135,21 +128,10 @@
         }
     }
 
-    // 💡 LOGICA DEPENDENTĂ: Se apelează când utilizatorul schimbă Categoria Principală
     private void OnCategoryChanged(ChangeEventArgs e)
     {
         category = e.Value?.ToString() ?? "Tops";
-
-        if (SubcategoryMap.ContainsKey(category))
-        {
-            AvailableSubcategories = SubcategoryMap[category];
-        }
-        else
-        {
-            AvailableSubcategories = new List<string>();
-        }
-
-        // Setează automat subcategoria la prima valoare din noua listă (sau la gol)
+        AvailableSubcategories = SubcategoryMap.ContainsKey(category) ? SubcategoryMap[category] : new List<string>();
         subcategory = AvailableSubcategories.FirstOrDefault() ?? "";
     }
 
@@ -157,35 +139,28 @@
     {
         if (string.IsNullOrEmpty(imagePreview) || string.IsNullOrEmpty(category) || string.IsNullOrEmpty(subcategory))
         {
-            // Poți adăuga aici o notificare de eroare
             return;
         }
 
         var item = new ClothingItem
         {
+            Brand = brand, // 💡 Salvăm brandul aici
             Category = category,
-            Subcategory = subcategory, // 💡 Noul câmp salvat
-            Season = season, // 💡 Noul câmp salvat
-            Style = style, // 💡 Noul câmp salvat
+            Subcategory = subcategory,
+            Season = season,
+            Style = style,
             Color = color,
             ImageData = imagePreview,
-            Name = $"{color} {subcategory}" // Nume mai specific
+       
         };
 
         WardrobeService.AddClothingItem(item);
         NavigationManager.NavigateTo("/closet");
     }
 
-    // --- Logica JS Interop Existentă (Lăsată neschimbată) ---
-
     private async Task TriggerFileInput()
     {
         await JSRuntime.InvokeVoidAsync("fileUpload.triggerFileInput", "fileInput");
-    }
-
-    private async Task OnFileChange(ChangeEventArgs e)
-    {
-        // Nu este necesară logica directă aici, deoarece funcția JS se ocupă de citirea fișierului și apelarea OnFileSelected
     }
 
     [JSInvokable]

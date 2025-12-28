@@ -92,6 +92,7 @@
 
     // --- VARIABILE PENTRU OUTFIT-URI ---
     private List<Outfit> favoriteOutfits = new();
+    private List<ClothingItem> favoriteClothes = new();
 
     // --- VARIABILE PENTRU FILTRARE ARTIcole ---
     private FilterModel Filter = new FilterModel();
@@ -126,6 +127,9 @@
             .ToList();
 
         FilteredItems = AllItemsInFavorites;
+        favoriteClothes = WardrobeService.GetAllClothes().Where(i => i.IsFavorite).ToList();
+
+        WardrobeService.OnChange += StateHasChanged;
         // Nu mai apelăm UpdateAvailableSubcategories pentru că nu ne interesează UI-ul
 
         WardrobeService.OnChange += StateHasChanged;
