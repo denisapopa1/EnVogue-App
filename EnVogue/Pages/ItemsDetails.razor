@@ -3,6 +3,7 @@
 @using EnVogue.Services
 @inject WardrobeServices WardrobeService
 @inject NavigationManager Nav
+@inject NotificationService Toast
 
 <div class="page-container with-nav">
     @* Top Bar *@
@@ -305,7 +306,17 @@
 
     private void CancelEdit() { LoadItemData(); isEditing = false; }
 
-    private void SaveChanges() { if (item != null) { WardrobeService.UpdateClothingItem(item); isEditing = false; } }
+    private void SaveChanges() { 
+        if (item != null) {
+            WardrobeService.UpdateClothingItem(item); 
+            Toast.Show("Changes saved successfully!", "success");
+            isEditing = false;
+        }
+    }
 
-    private void HandleDelete() { WardrobeService.RemoveClothingItem(ItemId); Nav.NavigateTo("/closet"); }
+    private void HandleDelete() { 
+        WardrobeService.RemoveClothingItem(ItemId);
+        Toast.Show("Item removed", "error");
+        Nav.NavigateTo("/closet"); 
+    }
 }

@@ -1,0 +1,91 @@
+﻿@using EnVogue.Services
+@inject NotificationService NotificationService
+@implements IDisposable
+
+
+@if (isVisible)
+{
+    <div class="toast-notification @type animate-slide-in">
+        <div class="toast-content">
+            <span class="toast-icon">@(type == "success" ? "✓" : "⚠")</span>
+            <span class="toast-message">@message</span>
+        </div>
+    </div>
+}
+<style>
+    .toast-notification {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        padding: 12px 24px;
+        border-radius: 30px;
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+    }
+
+    .success {
+        background: rgba(16, 185, 129, 0.9);
+    }
+
+    .error {
+        background: rgba(239, 68, 68, 0.9);
+    }
+
+    .animate-slide-in {
+        animation: slideUp 0.3s ease-out forwards;
+    }
+
+    /* 💡 Folosim @@ pentru a evita eroarea CS0103 */
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translate(-50%, 20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+    }
+</style>
+@code {
+    private bool isVisible;
+    private string message = "";
+    private string type = "success";
+
+    protected override void OnInitialized()
+    {
+        // Ne asigurăm că ne abonăm la eveniment
+        NotificationService.OnShow += ShowToast;
+    }
+
+    private void ShowToast(string msg, string t)
+    {
+        // Folosim InvokeAsync pentru a forța execuția pe thread-ul de UI
+        InvokeAsync(() =>
+        {
+            message = msg;
+            type = t;
+            isVisible = true;
+            StateHasChanged(); // 💡 Spune-i browserului să deseneze ACUM
+        });
+
+        // Opțional: ascunde după 3 secunde
+        Task.Delay(3000).ContinueWith(t =>
+        {
+            InvokeAsync(() =>
+            {
+                isVisible = false;
+                StateHasChanged();
+            });
+        });
+    }
+
+    public void Dispose() => NotificationService.OnShow -= ShowToast;
+}

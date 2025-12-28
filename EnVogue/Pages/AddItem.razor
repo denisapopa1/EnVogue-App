@@ -1,5 +1,6 @@
 ﻿@page "/add-item"
 @inject IJSRuntime JSRuntime
+@inject EnVogue.Services.NotificationService Toast
 @using EnVogue.Services
 @using EnVogue.Models
 @implements IDisposable
@@ -139,6 +140,8 @@
     {
         if (string.IsNullOrEmpty(imagePreview) || string.IsNullOrEmpty(category) || string.IsNullOrEmpty(subcategory))
         {
+            // OPȚIONAL: Notificare de eroare dacă lipsesc date
+            Toast.Show("Please upload a photo and select a category", "error");
             return;
         }
 
@@ -155,6 +158,8 @@
         };
 
         WardrobeService.AddClothingItem(item);
+        // 💡 ADAUGĂ ACEASTĂ LINIE ÎNAINTE DE NAVIGARE
+        Toast.Show("Item added to your wardrobe!");
         NavigationManager.NavigateTo("/closet");
     }
 
