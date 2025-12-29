@@ -1204,3 +1204,27 @@ button, [type="button"], [type="submit"] {
     letter-spacing: 0.5px;
     color: white;
 }
+
+.skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 8px;
+}
+
+/* 💡 REPARARE: Folosește @@ în loc de @ pentru a evita eroarea CS0103 */
+@@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skeleton-card {
+    padding: 15px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+}
