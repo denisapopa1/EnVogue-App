@@ -4,92 +4,180 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EnVogue</title>
-
     <base href="/" />
-
-    <!-- Bootstrap (dacă îl folosești) -->
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
 
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@300&display=swap" rel="stylesheet">
 
-    <!-- App styles -->
     <link rel="stylesheet" href="css/app.css" />
     <link href="EnVogue.styles.css" rel="stylesheet" />
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="favicon.png" />
-
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json?v=1.0.2">
-    <meta name="theme-color" content="#0b0f1a">
-
-    <!-- Mobile / iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="EnVogue">
-
-    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
-</head>
-
-<body>
-    <!-- BLazor root -->
-    <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
-    </div>
-
-    <!-- Error UI -->
-    <div id="blazor-error-ui">
-        An unhandled error has occurred.
-        <a href="" class="reload">Reload</a>
-        <a class="dismiss">🗙</a>
-    </div>
-
-    <!-- Custom JS -->
-    <script src="fileUpload.js"></script>
-
-    <!-- Blazor -->
-    <script src="_framework/blazor.webassembly.js"></script>
-
-    <!-- 🔥 HEADER SCROLL BEHAVIOR -->
-    <script>
-        (function () {
-            let lastScrollTop = 0;
-            const threshold = 10;
-
-            window.addEventListener("scroll", () => {
-                const topBar = document.querySelector(".top-bar");
-                if (!topBar) return;
-
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-                if (scrollTop > lastScrollTop + threshold) {
-                    topBar.classList.add("header-hidden");
-                } else if (scrollTop < lastScrollTop - threshold) {
-                    topBar.classList.remove("header-hidden");
-                }
-
-                lastScrollTop = Math.max(scrollTop, 0);
-            }, { passive: true });
-        })();
-    </script>
-
-    <!-- (Optional) Service Worker -->
-    <!--
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js')
-                .then(reg => console.log('Service Worker registered:', reg.scope))
-                .catch(err => console.error('Service Worker error:', err));
+    <style>
+        .loading-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #0b0f1a;
+            overflow: hidden;
+            color: white;
+            font-family: 'Inter', sans-serif;
         }
-    </script>
-    -->
 
+        /* --- LOGO CONTAINER PENTRU POZITIONARE STELUTE --- */
+        .logo-group {
+            position: relative;
+            padding: 0 60px; /* Spatiu pentru stelute in parti */
+            margin-bottom: 30px;
+        }
+
+        .loading-logo {
+            font-family: 'Dancing Script', cursive;
+            font-size: 5.5rem;
+            color: #ff7eb9;
+            margin: 0;
+            text-shadow: 0 0 20px rgba(255, 126, 185, 0.6);
+            z-index: 5;
+            position: relative;
+        }
+
+        /* --- STELUȚE GRUPATE ÎN JURUL TITLULUI --- */
+        .sparkle {
+            position: absolute;
+            color: #ffb3d9;
+            opacity: 0;
+            animation: twinkle-sync 2.5s infinite ease-in-out;
+            z-index: 1;
+        }
+
+        /* Stânga titlului */
+        .s1 {
+            top: 10%;
+            left: 0;
+            font-size: 1.8rem;
+        }
+
+        .s2 {
+            top: 50%;
+            left: 25px;
+            font-size: 1.2rem;
+        }
+
+        .s3 {
+            bottom: 0;
+            left: 10px;
+            font-size: 1.5rem;
+        }
+
+        /* Dreapta titlului */
+        .s4 {
+            top: 15%;
+            right: 5px;
+            font-size: 2.2rem;
+        }
+
+        .s5 {
+            top: 55%;
+            right: 35px;
+            font-size: 1rem;
+        }
+
+        .s6 {
+            bottom: 5%;
+            right: 15px;
+            font-size: 1.6rem;
+        }
+
+        /* --- BARA DE LOADING --- */
+        .loader-container {
+            width: 280px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .full-line {
+            width: 100%;
+            height: 1.5px;
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            position: absolute;
+            height: 100%;
+            width: 100px;
+            background: linear-gradient(90deg, transparent, #ff7eb9, transparent);
+            animation: move-fast 1.2s infinite linear;
+        }
+
+        .heartbeat-center {
+            position: absolute;
+            width: 40px;
+            height: 20px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40'%3E%3Cpath d='M0 20 L35 20 L42 5 L50 35 L58 20 L100 20' stroke='%23ff7eb9' stroke-width='4' fill='none'/%3E%3C/svg%3E") no-repeat center;
+            z-index: 10;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 11px;
+            letter-spacing: 3px;
+            opacity: 0.5;
+            text-transform: uppercase;
+        }
+
+        @keyframes move-fast {
+            0% {
+                transform: translateX(-150px);
+            }
+
+            100% {
+                transform: translateX(350px);
+            }
+        }
+
+        @keyframes twinkle-sync {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0.6);
+            }
+
+            50% {
+                opacity: 0.9;
+                transform: scale(1.1);
+                text-shadow: 0 0 12px #ff7eb9;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="loading-wrapper">
+            <div class="logo-group">
+                <span class="sparkle s1">✦</span>
+                <span class="sparkle s2">✦</span>
+                <span class="sparkle s3">✦</span>
+                <span class="sparkle s4">✦</span>
+                <span class="sparkle s5">✦</span>
+                <span class="sparkle s6">✦</span>
+
+                <h1 class="loading-logo">EnVogue</h1>
+            </div>
+
+            <div class="loader-container">
+                <div class="full-line">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="heartbeat-center"></div>
+            </div>
+
+            <div class="loading-text">Loading fashion assist...</div>
+        </div>
+    </div>
+    <script src="_framework/blazor.webassembly.js"></script>
 </body>
 </html>

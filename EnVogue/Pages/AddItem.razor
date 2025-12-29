@@ -15,7 +15,7 @@
             </svg>
         </button>
         <h2 class="brand" style="font-size: 20px; margin: 0;">Add New Item</h2>
-        <div style="width: 40px;"></div> @* Spacer pentru centrare *@
+        <div style="width: 40px;"></div>
     </div>
 
     <div class="card card-glass animate-fade-in form-limit" style="max-width: 500px; margin: 0 auto;">
@@ -42,6 +42,7 @@
             }
         </div>
 
+        @* Câmpuri Input *@
         <div class="input-group" style="margin-top: 24px;">
             <label>Brand</label>
             <input type="text" class="input-field" @bind="brand" placeholder="e.g. Zara, Nike, Gucci..." />
@@ -82,13 +83,13 @@
             <input type="text" class="input-field" placeholder="E.g., Blue, Red, Black" @bind="color" />
         </div>
 
+        @* 💡 Butonul apelează SaveItem care acum este async *@
         <button class="btn-primary" style="width: 100%; margin-top: 20px;" @onclick="SaveItem">Save Item</button>
     </div>
 </div>
 
 <NavBar CurrentPage="home" />
 
-@* 💡 DIALOGUL INTEGRAT CORECT *@
 <ConfirmDialog IsVisible="showDiscardConfirm"
                Title="Discard Item?"
                Message="You have unsaved details. Are you sure you want to go back?"
@@ -101,7 +102,6 @@
 @code {
     private List<string> MainCategories = new List<string> { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
     private List<string> Seasons = new List<string> { "Summer", "Winter", "Spring", "Autumn" };
-    private List<string> Styles = new List<string> { "Casual", "Elegant", "Sport", "Business" };
     private Dictionary<string, List<string>> SubcategoryMap = new Dictionary<string, List<string>> {
         { "Tops", new List<string> { "T-shirt", "Blouse", "Hoodie", "Sweater" } },
         { "Bottoms", new List<string> { "Jeans", "Trousers", "Skirt", "Shorts" } },
@@ -115,7 +115,7 @@
     private string category = "Tops";
     private string subcategory = "";
     private string season = "Summer";
-    private string style = "";
+    private string style = "Casual";
     private string color = "";
     private string imagePreview = "";
     private List<string> AvailableSubcategories = new List<string>();
@@ -129,23 +129,27 @@
 
     protected override void OnInitialized()
     {
-        if (SubcategoryMap.ContainsKey(category))
-        {
-            AvailableSubcategories = SubcategoryMap[category];
-            subcategory = AvailableSubcategories.FirstOrDefault() ?? "";
-        }
+        UpdateSubcategories();
+    }
+
+    private void OnCategoryChanged(ChangeEventArgs e)
+    {
+        category = e.Value?.ToString() ?? "Tops";
+        UpdateSubcategories();
+    }
+
+    private void UpdateSubcategories()
+    {
+        AvailableSubcategories = SubcategoryMap.ContainsKey(category) ? SubcategoryMap[category] : new List<string>();
+        subcategory = AvailableSubcategories.FirstOrDefault() ?? "";
     }
 
     private void HandleCancel()
     {
         if (!string.IsNullOrWhiteSpace(brand) || !string.IsNullOrWhiteSpace(color) || !string.IsNullOrWhiteSpace(imagePreview))
-        {
             showDiscardConfirm = true;
-        }
         else
-        {
             NavigationManager.NavigateTo("/closet");
-        }
     }
 
     private void ConfirmDiscard()
@@ -154,21 +158,17 @@
         NavigationManager.NavigateTo("/closet");
     }
 
-    private void OnCategoryChanged(ChangeEventArgs e)
-    {
-        category = e.Value?.ToString() ?? "Tops";
-        AvailableSubcategories = SubcategoryMap.ContainsKey(category) ? SubcategoryMap[category] : new List<string>();
-        subcategory = AvailableSubcategories.FirstOrDefault() ?? "";
-    }
-
-    private void SaveItem()
+    // 💡 REPARARE: SaveItem a devenit async Task și folosește await
+    private async Task SaveItem()
     {
         if (string.IsNullOrEmpty(imagePreview))
         {
             Toast.Show("Please upload a photo first", "error");
             return;
         }
-        WardrobeService.AddClothingItem(new ClothingItem
+
+        // Așteptăm salvarea în LocalStorage
+        await WardrobeService.AddClothingItem(new ClothingItem
         {
             Brand = brand,
             Category = category,
@@ -178,12 +178,16 @@
             Color = color,
             ImageData = imagePreview
         });
+
         Toast.Show("Item added successfully!", "success");
         NavigationManager.NavigateTo("/closet");
     }
 
     private async Task TriggerFileInput() => await JSRuntime.InvokeVoidAsync("fileUpload.triggerFileInput", "fileInput");
-    [JSInvokable] public void OnFileSelected(string base64Data) { imagePreview = base64Data; StateHasChanged(); }
+
+    [JSInvokable]
+    public void OnFileSelected(string base64Data) { imagePreview = base64Data; StateHasChanged(); }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -192,5 +196,6 @@
             await JSRuntime.InvokeVoidAsync("fileUpload.initializeFileInput", "fileInput", objRef);
         }
     }
+
     public void Dispose() => objRef?.Dispose();
 }

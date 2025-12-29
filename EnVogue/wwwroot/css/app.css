@@ -1213,7 +1213,7 @@ button, [type="button"], [type="submit"] {
 }
 
 /* 💡 REPARARE: Folosește @@ în loc de @ pentru a evita eroarea CS0103 */
-@@keyframes skeleton-loading {
+@keyframes skeleton-loading {
     0% {
         background-position: 200% 0;
     }

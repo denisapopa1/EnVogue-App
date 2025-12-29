@@ -3,33 +3,94 @@
 @inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
 @inject UserState UserState
+@inject WardrobeServices WardrobeService
+
+@if (isInitialized)
+{
+    @* --- PARTEA 1: TOP BAR (Vizibilă doar pe anumite pagini) --- *@
+    @if (ShowTopBar)
+    {
+        <div class="top-bar">
+            <div class="brand">EnVogue</div>
+            <button type="button" class="icon-button profile-btn"
+                    @onclick='() => NavigationManager.NavigateTo("/profile")'
+                    aria-label="Profile">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21a8 8 0 0 0-16 0"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </button>
+        </div>
+    }
+
+    @* --- PARTEA 2: CONȚINUTUL PAGINII --- *@
+    <div class="page-container with-nav">
+        @Body
+    </div>
+
+    @* --- PARTEA 3: COMPONENTE GLOBALE --- *@
+    <ToastContainer />
+}
+else
+{
+    @* --- PARTEA 4: ECRAN DE ÎNCĂRCARE (Apare la refresh) --- *@
+    <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#0b0f1a; color:white; font-family: 'Inter', sans-serif;">
+        <div class="loader-spinner" style="border: 4px solid rgba(255,255,255,0.1); border-left-color: #ff2d55; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
+        <div style="font-weight: 600; letter-spacing: 1px; opacity: 0.8;">ENVOGUE</div>
+    </div>
+
+    <style>
+        @("@") keyframes spin {
+            to
+
+        {
+            transform: rotate(360deg);
+        }
+
+        }</style>
+}
 
 @code {
-    private bool ShowTopBar =>
-        !NavigationManager.Uri.Contains("/splash", StringComparison.OrdinalIgnoreCase) &&
-        !NavigationManager.Uri.Contains("/login", StringComparison.OrdinalIgnoreCase) &&
-        !NavigationManager.Uri.Contains("/createaccount", StringComparison.OrdinalIgnoreCase);
+    private bool isInitialized = false;
+
+    private bool ShowTopBar
+    {
+        get
+        {
+            try
+            {
+                var uri = NavigationManager.Uri;
+                if (string.IsNullOrEmpty(uri)) return false;
+
+                return !uri.Contains("/splash", StringComparison.OrdinalIgnoreCase) &&
+                       !uri.Contains("/login", StringComparison.OrdinalIgnoreCase) &&
+                       !uri.Contains("/createaccount", StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Inițializăm LocalStorage doar când browserul este gata
+                await WardrobeService.InitializeAsync();
+                isInitialized = true;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during init: {ex.Message}");
+                isInitialized = true;
+                StateHasChanged();
+            }
+        }
+    }
 }
-
-@if (ShowTopBar)
-{
-    <div class="top-bar">
-        <div class="brand">EnVogue</div>
-        <button type="button" class="icon-button profile-btn"
-                @onclick='() => NavigationManager.NavigateTo("/profile")'
-                aria-label="Profile">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21a8 8 0 0 0-16 0"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        </button>
-    </div>
-}
-
-<div class="page-container with-nav">
-    @Body
-</div>
-
-@* 💡 ADAUGĂ CONTAINERUL AICI *@
-<ToastContainer />

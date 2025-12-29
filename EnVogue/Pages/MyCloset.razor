@@ -6,13 +6,23 @@
 @implements IDisposable
 
 <div class="page-container with-nav">
-    <div class="profile-header">
-        <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 20px;">My Wardrobe</h2>
+    @* --- HEADER ȘI STATISTICI --- *@
+    <div class="profile-header" style="margin-bottom: 25px;">
+        <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 5px;">My Wardrobe</h2>
+
+        @if (AllItems.Any())
+        {
+            <div class="stats-badge animate-fade-in" style="display: inline-flex; align-items: center; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+                <span style="font-size: 13px; font-weight: 600; opacity: 0.9;">
+                    <span style="margin-right: 5px;">📦</span> Total: @AllItems.Count items
+                </span>
+            </div>
+        }
     </div>
 
-    @* 1. BARA DE CĂUTARE - Întotdeauna vizibilă dacă există haine *@
     @if (AllItems.Any())
     {
+        @* --- BARA DE CĂUTARE ȘI FILTRE --- *@
         <div class="search-container-modern" style="margin-bottom: 12px;">
             <div class="search-input-wrapper">
                 <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -20,11 +30,10 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
                 <input type="text" class="input-field-modern" placeholder="Search by brand, style, color..."
-                       value="@Filter.SearchTerm" @oninput="@((e) => { Filter.SearchTerm = e.Value?.ToString() ?? ""; ApplyFilters(); })" />
+                       @bind-value="Filter.SearchTerm" @bind-value:event="oninput" @onkeyup="ApplyFilters" />
             </div>
         </div>
 
-        @* 2. BARA DE ACTION *@
         <div class="action-bar-pills">
             <button class="action-pill @(isFilterOpen ? "active" : "")" @onclick="ToggleFilter">
                 <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -50,12 +59,11 @@
             }
         </div>
 
-        @* 3. PANOURI EXPANDABILE *@
+        @* --- PANOURI FILTRARE --- *@
         <div class="expandable-panels">
             @if (isFilterOpen)
             {
                 <div class="filter-panel-content animate-slide-down card-glass">
-                    @* CATEGORIE *@
                     <div class="filter-section">
                         <p class="panel-label">Category</p>
                         <div class="pills-grid">
@@ -67,34 +75,18 @@
                         </div>
                     </div>
 
-                    @* SUBCATEGORIE *@
-                    @if (Filter.SelectedCategory != "All" && AvailableSubcategories.Any())
-                    {
-                        <div class="filter-section" style="margin-top: 20px;">
-                            <p class="panel-label">Type of @Filter.SelectedCategory</p>
-                            <div class="pills-grid">
-                                <button class="pill-btn @(string.IsNullOrEmpty(Filter.Subcategory) ? "active" : "")" @onclick='() => SetSubcategory("")'>Any Type</button>
-                                @foreach (var sub in AvailableSubcategories)
-                                {
-                                    <button class="pill-btn @(Filter.Subcategory == sub ? "active" : "")" @onclick='() => SetSubcategory(sub)'>@sub</button>
-                                }
-                            </div>
-                        </div>
-                    }
-
-                    @* CULOARE *@
                     <div class="filter-section" style="margin-top: 20px;">
                         <p class="panel-label">Color Palette</p>
                         <div class="color-options-grid" style="display: flex; flex-wrap: wrap; gap: 10px;">
-                             <div class="color-item @(string.IsNullOrEmpty(Filter.Color) ? "active" : "")" @onclick='() => SetColor("")' style="cursor:pointer; text-align:center;">
-                                <div class="color-circle" style="width:30px; height:30px; border-radius:50%; border:1px solid #444; background:#333;">🌈</div>
-                                <span style="font-size:10px;">All</span>
+                            <div class="color-item @(string.IsNullOrEmpty(Filter.Color) ? "active" : "")" @onclick='() => SetColor("")' style="cursor:pointer; text-align:center;">
+                                <div class="color-circle" style="width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center;">🌈</div>
+                                <span style="font-size:10px; color:white; display:block; margin-top:4px;">All</span>
                             </div>
                             @foreach (var color in PopularColors)
                             {
                                 <div class="color-item @(Filter.Color == color ? "active" : "")" @onclick='() => SetColor(color)' style="cursor:pointer; text-align:center;">
-                                    <div class="color-circle" style="width:30px; height:30px; border-radius:50%; border:1px solid #444; background-color:@GetColorHex(color)"></div>
-                                    <span style="font-size:10px;">@color</span>
+                                    <div class="color-circle shadow-sm" style="width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,0.15); background-color:@(GetColorHex(color))"></div>
+                                    <span style="font-size:10px; color:white; display:block; margin-top:4px;">@color</span>
                                 </div>
                             }
                         </div>
@@ -116,38 +108,40 @@
         </div>
     }
 
-    @* 4. LOGICA DE AFISARE CONTINUT - Reparată pentru vizibilitate *@
+    @* --- AFISARE CONTINUT --- *@
     @if (isLoading)
     {
         <div class="outfit-grid" style="margin-top: 20px;">
             @for (int i = 0; i < 6; i++)
             {
                 <div class="skeleton-card card-glass">
-                    <div class="skeleton skeleton-img" style="height:200px; margin-bottom:10px;"></div>
-                    <div class="skeleton skeleton-text" style="width: 70%; height:15px; margin-bottom:5px;"></div>
-                    <div class="skeleton skeleton-text" style="width: 40%; height:12px;"></div>
+                    <div class="skeleton skeleton-img" style="height:220px; border-radius:12px; margin-bottom:12px;"></div>
+                    <div class="skeleton skeleton-text" style="width: 70%; height:16px; margin-bottom:6px;"></div>
+                    <div class="skeleton skeleton-text" style="width: 45%; height:14px;"></div>
                 </div>
             }
         </div>
     }
     else if (!AllItems.Any())
     {
-        <div class="card card-glass center" style="padding: 60px; margin-top: 40px; text-align:center;">
+        <div class="card card-glass center" style="padding: 80px 40px; margin-top: 40px; text-align:center;">
             <div style="margin-bottom: 30px; opacity: 0.5;">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
                     <path d="M22 19V9a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2zM6 7V5a2 2 0 012-2h8a2 2 0 012 2v2" />
                 </svg>
             </div>
-            <h2 style="font-weight: 700; margin-bottom: 15px;">Your closet is empty</h2>
-            <button class="btn-primary" @onclick='() => NavigationManager.NavigateTo("/add-item")'>+ Add Your First Item</button>
+            <h2 style="font-weight: 700; margin-bottom: 15px; font-size: 22px;">Your closet is empty</h2>
+            <p style="opacity:0.6; margin-bottom:30px;">Start building your digital wardrobe by adding items.</p>
+            <button class="btn-primary" @onclick='() => NavigationManager.NavigateTo("/add-item")' style="width: auto; padding: 15px 40px;">+ Add Your First Item</button>
         </div>
     }
     else if (!FilteredItems.Any())
     {
-        <div class="card card-glass center animate-fade-in" style="padding: 60px; margin-top: 40px; text-align:center; border: 1px dashed rgba(255,255,255,0.2);">
-            <div style="font-size: 50px; margin-bottom: 20px;">🔍</div>
-            <h2 style="font-weight: 700;">No matches found</h2>
-            <button class="btn-primary" @onclick="ResetFilters" style="margin-top:20px;">Clear All Filters</button>
+        <div class="card card-glass center animate-fade-in" style="padding: 80px 40px; margin-top: 40px; text-align:center; border: 1px dashed rgba(255,255,255,0.2);">
+            <div style="font-size: 60px; margin-bottom: 25px;">🔍</div>
+            <h2 style="font-weight: 700; font-size: 22px;">No matches found</h2>
+            <p style="opacity:0.6; margin-bottom:30px;">Try adjusting your filters or search terms.</p>
+            <button class="btn-primary" @onclick="ResetFilters" style="width: auto; padding: 15px 40px; background: rgba(255,255,255,0.1);">Clear All Filters</button>
         </div>
     }
     else
@@ -157,15 +151,15 @@
             {
                 <div class="wardrobe-card animate-fade-in" @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
                     <div class="card-image-container">
-                        <img src="@item.ImageData" style="width:100%; border-radius:12px 12px 0 0;" />
+                        <img src="@item.ImageData" style="width:100%; border-radius:12px 12px 0 0; display:block;" />
                     </div>
 
-                    @* 💡 FUNDAL ALB PENTRU TEXT - Repară problema din imaginea ta *@
-                    <div class="card-content" style="background: white; padding: 12px; border-radius: 0 0 12px 12px; text-align: center;">
-                        <h3 style="font-weight: 700; font-size: 15px; margin: 0; color: #333;">
+                    @* REPARARE DESIGN: Text negru pe fundal alb, box mai mare *@
+                    <div class="card-content" style="background: white; padding: 15px; border-radius: 0 0 12px 12px; text-align: center;">
+                        <h3 style="font-weight: 700; font-size: 16px; margin: 0; color: #1a1a1a;">
                             @(string.IsNullOrWhiteSpace(item.Brand) ? item.Subcategory : item.Brand)
                         </h3>
-                        <p style="font-size: 12px; color: #666; margin: 4px 0 0 0; opacity: 0.9;">
+                        <p style="font-size: 13px; color: #666; margin: 5px 0 0 0; opacity: 1;">
                             @item.Subcategory • @item.Color
                         </p>
                     </div>
@@ -173,24 +167,47 @@
             }
         </div>
     }
-</div> @* Închidere page-container *@
+</div>
 
 <NavBar CurrentPage="my-closet" />
 
+<style>
+    .skeleton {
+        background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+        background-size: 200% 100%;
+        animation: skeleton-loading 1.5s infinite;
+        border-radius: 8px;
+    }
+
+    @@keyframes skeleton-loading {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    .skeleton-card {
+        padding: 15px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+    }
+</style>
 
 @code {
     private FilterModel Filter = new FilterModel { SelectedCategory = "All", SelectedSeason = "All", Style = "All", SortBy = "Newest", Subcategory = "" };
     private List<ClothingItem> AllItems = new List<ClothingItem>();
     private List<ClothingItem> FilteredItems = new List<ClothingItem>();
     private List<string> AllCategories = new() { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
-    private List<string> PopularColors = new() { "Black", "White", "Gray", "Silver", "Beige", "Brown", "Navy", "Blue", "Red", "Green" };
+    private List<string> PopularColors = new() { "Black", "White", "Gray", "Silver", "Beige", "Brown", "Navy", "Blue", "Red", "Green", "Pink", "Purple", "Gold" };
     private List<string> AvailableSubcategories = new List<string>();
-    private bool isLoading = true; // 💡 REPARARE EROARE CS0103: Am declarat variabila aici
+    private bool isLoading = true;
     private bool isFilterOpen = false;
     private bool isSortOpen = false;
 
-    private Dictionary<string, List<string>> SubcategoryMap = new()
-    {
+    private Dictionary<string, List<string>> SubcategoryMap = new() {
         { "Tops", new() { "T-shirt", "Blouse", "Sweater", "Hoodie" } },
         { "Bottoms", new() { "Jeans", "Trousers", "Skirt", "Shorts" } },
         { "Dress", new() { "Mini", "Maxi", "Cocktail", "Evening" } },
@@ -198,64 +215,62 @@
         { "Shoes", new() { "Sneakers", "Boots", "Heels", "Sandals"} },
         { "Accessories", new() { "Scarf", "Belt", "Jewelry", "Hat" } }
     };
-
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-        RefreshData();
-        UpdateSubcategories();
-        WardrobeService.OnChange += RefreshData;
-        
-        // Simulăm încărcarea din LocalStorage
+
+        // Încarcă datele inițiale
+        await RefreshData();
+
+        // Înregistrează evenimentul folosind o funcție anonimă compatibilă cu Action
+        WardrobeService.OnChange += HandleOnChange;
+
         await Task.Delay(600);
         isLoading = false;
     }
 
-    private void RefreshData()
+    // Creăm o metodă de tip "void" specială pentru eveniment
+    private void HandleOnChange() => InvokeAsync(async () => await RefreshData());
+
+    private async Task RefreshData()
     {
+        // Obținem hainele din lista deja încărcată în serviciu
         AllItems = WardrobeService.GetAllClothes();
         ApplyFilters();
+        StateHasChanged();
     }
 
     private void ToggleFilter() { isFilterOpen = !isFilterOpen; isSortOpen = false; }
     private void ToggleSort() { isSortOpen = !isSortOpen; isFilterOpen = false; }
-
-    private void SetCategory(string cat)
-    {
-        Filter.SelectedCategory = cat;
-        Filter.Subcategory = "";
-        UpdateSubcategories();
-        ApplyFilters();
-    }
+    private void SetCategory(string cat) { Filter.SelectedCategory = cat; Filter.Subcategory = ""; UpdateSubcategories(); ApplyFilters(); }
+    private void SetColor(string color) { Filter.Color = color; ApplyFilters(); }
+    private void SetSort(string sort) { Filter.SortBy = sort; ApplyFilters(); }
+    private void ResetFilters() { Filter = new FilterModel { SelectedCategory = "All", SelectedSeason = "All", Style = "All", SortBy = "Newest" }; UpdateSubcategories(); ApplyFilters(); }
 
     private void UpdateSubcategories()
     {
-        if (SubcategoryMap.ContainsKey(Filter.SelectedCategory))
-            AvailableSubcategories = SubcategoryMap[Filter.SelectedCategory];
-        else
-            AvailableSubcategories = new List<string>();
-    }
-
-    private void SetSubcategory(string sub) { Filter.Subcategory = sub; ApplyFilters(); }
-    private void SetColor(string color) { Filter.Color = color; ApplyFilters(); }
-    private void SetSeason(string season) { Filter.SelectedSeason = season; ApplyFilters(); }
-    private void SetStyle(string style) { Filter.Style = style; ApplyFilters(); }
-    private void SetSort(string sort) { Filter.SortBy = sort; ApplyFilters(); }
-
-    private void ResetFilters()
-    {
-        Filter = new FilterModel { SelectedCategory = "All", SelectedSeason = "All", Style = "All", SortBy = "Newest" };
-        UpdateSubcategories();
-        ApplyFilters();
+        if (SubcategoryMap.ContainsKey(Filter.SelectedCategory)) AvailableSubcategories = SubcategoryMap[Filter.SelectedCategory];
+        else AvailableSubcategories = new List<string>();
     }
 
     private string GetColorHex(string colorName)
     {
         return colorName.ToLower() switch
         {
-            "black" => "#1a1a1a", "white" => "#ffffff", "gray" => "#808080", "silver" => "#c0c0c0",
-            "beige" => "#f5f5dc", "brown" => "#8b4513", "navy" => "#000080", "blue" => "#3b82f6",
-            "red" => "#ef4444", "green" => "#22c55e", _ => "#808080"
+            "black" => "#1a1a1a",
+            "white" => "#ffffff",
+            "gray" => "#808080",
+            "silver" => "#c0c0c0",
+            "beige" => "#f5f5dc",
+            "brown" => "#8b4513",
+            "navy" => "#000080",
+            "blue" => "#3b82f6",
+            "red" => "#ef4444",
+            "green" => "#22c55e",
+            "pink" => "#ec4899",
+            "purple" => "#a855f7",
+            "gold" => "#ffd700",
+            _ => "#808080"
         };
     }
 
@@ -263,28 +278,22 @@
     {
         var query = AllItems.AsQueryable();
         var search = Filter.SearchTerm?.Trim().ToLower() ?? "";
-
         if (!string.IsNullOrEmpty(search))
         {
-            var searchTerms = search.Replace("-", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var searchTerms = search.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             foreach (var term in searchTerms)
             {
                 query = query.Where(i =>
                     (i.Brand != null && i.Brand.ToLower().Contains(term)) ||
                     (i.Category != null && i.Category.ToLower().Contains(term)) ||
-                    (i.Subcategory != null && i.Subcategory.ToLower().Replace("-", " ").Contains(term)) ||
-                    (i.Color != null && i.Color.ToLower().Contains(term))
-                );
+                    (i.Subcategory != null && i.Subcategory.ToLower().Contains(term)) ||
+                    (i.Color != null && i.Color.ToLower().Contains(term)));
             }
         }
-
         if (Filter.SelectedCategory != "All") query = query.Where(i => i.Category == Filter.SelectedCategory);
-        if (!string.IsNullOrEmpty(Filter.Subcategory)) query = query.Where(i => i.Subcategory == Filter.Subcategory);
         if (!string.IsNullOrEmpty(Filter.Color)) query = query.Where(i => i.Color.Contains(Filter.Color, StringComparison.OrdinalIgnoreCase));
-
         FilteredItems = query.ToList();
         StateHasChanged();
     }
-
-    public void Dispose() => WardrobeService.OnChange -= RefreshData;
+    public void Dispose() => WardrobeService.OnChange -= HandleOnChange;
 }
