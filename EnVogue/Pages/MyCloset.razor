@@ -107,16 +107,23 @@
                         </div>
                     </div>
 
-                    @* CULOARE *@
+                    @* CULOARE - Cercuri vizuale stilate *@
                     <div class="filter-section" style="margin-top: 20px;">
                         <p class="panel-label">Color</p>
-                        <div class="pills-grid">
-                            <button class="pill-btn @(string.IsNullOrEmpty(Filter.Color) ? "active" : "")" @onclick='() => SetColor("")'>All Colors</button>
+                        <div class="color-options-grid">
+                            @* Opțiunea pentru "Toate culorile" *@
+                            <div class="color-item @(string.IsNullOrEmpty(Filter.Color) ? "active" : "")" @onclick='() => SetColor("")'>
+                                <div class="color-circle shadow-sm" style="background: rgba(255,255,255,0.1); font-size: 14px;">🌈</div>
+                                <span class="color-label">All</span>
+                            </div>
+
                             @foreach (var color in PopularColors)
                             {
-                                <button class="pill-btn @(Filter.Color == color ? "active" : "")" @onclick='() => SetColor(color)'>
-                                    <span class="color-dot" style="background: @color.ToLower();"></span> @color
-                                </button>
+                                <div class="color-item @(Filter.Color == color ? "active" : "")" @onclick='() => SetColor(color)'>
+                                    @* 💡 Folosim paranteze rotunde pentru a ajuta editorul să recunoască codul C# *@
+                                    <div class="color-circle shadow-sm" style="background-color: @(GetColorHex(color));"></div>
+                                    <span class="color-label">@color</span>
+                                </div>
                             }
                         </div>
                     </div>
@@ -184,7 +191,12 @@
     private List<ClothingItem> AllItems = new List<ClothingItem>();
     private List<ClothingItem> FilteredItems = new List<ClothingItem>();
     private List<string> AllCategories = new() { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
-    private List<string> PopularColors = new() { "Black", "White", "Blue", "Red", "Beige", "Green" };
+    private List<string> PopularColors = new()
+    {
+        "Black", "White", "Gray", "Silver", "Beige", "Brown",
+        "Navy", "Blue", "LightBlue", "Green", "Olive", "Yellow",
+        "Orange", "Red", "Burgundy", "Pink", "Purple", "Gold"
+    };
     private List<string> AvailableSubcategories = new List<string>();
 
     private Dictionary<string, List<string>> SubcategoryMap = new()
@@ -247,6 +259,31 @@
         Filter = new FilterModel { SelectedCategory = "All", SelectedSeason = "All", Style = "All", SortBy = "Newest" };
         UpdateSubcategories(); // 💡 Curățare subcategorii la reset
         ApplyFilters();
+    }
+    private string GetColorHex(string colorName)
+    {
+        return colorName.ToLower() switch
+        {
+            "black" => "#1a1a1a",
+            "white" => "#ffffff",
+            "gray" => "#808080",
+            "silver" => "#c0c0c0",
+            "beige" => "#f5f5dc",
+            "brown" => "#8b4513",
+            "navy" => "#000080",
+            "blue" => "#3b82f6",
+            "lightblue" => "#add8e6",
+            "green" => "#22c55e",
+            "olive" => "#808000",
+            "yellow" => "#eab308",
+            "orange" => "#f97316",
+            "red" => "#ef4444",
+            "burgundy" => "#800020",
+            "pink" => "#ec4899",
+            "purple" => "#a855f7",
+            "gold" => "#ffd700",
+            _ => "#808080"
+        };
     }
     private void ApplyFilters()
     {

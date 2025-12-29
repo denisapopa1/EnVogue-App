@@ -1140,3 +1140,67 @@ button, [type="button"], [type="submit"] {
     cursor: pointer;
     margin-left: auto;
 }
+.color-options-grid {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 5px 0;
+}
+
+.color-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    width: 50px;
+}
+
+    .color-item:hover {
+        transform: translateY(-3px);
+    }
+
+.color-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 6px;
+    transition: all 0.2s ease;
+    background-clip: padding-box;
+}
+
+.all-colors {
+    background: rgba(255,255,255,0.08);
+    font-size: 16px;
+}
+
+/* Fix vizual pentru culori foarte deschise */
+.color-circle[style*="background-color: #ffffff"],
+.color-circle[style*="background-color: #f5f5dc"] {
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Evidențiere selecție - Stil EnVogue */
+.color-item.active .color-circle {
+    border-color: var(--accent);
+    box-shadow: 0 0 15px var(--accent);
+    transform: scale(1.15);
+}
+
+.color-item.active .color-label {
+    color: var(--accent);
+    font-weight: 700;
+    opacity: 1;
+}
+
+.color-label {
+    font-size: 10px;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: white;
+}
