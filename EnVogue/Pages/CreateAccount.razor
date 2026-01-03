@@ -1,85 +1,340 @@
 ﻿@page "/create-account"
+@layout EmptyLayout
 @using EnVogue.Models
-@using System.ComponentModel.DataAnnotations
-@using EnVogue.Services
+@inject NavigationManager NavigationManager
+@inject UserState UserState
+@inject WardrobeServices WardrobeService
+@inject IJSRuntime JS
 
-<EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
-    <DataAnnotationsValidator />
+<div class="login-wrapper" @onclick="BlurEverything">
+    @if (isNavigating)
+    {
+        <div class="nav-overlay">
+            <div class="loader"></div>
+        </div>
+    }
 
-    <div class="page-container with-nav" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 100px);">
-        <div class="card animate-fade-in form-limit" style="max-width: 420px; width: 100%;">
-            <div class="center" style="margin-bottom: 24px;">
-                <div class="brand" style="font-size: 28px;">EnVogue</div>
-                <p class="page-subtitle" style="margin-top: 6px;">Join Smart Wardrobe today</p>
+    @* Folosim variabila FormCssClass pentru a evita eroarea RZ9986 *@
+    <EditForm Model="@registerModel"
+              OnValidSubmit="HandleRegister"
+              class="@FormCssClass">
+
+        <DataAnnotationsValidator />
+
+        <div class="login-header" tabindex="-1">
+            <div class="logo-container">
+                <div class="circular-logo">
+                    @* Logo-ul rotund conform designului tău *@
+                    <img src="Images/elegant_pink_fashion_logo_envogue.png" alt="EnVogue Logo" />
+                </div>
             </div>
 
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" class="input-field" placeholder="Enter your email" @bind="registerModel.Email" />
+            <h1 class="main-title" tabindex="-1">Join EnVogue</h1>
+            <p class="subtitle" tabindex="-1">Create your smart wardrobe today</p>
+        </div>
+
+        <div class="form-group">
+            <label>EMAIL</label>
+            <InputText type="email"
+                       class="custom-input bold-text"
+                       placeholder="hello@example.com"
+                       @bind-Value="registerModel.Email" />
+            <div class="error-container">
                 <ValidationMessage For="@(() => registerModel.Email)" />
             </div>
+        </div>
 
-            <div class="input-group">
-                <label>Password</label>
-                <div style="position: relative;">
-                    <input type="@passwordFieldType" class="input-field" placeholder="Enter your password" @bind="registerModel.Password" style="padding-right: 40px;" />
-                    <button type="button" @onclick="TogglePassword"
-                            style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-2); cursor: pointer;">
-                        @(passwordFieldType == "password" ? "👁️" : "🙈")
-                    </button>
-                </div>
+        <div class="form-group">
+            <label>PASSWORD</label>
+            <div class="password-wrapper">
+                <InputText type="@passwordFieldType"
+                           class="custom-input bold-text"
+                           placeholder="••••••••"
+                           @bind-Value="registerModel.Password" />
+                <button type="button"
+                        class="toggle-pass"
+                        @onclick="TogglePassword">
+                    <span class="eye-icon">
+                        @(passwordFieldType == "password" ? "👁" : "🙈")
+                    </span>
+                </button>
+            </div>
+            <div class="error-container">
                 <ValidationMessage For="@(() => registerModel.Password)" />
             </div>
+        </div>
 
-            <div class="input-group">
-                <label>Confirm Password</label>
-                <div style="position: relative;">
-                    <input type="@confirmPasswordFieldType" class="input-field" placeholder="Re-enter your password" @bind="registerModel.ConfirmPassword" style="padding-right: 40px;" />
-                    <button type="button" @onclick="ToggleConfirmPassword"
-                            style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-2); cursor: pointer;">
-                        @(confirmPasswordFieldType == "password" ? "👁️" : "🙈")
-                    </button>
-                </div>
+        <div class="form-group">
+            <label>CONFIRM PASSWORD</label>
+            <div class="password-wrapper">
+                <InputText type="@confirmPasswordFieldType"
+                           class="custom-input bold-text"
+                           placeholder="••••••••"
+                           @bind-Value="registerModel.ConfirmPassword" />
+                <button type="button"
+                        class="toggle-pass"
+                        @onclick="ToggleConfirmPassword">
+                    <span class="eye-icon">
+                        @(confirmPasswordFieldType == "password" ? "👁" : "🙈")
+                    </span>
+                </button>
+            </div>
+            <div class="error-container">
                 <ValidationMessage For="@(() => registerModel.ConfirmPassword)" />
             </div>
-
-            <button class="btn-primary" style="width: 100%; margin-bottom: 12px;" type="submit" disabled="@(!formIsValid)">Create account</button>
-
-            <div class="center">
-                <a href="/login" style="color: var(--text-2); font-size: 14px; text-decoration: none;">Already have an account?</a>
-            </div>
         </div>
-    </div>
-</EditForm>
+
+        @* Buton mov solid conform imaginii *@
+        <button type="submit"
+                class="create-btn bold-text"
+                disabled="@(isLoading || !formIsValid)">
+            @if (isLoading)
+            {
+                <span>Creating Account...</span>
+            }
+            else
+            {
+                <span>Create Account →</span>
+            }
+        </button>
+
+        <div class="login-footer">
+            <span class="bold-text">Already have an account? </span>
+            <a href="/login" class="highlight-link bold-text">Log In</a>
+        </div>
+    </EditForm>
+</div>
+
+<style>
+    /* ELIMINARE DEFINITIVĂ CHENAR NEGRU LA CLICK */
+    * {
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+
+        *:focus, *:active {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+    .login-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fce7f3; /* Roz fundal */
+        font-family: 'Inter', sans-serif;
+    }
+
+    .login-form {
+        width: 100%;
+        max-width: 400px;
+        padding: 20px;
+        text-align: center;
+        transition: opacity 0.2s;
+    }
+
+        .login-form.navigating {
+            opacity: 0 !important;
+        }
+
+    /* STIL LOGO ROTUND */
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .circular-logo {
+        width: 80px;
+        height: 80px;
+        background: #1a1a1a;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+        .circular-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    /* TEXT ȘI TITLU */
+    .main-title {
+        color: #d946ef; /* Mov/Violet vibrant */
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .subtitle {
+        color: #7a5c68;
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 35px;
+    }
+
+    .form-group {
+        text-align: left;
+        margin-bottom: 18px;
+    }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: #7a5c68;
+            margin-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
+
+    .custom-input {
+        width: 100%;
+        padding: 14px 20px;
+        border-radius: 12px;
+        border: none;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        font-weight: 700;
+        color: #2d1b24;
+        box-sizing: border-box;
+    }
+
+    .password-wrapper {
+        position: relative;
+    }
+
+    .toggle-pass {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        opacity: 0.6;
+        font-size: 18px;
+    }
+
+    /* BUTON CREATE ACCOUNT */
+    .create-btn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 15px;
+        background-color: #d946ef;
+        color: white;
+        font-weight: 800;
+        font-size: 16px;
+        box-shadow: 0 8px 20px rgba(217,70,239,0.3);
+        cursor: pointer;
+        margin-top: 15px;
+    }
+
+    .highlight-link {
+        color: #d946ef;
+        text-decoration: none;
+        font-weight: 800;
+    }
+
+    .login-footer {
+        margin-top: 25px;
+        font-size: 14px;
+        color: #7a5c68;
+    }
+
+    .nav-overlay {
+        position: fixed;
+        inset: 0;
+        background: #fce7f3;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loader {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(217,70,239,0.1);
+        border-top: 4px solid #d946ef;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin {
+        to
+
+    {
+        transform: rotate(360deg);
+    }
+
+    }
+
+    /* VIZIBILITATE MESAJE EROARE */
+    .error-container {
+        margin-top: 4px;
+        min-height: 20px;
+    }
+
+    .validation-message {
+        color: #be123c !important; /* Roșu închis pentru contrast pe roz */
+        font-size: 12px;
+        font-weight: 800 !important;
+        background-color: rgba(255, 255, 255, 0.5);
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+</style>
 
 @code {
     private RegisterModel registerModel = new();
-
+    private bool isLoading;
+    private bool isNavigating;
     private string passwordFieldType = "password";
     private string confirmPasswordFieldType = "password";
+
+    private string FormCssClass =>
+        isNavigating ? "login-form navigating" : "login-form";
 
     private bool formIsValid =>
         !string.IsNullOrWhiteSpace(registerModel.Email) &&
         !string.IsNullOrWhiteSpace(registerModel.Password) &&
         !string.IsNullOrWhiteSpace(registerModel.ConfirmPassword);
 
+    private async Task BlurEverything()
+        => await JS.InvokeVoidAsync("document.activeElement.blur");
+
     private void TogglePassword()
-    {
-        passwordFieldType = passwordFieldType == "password" ? "text" : "password";
-    }
+        => passwordFieldType = passwordFieldType == "password" ? "text" : "password";
 
     private void ToggleConfirmPassword()
-    {
-        confirmPasswordFieldType = confirmPasswordFieldType == "password" ? "text" : "password";
-    }
+        => confirmPasswordFieldType = confirmPasswordFieldType == "password" ? "text" : "password";
 
-    private void HandleRegister()
+    private async Task HandleRegister()
     {
-        // Aici ulterior poți integra backend / Identity
+        if (isLoading) return;
+
+        isLoading = true;
+
+        // 1. SALVĂM E-MAILUL ÎN SERVICIU PENTRU NUME DINAMIC
+        WardrobeService.SetLoggedInUser(registerModel.Email!);
+
+        // 2. LOGICA EXISTENTĂ DE LOGIN
         UserState.Login(registerModel.Email!);
+
+        isNavigating = true;
+        StateHasChanged();
+
+        // Mic delay pentru animație
+        await Task.Delay(50);
+
+        // 3. NAVIGARE CĂTRE HOME
         NavigationManager.NavigateTo("/home");
     }
-
-    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
-    [Inject] private UserState UserState { get; set; } = default!;
 }

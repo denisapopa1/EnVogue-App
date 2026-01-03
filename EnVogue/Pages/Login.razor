@@ -1,71 +1,275 @@
 ﻿@page "/login"
+@layout EmptyLayout
 @using EnVogue.Models
-@using System.ComponentModel.DataAnnotations
-@using EnVogue.Services
+@inject NavigationManager NavigationManager
+@inject UserState UserState
+@inject WardrobeServices WardrobeService
+@inject IJSRuntime JS
 
-<EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
-    <DataAnnotationsValidator />
+<div class="login-wrapper" @onclick="BlurEverything">
+    @if (isNavigating)
+    {
+        <div class="nav-overlay">
+            <div class="loader"></div>
+        </div>
+    }
 
-    <div class="page-container with-nav" style="display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 100px);">
-        <div class="card animate-fade-in form-limit" style="max-width: 420px; width: 100%;">
-            <div class="center" style="margin-bottom: 24px;">
-                <div class="brand" style="font-size: 28px;">EnVogue</div>
-                <p class="page-subtitle" style="margin-top: 6px;">Your personal fashion assistant</p>
+    @* Rezolvare eroare RZ9986 prin definirea clasei într-o variabilă *@
+    @{
+        var loginFormClass = isNavigating ? "login-form navigating" : "login-form";
+    }
+
+    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" class="@loginFormClass">
+        <DataAnnotationsValidator />
+
+        <div class="login-header" tabindex="-1">
+            @* LOGO-UL ROTUND NEGRU *@
+            <div class="logo-container">
+                <div class="circular-logo">
+                    <img src="Images/elegant_pink_fashion_logo_envogue.png" alt="EnVogue Logo" />
+                </div>
             </div>
 
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" class="input-field" placeholder="Enter your email" @bind="loginModel.Email" />
+            <h1 class="main-title" tabindex="-1">Welcome Back</h1>
+            <p class="subtitle" tabindex="-1">Discover your style today</p>
+        </div>
+
+        <div class="form-group">
+            <label>EMAIL</label>
+            <InputText type="email"
+                       class="custom-input bold-text"
+                       placeholder="name@email.com"
+                       @bind-Value="loginModel.Email" />
+            <div class="error-container">
                 <ValidationMessage For="@(() => loginModel.Email)" />
             </div>
+        </div>
 
-            <div class="input-group">
-                <label>Password</label>
-                <div style="position: relative; width: 100%;">
-                    <input type="@passwordFieldType" class="input-field" placeholder="Enter your password" @bind="loginModel.Password" style="padding-right: 40px;" />
-                    <button type="button" @onclick="TogglePassword"
-                            style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-2); cursor: pointer;">
-                        @(passwordFieldType == "password" ? "👁️" : "🙈")
-                    </button>
-                </div>
+        <div class="form-group">
+            <label>PASSWORD</label>
+            <InputText type="password"
+                       class="custom-input bold-text"
+                       placeholder="••••••••"
+                       @bind-Value="loginModel.Password" />
+            <div class="error-container">
                 <ValidationMessage For="@(() => loginModel.Password)" />
             </div>
-
-            <button class="btn-primary" style="width: 100%; margin-bottom: 12px;" type="submit" disabled="@(!formIsValid)">Login</button>
-
-            <div class="center" style="margin-top: 6px;">
-                <a href="/create-account" style="color: var(--text-2); font-size: 14px; text-decoration: none;">Create account</a>
-            </div>
-
-            <div class="center" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-1);">
-                <a href="/home" style="color: var(--text-2); font-size: 14px; text-decoration: none;">Use without an account</a>
-            </div>
         </div>
-    </div>
-</EditForm>
 
+        <button type="submit" class="enter-btn bold-text" disabled="@(isLoading || !formIsValid)">
+            @if (isLoading)
+            {
+                <span>Entering...</span>
+            }
+            else
+            {
+                <span>Enter Wardrobe →</span>
+            }
+        </button>
+
+        <div class="login-footer">
+            <span class="bold-text">New here? </span>
+            <a href="/create-account" class="highlight-link bold-text">Create Account</a>
+        </div>
+    </EditForm>
+</div>
+
+<style>
+    /* ELIMINARE CHENAR NEGRU LA CLICK */
+    * {
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+
+        *:focus, *:active {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+    .login-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fce7f3; /* Roz fundal */
+        font-family: 'Inter', sans-serif;
+    }
+
+    .login-form {
+        width: 100%;
+        max-width: 400px;
+        padding: 20px;
+        text-align: center;
+        transition: opacity 0.2s;
+    }
+
+        .login-form.navigating {
+            opacity: 0 !important;
+        }
+
+    /* LOGO ROTUND */
+    .logo-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .circular-logo {
+        width: 80px;
+        height: 80px;
+        background: #1a1a1a;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+        .circular-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    /* TITLU ȘI TEXT */
+    .main-title {
+        color: #d946ef;
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .subtitle {
+        color: #7a5c68;
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 35px;
+    }
+
+    .form-group {
+        text-align: left;
+        margin-bottom: 22px;
+    }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: #7a5c68;
+            margin-bottom: 8px;
+            letter-spacing: 0.05em;
+        }
+
+    .custom-input {
+        width: 100%;
+        padding: 14px 20px;
+        border-radius: 12px;
+        border: none;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        font-weight: 700;
+        box-sizing: border-box;
+        color: #2d1b24;
+    }
+
+    /* BUTONUL VIOLET */
+    .enter-btn {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 15px;
+        background: linear-gradient(90deg, #d946ef 0%, #c026d3 100%);
+        color: white;
+        font-weight: 800;
+        font-size: 16px;
+        box-shadow: 0 8px 20px rgba(217, 70, 239, 0.3);
+        cursor: pointer;
+        margin-top: 15px;
+    }
+
+    .highlight-link {
+        color: #d946ef;
+        text-decoration: none;
+        font-weight: 800;
+    }
+
+    .bold-text {
+        font-weight: 700 !important;
+    }
+
+    .login-footer {
+        margin-top: 32px;
+        font-size: 14px;
+        color: #7a5c68;
+    }
+
+    /* TRANZIȚIE ȘI ERORI */
+    .nav-overlay {
+        position: fixed;
+        inset: 0;
+        background: #fce7f3;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loader {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(217,70,239,0.1);
+        border-top: 4px solid #d946ef;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .validation-message {
+        color: #be123c !important;
+        font-size: 12px;
+        font-weight: 800 !important;
+        background: rgba(255,255,255,0.6);
+        padding: 2px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-top: 4px;
+    }
+</style>
 
 @code {
     private LoginModel loginModel = new();
+    private bool isLoading;
+    private bool isNavigating;
 
-    private string passwordFieldType = "password";
+    private bool formIsValid => !string.IsNullOrWhiteSpace(loginModel.Email) && !string.IsNullOrWhiteSpace(loginModel.Password);
 
-    private bool formIsValid =>
-        !string.IsNullOrWhiteSpace(loginModel.Email) &&
-        !string.IsNullOrWhiteSpace(loginModel.Password);
+    private async Task BlurEverything() => await JS.InvokeVoidAsync("document.activeElement.blur");
 
-    private void TogglePassword()
+    private async Task HandleLogin()
     {
-        passwordFieldType = passwordFieldType == "password" ? "text" : "password";
-    }
+        if (isLoading) return;
 
-    private void HandleLogin()
-    {
-        UserState.Login(loginModel.Email!); // SALVEAZĂ UTILIZATORUL
+        isLoading = true;
+
+        // 1. SALVĂM E-MAILUL ÎN SERVICIU PENTRU A FI FOLOSIT PE HOME
+        // Asigură-te că metoda SetLoggedInUser există în WardrobeServices.cs
+        WardrobeService.SetLoggedInUser(loginModel.Email!);
+
+        // 2. LOGICA EXISTENTĂ
+        UserState.Login(loginModel.Email!);
+
+        isNavigating = true;
+        StateHasChanged();
+
+        await Task.Delay(50);
+
+        // 3. NAVIGARE CĂTRE HOME
         NavigationManager.NavigateTo("/home");
     }
-
-    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
-    [Inject] private UserState UserState { get; set; } = default!;
-
 }

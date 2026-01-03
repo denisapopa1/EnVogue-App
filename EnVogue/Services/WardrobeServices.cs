@@ -11,8 +11,20 @@ namespace EnVogue.Services
         private readonly ILocalStorageService _localStorage;
         private const string StorageKey = "my_wardrobe_data";
         private const string OutfitsKey = "my_outfits_data";
-
+        // Variabilă care reține mailul utilizatorului logat
+        private string _loggedInUserEmail;
         public event Action? OnChange;
+        // Metoda care primește mail-ul de la Login
+        public void SetLoggedInUser(string email)
+        {
+            _loggedInUserEmail = email;
+        }
+
+        // Metoda pe care o folosește pagina Home pentru a extrage numele
+        public string GetLoggedInUserEmail()
+        {
+            return _loggedInUserEmail;
+        }
 
         public WardrobeServices(ILocalStorageService localStorage)
         {

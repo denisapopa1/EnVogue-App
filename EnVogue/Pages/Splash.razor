@@ -1,21 +1,203 @@
 ﻿@page "/"
+@layout EmptyLayout
+@inject NavigationManager Nav
 
-<div class="splash-container">
-    <div class="splash-content">
-        <img src="Images/logo.png" alt="EnVogue Logo" class="splash-logo" />
-        <p class="tagline">Your intelligent fashion assistant</p>
+<div class="onboarding-container" tabindex="-1">
+    <div class="onboarding-bg">
+        <img src="Images/luxury_fashion_splash_image.png" alt="Luxury Fashion" />
     </div>
+
+    <div class="glass-sidebar">
+        <div class="onboarding-content">
+            <div class="header-section">
+                <span class="brand-tag">ENVOGUE</span>
+            </div>
+
+            <div class="main-text">
+                <h1>Your Style,</h1>
+                <h1 class="highlight">Your Way</h1>
+                <h1>Every Day</h1>
+            </div>
+
+            <div class="footer-section">
+                <button @onclick='() => Nav.NavigateTo("/login")' class="next-circle-btn">
+                    <span class="arrow-icon">→</span>
+                </button>
+
+                <div class="pagination-dots">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Butonul SKIP este acum poziționat fix în dreapta sus *@
+    <button @onclick='() => Nav.NavigateTo("/login")' class="skip-btn-right">SKIP</button>
 </div>
 
-@code {
-    [Inject] NavigationManager NavManager { get; set; } = default!;
+<style>
+    /* ELIMINARE CONTUR LA CLICK (FOCUS) */
+    .onboarding-container,
+    .onboarding-container:focus,
+    .onboarding-container:active,
+    h1:focus {
+        outline: none !important;
+        box-shadow: none !important;
+        -webkit-tap-highlight-color: transparent; /* Elimină flash-ul albastru pe mobil */
+    }
+    .onboarding-container {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        color: white;
+        font-family: 'Inter', sans-serif;
+        overflow: hidden;
+        z-index: 9999;
+        outline: none !important;
+    }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await Task.Delay(5000); 
-            NavManager.NavigateTo("/login");
+    .onboarding-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+
+        .onboarding-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .glass-sidebar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 50%;
+        height: 100%;
+        z-index: 2;
+        background: rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .onboarding-content {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        /* Menținem centrarea verticală a textului */
+        justify-content: center;
+        padding-left: 12%;
+        padding-right: 12%;
+        box-sizing: border-box;
+    }
+
+    /* SKIP ÎN DREAPTA SUS */
+    .skip-btn-right {
+        position: absolute;
+        top: 40px;
+        right: 40px;
+        background: none;
+        border: none;
+        color: white;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        cursor: pointer;
+        opacity: 0.6;
+        z-index: 10;
+        padding: 5px 10px;
+        text-transform: uppercase;
+    }
+
+        .skip-btn-right:hover {
+            opacity: 1;
+        }
+
+    .header-section {
+        margin-bottom: 20px;
+    }
+
+    .brand-tag {
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.5em;
+        color: #ff7eb9;
+        text-transform: uppercase;
+    }
+
+    .main-text {
+        margin-bottom: 35px;
+    }
+
+        .main-text h1 {
+            font-size: 52px;
+            font-weight: 900;
+            margin: 0;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+        }
+
+            .main-text h1.highlight {
+                color: #ff7eb9;
+            }
+
+    .footer-section {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .next-circle-btn {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+        color: #d946ef;
+    }
+
+
+        .next-circle-btn:hover {
+            transform: scale(1.1);
+        }
+
+    .arrow-icon {
+        font-size: 1.8rem;
+        font-weight: bold;
+    }
+
+    .pagination-dots {
+        display: flex;
+        gap: 8px;
+    }
+
+    .dot {
+        width: 14px;
+        height: 2px;
+        background: rgba(255,255,255,0.2);
+    }
+
+        .dot.active {
+            width: 28px;
+            background: #ff7eb9;
+        }
+
+    @@media (max-width: 768px) {
+        .glass-sidebar {
+            width: 100%;
+        }
+
+        .main-text h1 {
+            font-size: 3.5rem;
         }
     }
-}
+</style>
