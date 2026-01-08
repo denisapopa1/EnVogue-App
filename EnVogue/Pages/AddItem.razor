@@ -6,6 +6,7 @@
 @implements IDisposable
 
 <div class="page-container with-nav">
+
     @* --- TOP BAR CU BUTON DE CANCEL --- *@
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto;">
         <button class="icon-button-top" @onclick="HandleCancel" style="background: none; border: none; cursor: pointer; color: var(--text-1); padding: 8px;">
@@ -179,8 +180,8 @@
             ImageData = imagePreview
         });
 
-        Toast.Show("Item added successfully!", "success");
-        NavigationManager.NavigateTo("/closet");
+        // MODIFICARE AICI: Adăugăm ?success=true la finalul adresei
+        NavigationManager.NavigateTo("/closet?success=true");
     }
 
     private async Task TriggerFileInput() => await JSRuntime.InvokeVoidAsync("fileUpload.triggerFileInput", "fileInput");

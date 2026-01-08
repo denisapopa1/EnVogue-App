@@ -59,7 +59,7 @@ namespace EnVogue.Services
             NotifyStateChanged();
         }
 
-        private void NotifyStateChanged() => OnChange?.Invoke();
+        public void NotifyStateChanged() => OnChange?.Invoke();
 
         // --- HAINE ---
 

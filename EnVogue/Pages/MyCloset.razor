@@ -4,68 +4,69 @@
 @inject NavigationManager NavigationManager
 @inject WardrobeServices WardrobeService
 @implements IDisposable
+@layout EmptyLayout
 
-<div class="page-container with-nav">
-    @* --- HEADER ȘI STATISTICI --- *@
-    <div class="profile-header" style="margin-bottom: 25px;">
-        <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 5px;">My Wardrobe</h2>
-
-        @if (AllItems.Any())
-        {
-            <div class="stats-badge animate-fade-in" style="display: inline-flex; align-items: center; background: rgba(255,255,255,0.1); padding: 5px 15px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
-                <span style="font-size: 13px; font-weight: 600; opacity: 0.9;">
-                    <span style="margin-right: 5px;">📦</span> Total: @AllItems.Count items
-                </span>
-            </div>
-        }
+<div class="closet-page-wrapper">
+    <div class="editorial-background">
+        <img src="Images/minimalist_luxury_closet_texture.png" alt="Closet Texture" />
     </div>
 
-    @if (AllItems.Any())
-    {
-        @* --- BARA DE CĂUTARE ȘI FILTRE --- *@
-        <div class="search-container-modern" style="margin-bottom: 12px;">
+    <div class="content-overlay">
+        <div class="editorial-header">
+            <div class="header-left">
+                <h1 class="brand-title" tabindex="-1">EnVogue</h1>
+                <span class="collection-tag">MY COLLECTION</span>
+            </div>
+          
+
+            <div class="header-right">
+                <button class="profile-circle" @onclick='() => NavigationManager.NavigateTo("/profile")'>
+                    <svg viewBox="0 0 24 24" class="profile-svg">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                </button>
+
+                @if (AllItems != null && AllItems.Any())
+                {
+                    <div class="stats-badge-editorial">
+                        <span>📦 TOTAL: @AllItems.Count ITEMS</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="search-bar-editorial">
             <div class="search-input-wrapper">
-                <svg class="search-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
-                <input type="text" class="input-field-modern" placeholder="Search by brand, style, color..."
-                       @bind-value="Filter.SearchTerm" @bind-value:event="oninput" @onkeyup="ApplyFilters" />
+                <input type="text" placeholder="Search by brand, style, color..."
+                       value="@Filter.SearchTerm" @oninput="@((e) => { Filter.SearchTerm = e.Value?.ToString() ?? ""; ApplyFilters(); })" />
             </div>
         </div>
 
-        <div class="action-bar-pills">
-            <button class="action-pill @(isFilterOpen ? "active" : "")" @onclick="ToggleFilter">
-                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                </svg>
-                <span>Filters</span>
-                <span class="chevron">@(isFilterOpen ? "▲" : "▼")</span>
-            </button>
+        <div class="editorial-controls">
+            <div class="control-row">
+                <button class="filter-sort-btn @(isFilterOpen ? "active" : "")" @onclick="ToggleFilter">
+                    <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" /></svg>
+                    <span>Filters</span> <span class="chevron">@(isFilterOpen ? "▲" : "▼")</span>
+                </button>
+                <button class="filter-sort-btn @(isSortOpen ? "active" : "")" @onclick="ToggleSort">
+                    <svg class="control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 10l5 5 5-5M7 14l5 5 5-5" /></svg>
+                    <span>Sort</span> <span class="chevron">@(isSortOpen ? "▲" : "▼")</span>
+                </button>
+                @if (Filter.SelectedCategory != "All" || !string.IsNullOrEmpty(Filter.Color))
+                {
+                    <button class="reset-link-editorial" @onclick="ResetFilters">Reset</button>
+                }
+            </div>
 
-            <button class="action-pill @(isSortOpen ? "active" : "")" @onclick="ToggleSort">
-                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-                <span>Sort</span>
-                <span class="chevron">@(isSortOpen ? "▲" : "▼")</span>
-            </button>
-
-            @if (Filter.SelectedCategory != "All" || Filter.SelectedSeason != "All" || Filter.Style != "All" || !string.IsNullOrEmpty(Filter.Color))
-            {
-                <button class="reset-link" @onclick="ResetFilters">Reset</button>
-            }
-        </div>
-
-        @* --- PANOURI FILTRARE --- *@
-        <div class="expandable-panels">
-            @if (isFilterOpen)
-            {
-                <div class="filter-panel-content animate-slide-down card-glass">
-                    <div class="filter-section">
-                        <p class="panel-label">Category</p>
+            <div class="expandable-panels">
+                @if (isFilterOpen)
+                {
+                    <div class="editorial-panel animate-slide-down">
+                        <p class="panel-label">CATEGORY</p>
                         <div class="pills-grid">
                             <button class="pill-btn @(Filter.SelectedCategory == "All" ? "active" : "")" @onclick='() => SetCategory("All")'>All</button>
                             @foreach (var cat in AllCategories)
@@ -73,139 +74,716 @@
                                 <button class="pill-btn @(Filter.SelectedCategory == cat ? "active" : "")" @onclick='() => SetCategory(cat)'>@cat</button>
                             }
                         </div>
-                    </div>
-
-                    <div class="filter-section" style="margin-top: 20px;">
-                        <p class="panel-label">Color Palette</p>
-                        <div class="color-options-grid" style="display: flex; flex-wrap: wrap; gap: 10px;">
-                            <div class="color-item @(string.IsNullOrEmpty(Filter.Color) ? "active" : "")" @onclick='() => SetColor("")' style="cursor:pointer; text-align:center;">
-                                <div class="color-circle" style="width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center;">🌈</div>
-                                <span style="font-size:10px; color:white; display:block; margin-top:4px;">All</span>
+                        @if (Filter.SelectedCategory != "All" && AvailableSubcategories.Any())
+                        {
+                            <p class="panel-label" style="margin-top: 20px;">SUBCATEGORY</p>
+                            <div class="pills-grid">
+                                <button class="pill-btn @(string.IsNullOrEmpty(Filter.Subcategory) ? "active" : "")" @onclick='() => SetSubcategory("")'>Any</button>
+                                @foreach (var sub in AvailableSubcategories)
+                                {
+                                    <button class="pill-btn @(Filter.Subcategory == sub ? "active" : "")" @onclick='() => SetSubcategory(sub)'>@sub</button>
+                                }
                             </div>
+                        }
+                        <p class="panel-label" style="margin-top: 20px;">SEASON</p>
+
+                        <div class="pills-grid">
+
+                            <button class="pill-btn @(Filter.SelectedSeason == "All" ? "active" : "")" @onclick='() => SetSeason("All")'>All</button>
+
+                            @foreach (var season in new[] { "Summer", "Winter", "Spring", "Autumn" })
+                            {
+                                <button class="pill-btn @(Filter.SelectedSeason == season ? "active" : "")" @onclick='() => SetSeason(season)'>@season</button>
+                            }
+
+                        </div>
+                        <p class="panel-label" style="margin-top: 20px;">COLOR PALETTE</p>
+                        <div class="color-options-grid">
                             @foreach (var color in PopularColors)
                             {
-                                <div class="color-item @(Filter.Color == color ? "active" : "")" @onclick='() => SetColor(color)' style="cursor:pointer; text-align:center;">
-                                    <div class="color-circle shadow-sm" style="width:34px; height:34px; border-radius:50%; border:2px solid rgba(255,255,255,0.15); background-color:@(GetColorHex(color))"></div>
-                                    <span style="font-size:10px; color:white; display:block; margin-top:4px;">@color</span>
+                                <div class="color-item @(Filter.Color == color ? "active" : "")" @onclick='() => SetColor(color)'>
+                                    <div class="color-circle" style="background-color:@(GetColorHex(color))"></div>
                                 </div>
                             }
                         </div>
                     </div>
-                </div>
-            }
-
-            @if (isSortOpen)
-            {
-                <div class="filter-panel-content animate-slide-down card-glass">
-                    <p class="panel-label">Sort Order</p>
-                    <div class="pills-grid">
-                        <button class="pill-btn @(Filter.SortBy == "Newest" ? "active" : "")" @onclick='() => SetSort("Newest")'>Newest First</button>
-                        <button class="pill-btn @(Filter.SortBy == "Oldest" ? "active" : "")" @onclick='() => SetSort("Oldest")'>Oldest First</button>
-                        <button class="pill-btn @(Filter.SortBy == "Brand" ? "active" : "")" @onclick='() => SetSort("Brand")'>By Brand</button>
+                }
+                @if (isSortOpen)
+                {
+                    <div class="editorial-panel animate-slide-down">
+                        <p class="panel-label">SORT ORDER</p>
+                        <div class="pills-grid">
+                            <button class="pill-btn @(Filter.SortBy == "Newest" ? "active" : "")" @onclick='() => SetSort("Newest")'>Newest First</button>
+                            <button class="pill-btn @(Filter.SortBy == "Oldest" ? "active" : "")" @onclick='() => SetSort("Oldest")'>Oldest First</button>
+                        </div>
                     </div>
-                </div>
-            }
-        </div>
-    }
-
-    @* --- AFISARE CONTINUT --- *@
-    @if (isLoading)
-    {
-        <div class="outfit-grid" style="margin-top: 20px;">
-            @for (int i = 0; i < 6; i++)
-            {
-                <div class="skeleton-card card-glass">
-                    <div class="skeleton skeleton-img" style="height:220px; border-radius:12px; margin-bottom:12px;"></div>
-                    <div class="skeleton skeleton-text" style="width: 70%; height:16px; margin-bottom:6px;"></div>
-                    <div class="skeleton skeleton-text" style="width: 45%; height:14px;"></div>
-                </div>
-            }
-        </div>
-    }
-    else if (!AllItems.Any())
-    {
-        <div class="card card-glass center" style="padding: 80px 40px; margin-top: 40px; text-align:center;">
-            <div style="margin-bottom: 30px; opacity: 0.5;">
-                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-                    <path d="M22 19V9a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2zM6 7V5a2 2 0 012-2h8a2 2 0 012 2v2" />
-                </svg>
+                }
             </div>
-            <h2 style="font-weight: 700; margin-bottom: 15px; font-size: 22px;">Your closet is empty</h2>
-            <p style="opacity:0.6; margin-bottom:30px;">Start building your digital wardrobe by adding items.</p>
-            <button class="btn-primary" @onclick='() => NavigationManager.NavigateTo("/add-item")' style="width: auto; padding: 15px 40px;">+ Add Your First Item</button>
         </div>
-    }
-    else if (!FilteredItems.Any())
-    {
-        <div class="card card-glass center animate-fade-in" style="padding: 80px 40px; margin-top: 40px; text-align:center; border: 1px dashed rgba(255,255,255,0.2);">
-            <div style="font-size: 60px; margin-bottom: 25px;">🔍</div>
-            <h2 style="font-weight: 700; font-size: 22px;">No matches found</h2>
-            <p style="opacity:0.6; margin-bottom:30px;">Try adjusting your filters or search terms.</p>
-            <button class="btn-primary" @onclick="ResetFilters" style="width: auto; padding: 15px 40px; background: rgba(255,255,255,0.1);">Clear All Filters</button>
-        </div>
-    }
-    else
-    {
-        <div class="outfit-grid" style="margin-top: 20px;">
-            @foreach (var item in FilteredItems)
-            {
-                <div class="wardrobe-card animate-fade-in" @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
-                    <div class="card-image-container">
-                        <img src="@item.ImageData" style="width:100%; border-radius:12px 12px 0 0; display:block;" />
+
+        <div class="wardrobe-scroll-area">
+            <div class="editorial-grid">
+                @if (isLoading)
+                {
+                    @for (int i = 0; i < 9; i++)
+                    {
+                        <div class="skeleton-card-editorial"></div>
+                    }
+                }
+                else if (AllItems == null || !AllItems.Any())
+                {
+                    @* Aici rămâne logica de Empty State centrat *@
+                    <div class="empty-state-full">
+                        <div class="empty-box-dashed" @onclick='() => NavigationManager.NavigateTo("/add-item")'>
+                            <span class="plus-large">+</span>
+                            <p>Your closet is empty.</p>
+                            <p class="sub-text">Start building your collection now.</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    @* Cardul "+" mic care apare mereu primul în grid *@
+                    <div class="wardrobe-card-editorial add-new-dashed" @onclick='() => NavigationManager.NavigateTo("/add-item")'>
+                        <span class="plus-symbol">+</span>
                     </div>
 
-                    @* REPARARE DESIGN: Text negru pe fundal alb, box mai mare *@
-                    <div class="card-content" style="background: white; padding: 15px; border-radius: 0 0 12px 12px; text-align: center;">
-                        <h3 style="font-weight: 700; font-size: 16px; margin: 0; color: #1a1a1a;">
-                            @(string.IsNullOrWhiteSpace(item.Brand) ? item.Subcategory : item.Brand)
-                        </h3>
-                        <p style="font-size: 13px; color: #666; margin: 5px 0 0 0; opacity: 1;">
-                            @item.Subcategory • @item.Color
-                        </p>
-                    </div>
-                </div>
-            }
+                    @* --- AICI PUI CODUL NOU PENTRU CARDURI CU TEXT --- *@
+                    @foreach (var item in FilteredItems)
+                    {
+                        <div class="wardrobe-card-editorial animate-fade-in" @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
+                            <div class="image-container-padded">
+                                <img src="@item.ImageData" alt="wardrobe item" />
+                            </div>
+
+                            <div class="item-details-box">
+                                @* Titlu principal mărit: Brand sau Categorie *@
+                                <h3 class="item-brand-label">@(string.IsNullOrWhiteSpace(item.Brand) ? item.Category : item.Brand)</h3>
+
+                                @* Detaliu secundar: Subcategoria *@
+                                <span class="item-sub-label">@item.Subcategory</span>
+
+                                @* Element de design pentru a umple spațiul: Sezonul ca etichetă elegantă *@
+                                <div class="item-meta-divider"></div>
+                                <span class="meta-season-tag">@item.Season</span>
+                            </div>
+                        </div>
+                    }
+                    @if (AllItems.Any() && !FilteredItems.Any())
+                    {
+                        <div class="empty-state-editorial">No matches found for these filters.</div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+@* Acesta trebuie să fie în afara containerelor cu overflow:hidden *@
+<div class="toast-container-editorial">
+    @if (localSuccessMessage != null)
+    {
+        <div class="toast-item-envogue">
+            <div class="toast-icon-wrapper">✨</div>
+            <p>@localSuccessMessage</p>
         </div>
     }
 </div>
-
 <NavBar CurrentPage="my-closet" />
 
 <style>
-    .skeleton {
-        background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
-        background-size: 200% 100%;
-        animation: skeleton-loading 1.5s infinite;
-        border-radius: 8px;
+    .toast-container-editorial {
+        position: fixed;
+        top: 25px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100000;
+        pointer-events: none;
     }
 
-    @@keyframes skeleton-loading {
-        0% {
-            background-position: 200% 0;
-        }
-
-        100% {
-            background-position: -200% 0;
-        }
+    /* Notificarea stilizată "High-End" */
+    .toast-item-envogue {
+        background: rgba(255, 255, 255, 0.98); /* Mai opac pentru contrast */
+        padding: 14px 28px;
+        border-radius: 12px; /* Colțuri mai puțin rotunjite pentru un look mai sofisticat */
+        border-left: 4px solid #d946ef; /* O linie de accent roz în stânga */
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        pointer-events: auto;
+        animation: toastSlideDown 0.5s cubic-bezier(0.23, 1, 0.32, 1);
     }
 
-    .skeleton-card {
-        padding: 15px;
+        /* Stil text în interiorul toast-ului */
+        .toast-item-envogue p {
+            margin: 0;
+            font-family: 'Playfair Display', serif; /* Fontul titlului tău */
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1517 !important;
+            letter-spacing: 0.5px;
+        }
+
+    /* Iconița cu un mic fundal discret */
+    .toast-icon-wrapper {
+        background: #fdf2f8;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 16px;
+    }
+
+    
+    @@keyframes toastSlideDown {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+    /* DESIGN EDITORIAL FINAL */
+    .brand-title {
+        border: none !important;
+        outline: none !important;
+        font-family: 'Playfair Display', serif;
+        font-size: 38px;
+        font-weight: 900;
+        color: #1a1517;
+        line-height: 0.8;
+    }
+
+    .closet-page-wrapper {
+        position: fixed;
+        inset: 0;
+        background: #fdf2f8;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .editorial-background {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        opacity: 0.5;
+    }
+
+        .editorial-background img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .content-overlay {
+        position: relative;
+        z-index: 10;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 40px 25px 100px;
+        box-sizing: border-box;
+    }
+
+    .editorial-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .collection-tag {
+        font-size: 10px;
+        font-weight: 800;
+        color: #7a5c68;
+        letter-spacing: 3px;
+        display: block;
+        margin-top: 5px;
+        text-transform: uppercase;
+    }
+
+    .stats-badge-editorial {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 14px;
+        background: rgba(255, 255, 255, 0.7); /* Fundal alb semi-transparent pentru contrast */
+        backdrop-filter: blur(8px); /* Efect de încețoșare modern */
         border-radius: 20px;
+        border: 1px solid rgba(217, 70, 239, 0.2); /* Bordură roz discretă */
+        font-size: 13px;
+        font-weight: 800;
+        color: #1a1517 !important; /* Text negru pentru lizibilitate maximă */
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+        .stats-badge-editorial span {
+            color: #d946ef; /* Doar iconița și numărul rămân roz */
+            margin-right: 4px;
+        }
+    /* CONTROALE */
+    .control-icon {
+        width: 18px !important;
+        height: 18px !important;
+        color: #d946ef;
+        flex-shrink: 0;
+    }
+
+    .editorial-controls {
+        margin-bottom: 15px;
+    }
+
+    .control-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 12px;
+        align-items: center;
+    }
+
+    .filter-sort-btn {
+        flex: 1;
+        background: white;
+        border: none;
+        border-radius: 18px;
+        padding: 14px;
+        font-weight: 700;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        color: #1a1517;
+        cursor: pointer;
+    }
+
+    .search-bar-editorial input {
+        width: 100%;
+        padding: 18px 25px;
+        border-radius: 40px;
+        border: 1px solid rgba(0,0,0,0.05);
+        background: white;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        margin-bottom: 10px;
+        box-sizing: border-box;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        width: 100%;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 20px;
+        /* Modificăm de la 50% la o valoare mai mică sau folosim calc pentru precizie */
+        top: 46%;
+        transform: translateY(-50%);
+        width: 18px;
+        height: 18px;
+        color: #7a5c68;
+        pointer-events: none;
+        /* Asigură-te că nu există margini care să o împingă în jos */
+        margin: 0;
+    }
+
+    .search-bar-editorial input {
+        padding-left: 50px !important; /* Spațiu pentru iconița lupă */
+    }
+
+    /* GRID */
+    .wardrobe-scroll-area {
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 20px;
+        scrollbar-width: none;
+    }
+
+        .wardrobe-scroll-area::-webkit-scrollbar {
+            display: none;
+        }
+
+    .editorial-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3 coloane pe ecrane mici */
+        gap: 10px;
+        width: 100%;
+    }
+    @@media (min-width: 768px) {
+        .editorial-grid
+
+    {
+        grid-template-columns: repeat(5, 1fr); /* 5 coloane pe desktop pentru boxuri mici */
+        gap: 20px;
+    }
+
+    }
+
+    .wardrobe-card-editorial {
+        aspect-ratio: 0.72;
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        cursor: pointer;
+        padding: 10px; /* Marginea albă din jurul întregului conținut */
+    }
+    /* Containerul imaginii cu padding suplimentar */
+    .image-container-padded {
+        width: 100%;
+        height: 55%; /* Ocupă mai puțin spațiu pentru a lăsa loc textului */
+        border-radius: 10px; /* Colțuri rotunjite și pentru poză */
+        overflow: hidden;
+        background: #fdf2f8; /* Fundal gri deschis în caz că poza nu e pătrată */
+        overflow: hidden;
+    }
+
+        .image-container-padded img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Poza umple containerul dar păstrează marginile cardului */
+            display: block;
+        }
+
+    .item-details-box {
+        flex: 1;
+        padding: 20px 0 5px 0; /* Spațiu generos deasupra textului */
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Centrare verticală în spațiul rămas */
+        align-items: center;
+        text-align: center;
+    }
+
+    .item-brand-label {
+        font-size: 16px; /* Mărit semnificativ pentru impact */
+        font-weight: 900;
+        color: #000 !important;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin: 0;
+    }
+
+    .item-sub-label {
+        font-size: 12px; /* Mărit pentru lizibilitate */
+        font-weight: 500;
+        color: #7a5c68 !important;
+        margin-top: 5px;
+        opacity: 0.8;
+    }
+
+    /* Linie decorativă subtilă pentru a umple spațiul */
+    .item-meta-divider {
+        width: 20px;
+        height: 2px;
+        background: #d946ef;
+        margin: 15px 0;
+        opacity: 0.3;
+    }
+
+    .meta-season-tag {
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #aaa;
+        padding: 4px 10px;
+        border: 1px solid #f0f0f0;
+        border-radius: 20px;
+        background: #fafafa;
+    }
+    /* Efect de hover pentru card */
+    .wardrobe-card-editorial:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(217, 70, 239, 0.15);
+    }
+
+    .empty-state-full {
+        grid-column: 1 / -1; /* Ocupă toate coloanele grid-ului */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 60px 0; /* Spațiu generos sus-jos */
+        min-height: 400px; /* Înălțime minimă pentru a părea centrat pe pagină */
+    }
+    /* Chenarul punctat mărit și stilizat */
+    .empty-box-dashed {
+        width: 100%;
+        max-width: 850px; /* Mai lat decât înainte */
+        height:350px;
+        padding: 60px 40px; /* Spațiu intern mai mare */
+        border: 2px dashed rgba(217, 70, 239, 0.4); /* Roz accent mai vizibil */
+        border-radius: 30px; /* Colțuri mai rotunjite editorial */
+        background: rgba(255, 255, 255, 0.6); /* Mai opac pe fundalul texturat */
+        backdrop-filter: blur(10px); /* Efect de sticlă modern */
+        text-align: center;
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .empty-box-dashed:hover {
+            transform: scale(1.02); /* Efect discret de mărire la hover */
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+    .plus-large {
+        display: block;
+        font-size: 64px; /* Mult mai mare pentru impact vizual */
+        color: #d946ef;
         margin-bottom: 20px;
+        font-weight: 200; /* Subțire și elegant */
+        line-height: 1;
+    }
+
+    .empty-box-dashed p {
+        font-size: 16px; /* Text principal mai mare */
+        color: black;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .empty-box-dashed .sub-text {
+        font-size: 13px;
+        color: #7a5c68;
+        font-weight: 400;
+        margin-top: 8px;
+        opacity: 0.8;
+    }
+    /* Hover label redus pentru carduri mici */
+    .item-hover-label h3 {
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .item-hover-label {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 12px;
+        background: linear-gradient(transparent, rgba(0,0,0,0.7));
+        color: white;
+        text-align: center;
+        opacity: 0;
+        transition: 0.3s;
+    }
+
+    .wardrobe-card-editorial:hover .item-hover-label {
+        opacity: 1;
+    }
+
+    .item-hover-label h3 {
+        font-size: 13px;
+        margin: 0;
+        font-weight: 800;
+    }
+
+    .item-hover-label p {
+        font-size: 10px;
+        margin: 2px 0 0 0;
+        opacity: 0.8;
+    }
+
+    .add-new-dashed {
+        border: 2px dashed rgba(217, 70, 239, 0.3);
+        background: rgba(255, 255, 255, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .plus-symbol {
+        font-size: 30px;
+        color: #d946ef;
+        font-weight: 300;
+    }
+
+    /* PROFILE */
+    .profile-circle {
+        width: 48px;
+        height: 48px;
+        background: white;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+        .profile-circle:hover {
+            transform: scale(1.1);
+        }
+
+    .profile-svg {
+        width: 24px;
+        height: 24px;
+        fill: #d946ef;
+    }
+
+    .editorial-panel {
+        background: white;
+        border-radius: 25px;
+        padding: 20px;
+        margin-top: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .pills-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .pill-btn {
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1px solid #ddd; /* Bordură vizibilă pe fundal alb */
+        background: white;
+        color: #1a1517 !important; /* Text negru forțat pentru vizibilitate */
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .pill-btn.active {
+            background: #d946ef;
+            color: white !important; /* Text alb doar pe butonul activ roz */
+            border-color: #d946ef;
+            box-shadow: 0 4px 10px rgba(217, 70, 239, 0.3);
+        }
+
+        .pill-btn:hover:not(.active) {
+            background: #f9f9f9;
+            border-color: #ccc;
+        }
+
+    .panel-label {
+        font-size: 10px;
+        font-weight: 900;
+        color: #7a5c68;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+    }
+
+    .color-options-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .color-circle {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 1px solid rgba(0,0,0,0.1);
+        cursor: pointer;
+    }
+
+    .reset-link-editorial {
+        background: none;
+        border: none;
+        color: #d946ef;
+        font-weight: 800;
+        font-size: 12px;
+        cursor: pointer;
+        margin-left: auto;
+    }
+
+    .empty-state-editorial {
+        grid-column: span 2;
+        text-align: center;
+        padding: 60px 20px;
+        color: #7a5c68;
+        font-style: italic;
+        font-size: 14px;
+    }
+
+    .skeleton-card-editorial {
+        aspect-ratio: 0.75;
+        background: rgba(255,255,255,0.3);
+        border-radius: 25px;
+        animation: pulse 1.5s infinite;
+    }
+
+    .editorial-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 25px;
+    }
+
+    /* Containerul din dreapta care aliniază elementele pe verticală */
+    .header-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end; /* Aliniază totul la marginea din dreapta */
+        text-align: right;
+    }
+
+    .profile-circle {
+        margin-bottom: 10px; /* Spațiu între cerc și textul de dedesubt */
+    }
+
+    /* Stilul pentru TOTAL ITEMS mărit și aliniat la dreapta */
+    .stats-badge-editorial {
+        font-size: 14px; /* Dimensiune mai mare */
+        font-weight: 800;
+        color: #d946ef; /* Culoare roz accent */
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    @@keyframes pulse {
+        0%, 100%
+
+    {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
     }
 </style>
 
 @code {
+    // --- TOATĂ LOGICA TA INTEGRATĂ (FĂRĂ MODIFICĂRI DE FUNCȚIONARE) ---
     private FilterModel Filter = new FilterModel { SelectedCategory = "All", SelectedSeason = "All", Style = "All", SortBy = "Newest", Subcategory = "" };
-    private List<ClothingItem> AllItems = new List<ClothingItem>();
-    private List<ClothingItem> FilteredItems = new List<ClothingItem>();
+    private List<ClothingItem> AllItems = new();
+    private List<ClothingItem> FilteredItems = new();
     private List<string> AllCategories = new() { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
     private List<string> PopularColors = new() { "Black", "White", "Gray", "Silver", "Beige", "Brown", "Navy", "Blue", "Red", "Green", "Pink", "Purple", "Gold" };
-    private List<string> AvailableSubcategories = new List<string>();
+    private List<string> AvailableSubcategories = new();
     private bool isLoading = true;
     private bool isFilterOpen = false;
     private bool isSortOpen = false;
+    private string? localSuccessMessage;
 
     private Dictionary<string, List<string>> SubcategoryMap = new() {
         { "Tops", new() { "T-shirt", "Blouse", "Sweater", "Hoodie" } },
@@ -218,23 +796,50 @@
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
-
-        // Încarcă datele inițiale
         await RefreshData();
-
-        // Înregistrează evenimentul folosind o funcție anonimă compatibilă cu Action
+        UpdateSubcategories();
         WardrobeService.OnChange += HandleOnChange;
 
-        await Task.Delay(600);
+        // --- LOGICA PENTRU AFIȘARE MESAJ ȘI CURĂȚARE URL ---
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (uri.Query.Contains("success=true"))
+        {
+            ShowToast("✨ Item added to your collection!");
+
+            // CURĂȚĂM URL-UL: Înlocuim adresa cu varianta fără parametri
+            // 'false' înseamnă că nu reîncărcăm pagina, doar schimbăm textul din bara de sus
+            NavigationManager.NavigateTo("/closet", forceLoad: false, replace: true);
+        }
+
+        await Task.Delay(800);
         isLoading = false;
     }
 
-    // Creăm o metodă de tip "void" specială pentru eveniment
-    private void HandleOnChange() => InvokeAsync(async () => await RefreshData());
+    // Această metodă va fi apelată DOAR dacă se schimbă datele în timp ce ești pe pagină
+    private void HandleOnChange() => InvokeAsync(async () =>
+    {
+        await RefreshData();
+        ShowToast("Garderobă actualizată!");
+    });
+
+    // FUNCȚIA UNICĂ pentru afișarea mesajului
+    private void ShowToast(string message)
+    {
+        localSuccessMessage = message;
+        StateHasChanged();
+
+        // Folosim un ID de sesiune simplu sau anulăm task-ul precedent dacă vrei complexitate,
+        // dar pentru acest caz e suficient să curățăm după X secunde:
+        _ = Task.Delay(3000).ContinueWith(_ =>
+        {
+            localSuccessMessage = null;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
 
     private async Task RefreshData()
     {
-        // Obținem hainele din lista deja încărcată în serviciu
         AllItems = WardrobeService.GetAllClothes();
         ApplyFilters();
         StateHasChanged();
@@ -243,36 +848,31 @@
     private void ToggleFilter() { isFilterOpen = !isFilterOpen; isSortOpen = false; }
     private void ToggleSort() { isSortOpen = !isSortOpen; isFilterOpen = false; }
     private void SetCategory(string cat) { Filter.SelectedCategory = cat; Filter.Subcategory = ""; UpdateSubcategories(); ApplyFilters(); }
+    private void UpdateSubcategories() { AvailableSubcategories = SubcategoryMap.ContainsKey(Filter.SelectedCategory) ? SubcategoryMap[Filter.SelectedCategory] : new(); }
+    private void SetSubcategory(string sub) { Filter.Subcategory = sub; ApplyFilters(); }
     private void SetColor(string color) { Filter.Color = color; ApplyFilters(); }
+    private void SetSeason(string season) { Filter.SelectedSeason = season; ApplyFilters(); }
+    private void SetStyle(string style) { Filter.Style = style; ApplyFilters(); }
     private void SetSort(string sort) { Filter.SortBy = sort; ApplyFilters(); }
     private void ResetFilters() { Filter = new FilterModel { SelectedCategory = "All", SelectedSeason = "All", Style = "All", SortBy = "Newest" }; UpdateSubcategories(); ApplyFilters(); }
 
-    private void UpdateSubcategories()
+    private string GetColorHex(string colorName) => colorName.ToLower() switch
     {
-        if (SubcategoryMap.ContainsKey(Filter.SelectedCategory)) AvailableSubcategories = SubcategoryMap[Filter.SelectedCategory];
-        else AvailableSubcategories = new List<string>();
-    }
-
-    private string GetColorHex(string colorName)
-    {
-        return colorName.ToLower() switch
-        {
-            "black" => "#1a1a1a",
-            "white" => "#ffffff",
-            "gray" => "#808080",
-            "silver" => "#c0c0c0",
-            "beige" => "#f5f5dc",
-            "brown" => "#8b4513",
-            "navy" => "#000080",
-            "blue" => "#3b82f6",
-            "red" => "#ef4444",
-            "green" => "#22c55e",
-            "pink" => "#ec4899",
-            "purple" => "#a855f7",
-            "gold" => "#ffd700",
-            _ => "#808080"
-        };
-    }
+        "black" => "#1a1a1a",
+        "white" => "#ffffff",
+        "gray" => "#808080",
+        "silver" => "#c0c0c0",
+        "beige" => "#f5f5dc",
+        "brown" => "#8b4513",
+        "navy" => "#000080",
+        "blue" => "#3b82f6",
+        "red" => "#ef4444",
+        "green" => "#22c55e",
+        "pink" => "#ec4899",
+        "purple" => "#a855f7",
+        "gold" => "#ffd700",
+        _ => "#808080"
+    };
 
     private void ApplyFilters()
     {
@@ -280,19 +880,24 @@
         var search = Filter.SearchTerm?.Trim().ToLower() ?? "";
         if (!string.IsNullOrEmpty(search))
         {
-            var searchTerms = search.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var searchTerms = search.Replace("-", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries);
             foreach (var term in searchTerms)
             {
-                query = query.Where(i =>
-                    (i.Brand != null && i.Brand.ToLower().Contains(term)) ||
-                    (i.Category != null && i.Category.ToLower().Contains(term)) ||
-                    (i.Subcategory != null && i.Subcategory.ToLower().Contains(term)) ||
-                    (i.Color != null && i.Color.ToLower().Contains(term)));
+                query = query.Where(i => (i.Brand != null && i.Brand.ToLower().Contains(term)) || (i.Category != null && i.Category.ToLower().Contains(term)) || (i.Subcategory != null && i.Subcategory.ToLower().Replace("-", " ").Contains(term)) || (i.Color != null && i.Color.ToLower().Contains(term)));
             }
         }
-        if (Filter.SelectedCategory != "All") query = query.Where(i => i.Category == Filter.SelectedCategory);
+        if (Filter.SelectedCategory != "All") query = query.Where(i => i.Category.Equals(Filter.SelectedCategory, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrEmpty(Filter.Subcategory)) query = query.Where(i => i.Subcategory == Filter.Subcategory);
         if (!string.IsNullOrEmpty(Filter.Color)) query = query.Where(i => i.Color.Contains(Filter.Color, StringComparison.OrdinalIgnoreCase));
-        FilteredItems = query.ToList();
+        if (Filter.SelectedSeason != "All") query = query.Where(i => i.Season.Equals(Filter.SelectedSeason, StringComparison.OrdinalIgnoreCase));
+        if (Filter.Style != "All" && !string.IsNullOrEmpty(Filter.Style)) query = query.Where(i => i.Style.Equals(Filter.Style, StringComparison.OrdinalIgnoreCase));
+
+        FilteredItems = Filter.SortBy switch
+        {
+            "Brand" => query.OrderBy(i => string.IsNullOrEmpty(i.Brand) ? "ZZZ" : i.Brand).ToList(),
+            "Oldest" => query.OrderBy(i => i.Id).ToList(),
+            _ => query.OrderByDescending(i => i.Id).ToList()
+        };
         StateHasChanged();
     }
     public void Dispose() => WardrobeService.OnChange -= HandleOnChange;
