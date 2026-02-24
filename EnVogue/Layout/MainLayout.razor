@@ -24,31 +24,57 @@
         </div>
     }
 
-    @* --- PARTEA 2: CONȚINUTUL PAGINII --- *@
     <div class="page-container with-nav">
         @Body
     </div>
-
-    @* --- PARTEA 3: COMPONENTE GLOBALE --- *@
-    <ToastContainer />
 }
 else
 {
-    @* --- PARTEA 4: ECRAN DE ÎNCĂRCARE (Apare la refresh) --- *@
-    <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:#0b0f1a; color:white; font-family: 'Inter', sans-serif;">
-        <div class="loader-spinner" style="border: 4px solid rgba(255,255,255,0.1); border-left-color: #ff2d55; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
-        <div style="font-weight: 600; letter-spacing: 1px; opacity: 0.8;">ENVOGUE</div>
+    <div class="loader-wrapper-fullscreen">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">ENVOGUE</div>
     </div>
+}
 
-    <style>
-        @("@") keyframes spin {
-            to
+@* --- NOTIFICĂRILE TREBUIE SĂ FIE ÎN AFARA ORICĂRUI IF PENTRU SIGURANȚĂ --- *@
+<ToastContainer />
 
-        {
-            transform: rotate(360deg);
-        }
+<style>
+    .loader-wrapper-fullscreen {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #0b0f1a;
+        color: white;
+        font-family: 'Inter', sans-serif;
+    }
 
-        }</style>
+    .loader-spinner {
+        border: 4px solid rgba(255,255,255,0.1);
+        border-left-color: #ff2d55;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+
+    .loader-text {
+        font-weight: 600;
+        letter-spacing: 1px;
+        opacity: 0.8;
+    }
+
+    @("@") keyframes spin {
+        to
+
+    {
+        transform: rotate(360deg);
+    }
+
+    }</style>
 }
 
 @code {

@@ -2,50 +2,47 @@
 @inject NotificationService NotificationService
 @implements IDisposable
 
-
 @if (isVisible)
 {
-    <div class="toast-notification @type animate-slide-in">
+    @* Folosim style inline pentru z-index ca să fim siguri că nu e suprascris *@
+    <div class="toast-notification @type animate-slide-in"
+         style="z-index: 9999999 !important; position: fixed !important;">
         <div class="toast-content">
             <span class="toast-icon">@(type == "success" ? "✓" : "⚠")</span>
             <span class="toast-message">@message</span>
         </div>
     </div>
 }
+
 <style>
     .toast-notification {
-        position: fixed;
-        bottom: 100px;
+        top: 25px; /* Îl mutăm sus pentru a fi vizibil deasupra box-ului */
         left: 50%;
         transform: translateX(-50%);
-        z-index: 9999;
-        padding: 12px 24px;
-        border-radius: 30px;
-        color: white;
-        font-weight: 600;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        backdrop-filter: blur(10px);
+        padding: 16px 32px;
+        border-radius: 50px;
+        color: white !important;
+        font-weight: 800;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        background: #000000 !important; /* Negru pur pentru contrast pe roz */
         display: flex;
         align-items: center;
-    }
-
-    .success {
-        background: rgba(16, 185, 129, 0.9);
+        min-width: 280px;
+        justify-content: center;
     }
 
     .error {
-        background: rgba(239, 68, 68, 0.9);
+        background: #ff2d55 !important;
     }
 
-    .animate-slide-in {
-        animation: slideUp 0.3s ease-out forwards;
+    .success {
+        background: #28a745 !important;
     }
 
-    /* 💡 Folosim @@ pentru a evita eroarea CS0103 */
     @@keyframes slideUp {
         from {
             opacity: 0;
-            transform: translate(-50%, 20px);
+            transform: translate(-50%, -20px);
         }
 
         to {
@@ -54,6 +51,7 @@
         }
     }
 </style>
+
 @code {
     private bool isVisible;
     private string message = "";
@@ -61,29 +59,23 @@
 
     protected override void OnInitialized()
     {
-        // Ne asigurăm că ne abonăm la eveniment
         NotificationService.OnShow += ShowToast;
     }
 
     private void ShowToast(string msg, string t)
     {
-        // Folosim InvokeAsync pentru a forța execuția pe thread-ul de UI
-        InvokeAsync(() =>
+        // InvokeAsync este critic aici pentru a randa pe UI thread
+        InvokeAsync(async () =>
         {
             message = msg;
             type = t;
             isVisible = true;
-            StateHasChanged(); // 💡 Spune-i browserului să deseneze ACUM
-        });
+            StateHasChanged(); // Forțează browserul să deseneze
 
-        // Opțional: ascunde după 3 secunde
-        Task.Delay(3000).ContinueWith(t =>
-        {
-            InvokeAsync(() =>
-            {
-                isVisible = false;
-                StateHasChanged();
-            });
+            await Task.Delay(3500); // Îl lăsăm puțin mai mult vizibil
+
+            isVisible = false;
+            StateHasChanged();
         });
     }
 

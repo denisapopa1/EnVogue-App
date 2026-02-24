@@ -13,7 +13,7 @@
         // -----------------------------
 
         public string Color { get; set; } = "";
-        public string ImageData { get; set; } = "";
+        public byte[] ImageData { get; set; } = Array.Empty<byte>();
         public DateTime AddedDate { get; set; } = DateTime.Now;
         public List<string> Tags { get; set; } = new();
         public bool IsFavorite { get; set; } = false;

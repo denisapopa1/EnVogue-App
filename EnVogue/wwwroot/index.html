@@ -5,13 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EnVogue</title>
     <base href="/" />
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
 
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@300;700;800&family=Playfair+Display:ital,wght@0,900;1,900&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/app.css" />
     <link href="EnVogue.styles.css" rel="stylesheet" />
     <style>
+        /* ... (Stilurile tale de loading rămân neschimbate) ... */
         .loading-wrapper {
             position: relative;
             display: flex;
@@ -25,10 +29,9 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* --- LOGO CONTAINER PENTRU POZITIONARE STELUTE --- */
         .logo-group {
             position: relative;
-            padding: 0 60px; /* Spatiu pentru stelute in parti */
+            padding: 0 60px;
             margin-bottom: 30px;
         }
 
@@ -42,7 +45,6 @@
             position: relative;
         }
 
-        /* --- STELUȚE GRUPATE ÎN JURUL TITLULUI --- */
         .sparkle {
             position: absolute;
             color: #ffb3d9;
@@ -51,7 +53,6 @@
             z-index: 1;
         }
 
-        /* Stânga titlului */
         .s1 {
             top: 10%;
             left: 0;
@@ -70,7 +71,6 @@
             font-size: 1.5rem;
         }
 
-        /* Dreapta titlului */
         .s4 {
             top: 15%;
             right: 5px;
@@ -89,7 +89,6 @@
             font-size: 1.6rem;
         }
 
-        /* --- BARA DE LOADING --- */
         .loader-container {
             width: 280px;
             position: relative;
@@ -178,7 +177,8 @@
             <div class="loading-text">Loading fashion assist...</div>
         </div>
     </div>
+
     <script src="_framework/blazor.webassembly.js"></script>
-    <script src="/fileUpload.js"></script>
+    <script src="fileUploadV2.js"></script>
 </body>
 </html>
