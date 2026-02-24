@@ -1,120 +1,456 @@
 ﻿@page "/create-outfit"
 @using EnVogue.Models
 @using EnVogue.Services
+@inject NavigationManager NavigationManager
+@inject WardrobeServices WardrobeService
+@layout EmptyLayout
 
-<div class="page-content with-nav">
-    <div class="profile-header">
-        <h2>Create Outfit</h2>
+<div class="studio-page-wrapper">
+    @* FUNDAL SATINAT CU OVERLAY ÎNTUNECAT *@
+    <div class="luxury-satin-bg">
+        <img src="Images/studio_fashion_light_setup_texture.png" alt="Satin Background" />
+        <div class="dark-overlay"></div>
     </div>
 
-    @if (generatedOutfit == null)
-    {
-        <p class="page-subtitle center" style="margin-bottom: 24px;">Choose how you want to create your outfit:</p>
-
-        <div class="toggle-switch">
-            <button class="toggle-option @(isManual ? "active" : "")" @onclick="() => isManual = true">Manual</button>
-            <button class="toggle-option @(!isManual ? "active" : "")" @onclick="() => isManual = false">Automatic</button>
+    @* HEADER EDITORIAL *@
+    <header class="editorial-nav-extreme">
+        <div class="nav-left-zone">
+            <button class="nav-circle-btn white-btn" @onclick='() => NavigationManager.NavigateTo("/home")'>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+            <h1 class="logo-text white-text no-border">EnVogue</h1>
         </div>
 
-        @if (isManual)
-        {
-            <div class="card animate-fade-in form-limit">
-                <h3 class="center" style="margin-bottom: 12px;">Select Items Manually</h3>
-                <p class="text-muted center" style="margin-bottom: 20px;">Choose items from your closet to create your outfit</p>
+        <button class="nav-circle-btn white-btn" @onclick='() => NavigationManager.NavigateTo("/profile")'>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+            </svg>
+        </button>
+    </header>
 
-                <div class="center">
-                    <button class="fab" @onclick='() => NavigationManager.NavigateTo("/closet")'>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                    </button>
-                    <p class="page-subtitle" style="margin-top: 12px;">Browse your closet</p>
-                </div>
+    <div class="content-container screen-fit-layout">
+        <div class="header-text-group-fit">
+            <div class="page-title-area">
+                <h2 class="bold-title white-text">Studio</h2>
+                <p class="bold-subtitle white-text">DESIGN YOUR PERFECT LOOK</p>
             </div>
-        }
-        else
-        {
-            <div class="card animate-fade-in form-limit">
-                <h3 class="center" style="margin-bottom: 12px;">Automatic Generation</h3>
-                <p class="text-muted center" style="margin-bottom: 20px;">Generate outfits based on smart matching rules</p>
+        </div>
 
-                <div class="input-group">
-                    <label>Occasion (optional)</label>
-                    <input type="text" class="input-field" placeholder="E.g., Casual, Office, Party" @bind="occasion" />
-                </div>
-
-                <div class="input-group">
-                    <label>Preferred Colors (optional)</label>
-                    <input type="text" class="input-field" placeholder="E.g., Blue, Black, White" @bind="colors" />
-                </div>
-
-                <button class="btn-primary" @onclick="GenerateOutfit" disabled="@isGenerating">
-                    @(isGenerating ? "Generating..." : "Generate Outfit")
+        @* TOGGLE SWITCH CU PICTOGRAME CORECTATE *@
+        <div class="toggle-container-editorial">
+            <div class="pill-toggle">
+                <button class="toggle-btn @(isManual ? "active" : "")" @onclick="() => isManual = true">
+                    @* SVG Mână pentru Manual *@
+                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5"></path>
+                        <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v10"></path>
+                        <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
+                        <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path>
+                    </svg>
+                    MANUAL
+                </button>
+                <button class="toggle-btn @(!isManual ? "active-ai" : "")" @onclick="() => isManual = false">
+                    @* SVG Baghetă Magică pentru AI Stylist *@
+                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="5" x2="19" y2="5"></line>
+                        <line x1="2" y1="22" x2="17" y2="7"></line>
+                        <line x1="11" y1="5" x2="11" y2="5"></line>
+                        <line x1="7" y1="9" x2="7" y2="9"></line>
+                        <line x1="15" y1="1" x2="15" y2="1"></line>
+                        <line x1="23" y1="9" x2="23" y2="9"></line>
+                        <line x1="19" y1="13" x2="19" y2="13"></line>
+                    </svg>
+                    AI STYLIST
                 </button>
             </div>
-        }
-    }
-    else
-    {
-        <div class="card animate-fade-in form-limit">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3>Your Outfit</h3>
-                <button class="btn-secondary" @onclick="() => generatedOutfit = null">Reset</button>
-            </div>
+        </div>
 
-            @if (generatedOutfit.Items.Any())
+        @* CARDUL DINAMIC *@
+        <div class="luxury-form-card @(isManual ? "transparent-card" : "ai-white-card") animate-fade-in">
+            @if (!isManual)
             {
-                <div class="outfit-grid">
-                    @foreach (var item in generatedOutfit.Items)
-                    {
-                        <div><img src="@item.ImageData" alt="@item.Name" /></div>
-                    }
-                </div>
-
-                <div style="display: flex; gap: 12px;">
-                    <button class="btn-secondary" style="flex: 1;" @onclick="SaveToFavorites">❤️ Save to Favorites</button>
-                    <button class="btn-primary" style="flex: 1;" @onclick="GenerateOutfit">Generate New</button>
-                </div>
+                <div class="color-top-bar"></div>
             }
-            else
+
+            @if (generatedOutfit == null)
             {
-                <p class="center text-muted">Not enough items to generate an outfit.</p>
-                <button class="btn-primary" @onclick='() => NavigationManager.NavigateTo("/add-item")'>Add Items</button>
+                @if (isManual)
+                {
+                    <div class="manual-canvas-area">
+                        <div class="plus-circle-btn" @onclick='() => NavigationManager.NavigateTo("/closet")'>
+                            <span class="plus-sign">+</span>
+                        </div>
+                        <h3 class="canvas-title">Manual Canvas</h3>
+                        <p class="canvas-desc">Drag and drop items to build your unique combination.</p>
+                        <button class="action-pill-btn-white" @onclick='() => NavigationManager.NavigateTo("/closet")'>
+                            SELECT ITEMS
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="ai-stylist-area-white">
+                        <h3 class="ai-title-black">Smart Style</h3>
+                        <div class="ai-divider-pink"></div>
+                        <div class="input-block-fit">
+                            <label class="ai-label-gray">OCCASION</label>
+                            <input type="text" @bind="occasion" placeholder="Dinner Party" class="ai-light-input" />
+                        </div>
+                        <div class="input-block-fit">
+                            <label class="ai-label-gray">COLOR STORY</label>
+                            <input type="text" @bind="colors" placeholder="Earthy Tones" class="ai-light-input" />
+                        </div>
+                        <button class="ai-generate-btn-black" @onclick="GenerateOutfit" disabled="@isGenerating">
+                            @(isGenerating ? "GENERATING..." : "GENERATE LOOK →")
+                        </button>
+                    </div>
+                }
             }
         </div>
-    }
+    </div>
 </div>
 
+@* REINTRODUS NAV BAR-UL DISPĂRUT *@
 <NavBar CurrentPage="create" />
 
+<style>
+    .studio-page-wrapper {
+        position: fixed;
+        inset: 0;
+        overflow-y: hidden;
+        padding-bottom: 100px;
+    }
+
+    .luxury-satin-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+    }
+
+        .luxury-satin-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .dark-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .editorial-nav-extreme {
+        position: fixed;
+        top: 15px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 100;
+    }
+
+    .nav-left-zone {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .logo-text {
+        font-family: 'Playfair Display', serif;
+        font-size: 36px;
+        font-weight: 900;
+        font-style: italic;
+        margin: 0;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    .white-text {
+        color: #ffffff !important;
+    }
+
+    .nav-circle-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.98) !important;
+        color: #000 !important;
+    }
+
+    .screen-fit-layout {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start; /* Aliniere de sus */
+        padding-top: 12vh; /* Redus de la 20vh la 5vh pentru a ridica tot conținutul */
+        min-height: 100vh; /* Asigură că ocupă ecranul, dar nu forțează scroll-ul */
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Opțional: Micșorează puțin spațiul dintre titlu și toggle pentru a câștiga spațiu vertical */
+    .header-text-group-fit {
+        text-align: center;
+        margin-bottom: 20px; /* Redus de la 30px */
+    }
+
+    .toggle-container-editorial {
+        margin-bottom: 25px; /* Redus de la 40px */
+    }
+    .bold-title {
+        font-family: 'Inter', sans-serif;
+        font-size: 44px;
+        font-weight: 900;
+        margin: 0;
+        letter-spacing: -1px;
+    }
+
+    .bold-subtitle {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 5px;
+        opacity: 0.8;
+        margin-top: 5px;
+    }
+
+    .toggle-container-editorial {
+        margin-bottom: 40px;
+    }
+
+    .pill-toggle {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 5px;
+        border-radius: 50px;
+        display: flex;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* ASIGURARE ASPECT PICTOGRAME TOGGLE */
+    .icon-svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+
+    .toggle-btn {
+        border: none;
+        background: transparent;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        opacity: 0.8;
+        white-space: nowrap;
+    }
+
+        .toggle-btn.active {
+            background: white;
+            color: black;
+            opacity: 1;
+            box-shadow: 0 4px 15px rgba(255,255,255,0.2);
+        }
+
+        .toggle-btn.active-ai {
+            background: #d946ef;
+            color: white;
+            opacity: 1;
+        }
+
+    .transparent-card {
+        background: rgba(25, 20, 30, 0.45);
+        backdrop-filter: blur(25px) saturate(150%);
+        border-radius: 55px;
+        width: 90%;
+        max-width: 460px;
+        padding: 70px 40px 60px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: center;
+    }
+
+    .ai-white-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        border-radius: 60px;
+        width: 90%;
+        max-width: 480px;
+        padding: 60px 50px;
+        text-align: left;
+        box-shadow: 0 40px 100px rgba(0,0,0,0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .color-top-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #d946ef, #8b5cf6);
+    }
+
+    .ai-title-black {
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 32px;
+        color: #1a1517;
+        margin-bottom: 8px;
+    }
+
+    .ai-divider-pink {
+        width: 35px;
+        height: 4px;
+        background: #d946ef;
+        margin-bottom: 40px;
+        border-radius: 2px;
+    }
+
+    .ai-label-gray {
+        display: block;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        color: #888;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+
+    .ai-light-input {
+        width: 100%;
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid rgba(0,0,0,0.05);
+        background: rgba(249, 249, 249, 0.7);
+        font-size: 15px;
+        font-weight: 600;
+        outline: none;
+        margin-bottom: 25px;
+        color: #333;
+    }
+
+    .ai-generate-btn-black {
+        width: 100%;
+        padding: 20px;
+        background: #1a1517;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-top: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .plus-circle-btn {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.05);
+        margin: 0 auto 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .plus-sign {
+        color: white;
+        font-size: 42px;
+        font-weight: 200;
+    }
+
+    .canvas-title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 30px;
+        color: white;
+        margin-bottom: 12px;
+    }
+
+    .canvas-desc {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 40px;
+        line-height: 1.5;
+        max-width: 280px;
+        margin: 0 auto 40px;
+    }
+
+    .action-pill-btn-white {
+        width: 85%;
+        padding: 18px;
+        background: #ffffff;
+        color: #000000;
+        border: none;
+        border-radius: 40px;
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 1.5px;
+        cursor: pointer;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+</style>
+
 @code {
-    private bool isManual = false;
+    private bool isManual = true;
     private string occasion = "";
     private string colors = "";
     private bool isGenerating = false;
     private Outfit? generatedOutfit = null;
 
-    [Inject] NavigationManager NavigationManager { get; set; } = default!;
-    [Inject] WardrobeServices WardrobeService { get; set; } = default!;
-
     private async Task GenerateOutfit()
     {
         isGenerating = true;
-        await Task.Delay(500);
-
+        await Task.Delay(1500);
         generatedOutfit = WardrobeService.GenerateOutfitWithRules(occasion, colors);
-
         isGenerating = false;
     }
 
-    private void SaveToFavorites()
+    private string GetImageSource(byte[]? imageBytes)
     {
-        if (generatedOutfit != null)
-        {
-            generatedOutfit.IsFavorite = true;
-            WardrobeService.AddOutfit(generatedOutfit);
-            NavigationManager.NavigateTo("/favorites");
-        }
+        if (imageBytes == null || imageBytes.Length == 0) return "Images/placeholder.png";
+        return $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
     }
 }
