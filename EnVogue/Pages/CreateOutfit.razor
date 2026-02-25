@@ -12,7 +12,7 @@
         <div class="dark-overlay"></div>
     </div>
 
-    @* HEADER EDITORIAL *@
+    @* HEADER EDITORIAL - SINCRONIZAT CU CLOSET ȘI FAVORITES *@
     <header class="editorial-nav-extreme">
         <div class="nav-left-zone">
             <button class="nav-circle-btn white-btn" @onclick='() => NavigationManager.NavigateTo("/home")'>
@@ -21,7 +21,10 @@
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
             </button>
-            <h1 class="logo-text white-text no-border">EnVogue</h1>
+            <div class="header-brand-group">
+                <h1 class="brand-title-global">EnVogue</h1>
+                <span class="collection-tag-global">STYLE STUDIO</span>
+            </div>
         </div>
 
         <button class="nav-circle-btn white-btn" @onclick='() => NavigationManager.NavigateTo("/profile")'>
@@ -39,12 +42,11 @@
             </div>
         </div>
 
-        @* TOGGLE SWITCH CU PICTOGRAME CORECTATE *@
+        @* TOGGLE SWITCH *@
         <div class="toggle-container-editorial">
             <div class="pill-toggle">
                 <button class="toggle-btn @(isManual ? "active" : "")" @onclick="() => isManual = true">
-                    @* SVG Mână pentru Manual *@
-                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v5"></path>
                         <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v10"></path>
                         <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"></path>
@@ -53,8 +55,7 @@
                     MANUAL
                 </button>
                 <button class="toggle-btn @(!isManual ? "active-ai" : "")" @onclick="() => isManual = false">
-                    @* SVG Baghetă Magică pentru AI Stylist *@
-                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="19" y1="5" x2="19" y2="5"></line>
                         <line x1="2" y1="22" x2="17" y2="7"></line>
                         <line x1="11" y1="5" x2="11" y2="5"></line>
@@ -68,7 +69,7 @@
             </div>
         </div>
 
-@* CARDUL DINAMIC *@
+        @* CARDUL DINAMIC *@
         <div class="luxury-form-card @(isManual ? "transparent-card" : "ai-white-card") animate-fade-in">
             @if (!isManual)
             {
@@ -77,7 +78,6 @@
 
             @if (generatedOutfit == null)
             {
-                @* Aici rămâne logica ta actuală pentru Manual și AI Stylist *@
                 @if (isManual)
                 {
                     <div class="manual-canvas-area">
@@ -112,7 +112,6 @@
             }
             else
             {
-                @* --- ACEASTA ESTE SECȚIUNEA NOUĂ CARE LIPSEA --- *@
                 <div class="outfit-result-area @(isManual ? "text-white" : "text-black")">
                     <div class="result-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h3 class="@(isManual ? "canvas-title" : "ai-title-black")" style="margin:0;">Your Look</h3>
@@ -135,55 +134,48 @@
                 </div>
             }
         </div>
-        </div>
-        </div>
-        
-@* REINTRODUS NAV BAR-UL DISPĂRUT *@
+    </div>
+</div>
+
 <NavBar CurrentPage="create" />
 
 <style>
+    /* --- STILURI GLOBALE DE BRANDING (IDENTICE CU CLOSET ȘI FAVORITES) --- */
+    .brand-title-global {
+        font-family: 'Playfair Display', serif;
+        font-size: 38px;
+        font-weight: 900;
+        color: white;
+        line-height: 0.8;
+        margin: 0;
+        border: none !important;
+        outline: none !important;
+    }
+
+    .collection-tag-global {
+        font-size: 10px;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.7);
+        letter-spacing: 3px;
+        display: block;
+        margin-top: 5px;
+        text-transform: uppercase;
+    }
+
+    .header-brand-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    /* RESTUL STILURILOR EXISTENTE */
     .studio-page-wrapper {
         position: fixed;
         inset: 0;
         overflow-y: hidden;
         padding-bottom: 100px;
     }
-    /* Stiluri pentru grid-ul de haine generate */
-    .outfit-display-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin: 20px 0;
-        max-height: 45vh;
-        overflow-y: auto;
-    }
 
-    .result-item-card {
-        aspect-ratio: 1;
-        border-radius: 20px;
-        overflow: hidden;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .ai-white-card .result-item-card {
-        background: #f5f5f5;
-        border: 1px solid #eee;
-    }
-
-    .result-item-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .text-white {
-        color: white;
-    }
-
-    .text-black {
-        color: #1a1517;
-    }
     .luxury-satin-bg {
         position: fixed;
         inset: 0;
@@ -216,22 +208,7 @@
     .nav-left-zone {
         display: flex;
         align-items: center;
-        gap: 12px;
-    }
-
-    .logo-text {
-        font-family: 'Playfair Display', serif;
-        font-size: 36px;
-        font-weight: 900;
-        font-style: italic;
-        margin: 0;
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-    }
-
-    .white-text {
-        color: #ffffff !important;
+        gap: 15px;
     }
 
     .nav-circle-btn {
@@ -251,22 +228,18 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: flex-start; /* Aliniere de sus */
-        padding-top: 12vh; /* Redus de la 20vh la 5vh pentru a ridica tot conținutul */
-        min-height: 100vh; /* Asigură că ocupă ecranul, dar nu forțează scroll-ul */
+        justify-content: flex-start;
+        padding-top: 12vh;
+        min-height: 100vh;
         position: relative;
         z-index: 10;
     }
 
-    /* Opțional: Micșorează puțin spațiul dintre titlu și toggle pentru a câștiga spațiu vertical */
     .header-text-group-fit {
         text-align: center;
-        margin-bottom: 20px; /* Redus de la 30px */
+        margin-bottom: 20px;
     }
 
-    .toggle-container-editorial {
-        margin-bottom: 25px; /* Redus de la 40px */
-    }
     .bold-title {
         font-family: 'Inter', sans-serif;
         font-size: 44px;
@@ -296,7 +269,6 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* ASIGURARE ASPECT PICTOGRAME TOGGLE */
     .icon-svg {
         width: 18px;
         height: 18px;
@@ -318,14 +290,12 @@
         justify-content: center;
         gap: 10px;
         opacity: 0.8;
-        white-space: nowrap;
     }
 
         .toggle-btn.active {
             background: white;
             color: black;
             opacity: 1;
-            box-shadow: 0 4px 15px rgba(255,255,255,0.2);
         }
 
         .toggle-btn.active-ai {
@@ -340,7 +310,7 @@
         border-radius: 55px;
         width: 90%;
         max-width: 460px;
-        padding: 70px 40px 60px;
+        padding: 50px 40px;
         border: 1px solid rgba(255, 255, 255, 0.08);
         text-align: center;
     }
@@ -351,7 +321,7 @@
         border-radius: 60px;
         width: 90%;
         max-width: 480px;
-        padding: 60px 50px;
+        padding: 50px;
         text-align: left;
         box-shadow: 0 40px 100px rgba(0,0,0,0.3);
         position: relative;
@@ -379,7 +349,7 @@
         width: 35px;
         height: 4px;
         background: #d946ef;
-        margin-bottom: 40px;
+        margin-bottom: 30px;
         border-radius: 2px;
     }
 
@@ -402,7 +372,7 @@
         font-size: 15px;
         font-weight: 600;
         outline: none;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
         color: #333;
     }
 
@@ -425,12 +395,12 @@
     }
 
     .plus-circle-btn {
-        width: 90px;
-        height: 90px;
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         border: 1px solid rgba(255, 255, 255, 0.3);
         background: rgba(255, 255, 255, 0.05);
-        margin: 0 auto 25px;
+        margin: 0 auto 20px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -439,25 +409,26 @@
 
     .plus-sign {
         color: white;
-        font-size: 42px;
+        font-size: 38px;
         font-weight: 200;
     }
 
     .canvas-title {
         font-family: 'Inter', sans-serif;
         font-weight: 800;
-        font-size: 30px;
+        font-size: 28px;
         color: white;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
 
     .canvas-desc {
-        font-size: 14px;
+        font-size: 13px;
         color: rgba(255, 255, 255, 0.6);
-        margin-bottom: 40px;
+        margin-bottom: 30px;
         line-height: 1.5;
         max-width: 280px;
-        margin: 0 auto 40px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .action-pill-btn-white {
@@ -469,14 +440,37 @@
         border-radius: 40px;
         font-weight: 800;
         font-size: 13px;
-        letter-spacing: 1.5px;
+        letter-spacing: 1px;
         cursor: pointer;
     }
+
+    .outfit-display-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin: 20px 0;
+        max-height: 45vh;
+        overflow-y: auto;
+    }
+
+    .result-item-card {
+        aspect-ratio: 1;
+        border-radius: 20px;
+        overflow: hidden;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+        .result-item-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
     .animate-fade-in {
         animation: fadeIn 0.6s ease-out;
     }
-
+    
     @@keyframes fadeIn {
         from
 
@@ -513,6 +507,7 @@
         if (imageBytes == null || imageBytes.Length == 0) return "Images/placeholder.png";
         return $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
     }
+
     private void SaveToFavorites()
     {
         if (generatedOutfit != null)

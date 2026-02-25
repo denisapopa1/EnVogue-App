@@ -2,197 +2,342 @@
 @using EnVogue.Models
 @using EnVogue.Services
 @implements IDisposable
+@layout EmptyLayout
 
-<div class="page-container with-nav">
-    <div class="profile-header"><h2>Favorites</h2></div>
-
-    <div class="input-group" style="margin-bottom: 20px;">
-        <input type="text"
-               class="input-field"
-               placeholder="🔍 Search items by color, category, season, or style in favorites"
-               value="@Filter.SearchTerm"
-               @oninput="@((e) => { Filter.SearchTerm = e.Value?.ToString() ?? ""; ApplyFilters(); })" />
+<div class="favorites-page-wrapper">
+    @* FUNDAL CU IMAGINE BLURATĂ *@
+    <div class="editorial-bg-blur">
+        <img src="Images/luxury_jewelry_and_heart_motifs_texture.png" alt="Background" />
+        <div class="light-overlay"></div>
     </div>
-    @if (!string.IsNullOrEmpty(Filter.SearchTerm))
-    {
-        <h3 style="margin-bottom: 12px; font-size: 18px;">Filtered Items:</h3>
-        @if (FilteredItems.Any())
+
+    <div class="content-overlay-editorial">
+        @* HEADER EDITORIAL - IDENTIC CU CLOSET *@
+        <div class="favorites-header">
+            <div class="header-left-zone">
+                <h1 class="brand-logo-text no-border">EnVogue</h1>
+                <span class="view-subtitle">SAVED LOOKS</span>
+            </div>
+
+            <button class="profile-circle-nav" @onclick='() => NavigationManager.NavigateTo("/profile")'>
+                <svg viewBox="0 0 24 24" class="icon-user-pink">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="title-section-airy">
+            <h2 class="section-title-bold">Wishlist</h2>
+            <p class="stats-text-large">@favoriteOutfits.Count CURATED STYLES</p>
+        </div>
+
+        @* BOX ALINIAT ȘI DIMENSIONAT EXACT CA ÎN CLOSET *@
+        @if (!favoriteOutfits.Any())
         {
-            <div class="outfit-grid" style="margin-bottom: 20px;">
-                @foreach (var item in FilteredItems)
-                {
-                    <div class="item-tile" style="border: 1px solid var(--accent);">
-                        <img src="@item.ImageData" alt="@item.Name" />
-                        <p style="font-size: 12px; text-align: center;">@item.Name</p>
-                    </div>
-                }
+            <div class="empty-state-full-favorites animate-fade-in">
+                <div class="empty-box-dashed-favorites" @onclick='() => NavigationManager.NavigateTo("/create-outfit")'>
+                    <span class="plus-large-favorites">♡</span>
+                    <p class="empty-msg-main">Your collection is empty.</p>
+                    <p class="sub-text-favorites">Start building your favorite looks now.</p>
+                </div>
             </div>
         }
         else
         {
-            <div class="card card-glass center" style="padding: 28px; margin-bottom: 20px;">
-                <p class="text-muted">No favorite items match the search term.</p>
-            </div>
-        }
-    }
-
-
-    @if (!favoriteOutfits.Any())
-    {
-        <div class="card card-glass center animate-fade-in" style="padding: 28px;">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="1.5" style="margin: 0 auto 12px;">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-            </svg>
-            <h3 style="margin-bottom: 6px;">No favorites yet</h3>
-            <p class="page-subtitle" style="margin-bottom: 16px;">Save your favorite outfits to see them here</p>
-            <button class="btn-primary" @onclick='() => NavigationManager.NavigateTo("/create-outfit")'>Create Your First Outfit</button>
-        </div>
-    }
-    else
-    {
-        @if (string.IsNullOrEmpty(Filter.SearchTerm))
-        {
-            <h3 style="margin-bottom: 12px; font-size: 18px;">Favorite Outfits:</h3>
-        }
-
-        <div style="display: flex; flex-direction: column; gap: 14px;">
-            @foreach (var outfit in favoriteOutfits)
-            {
-                <div class="card" style="padding: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h3 style="font-size: 16px; font-weight: 600;">@outfit.Name</h3>
-                        <button @onclick="() => RemoveFromFavorites(outfit.Id)" style="background: none; border: none; color: var(--accent); cursor: pointer;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <p class="page-subtitle" style="margin-bottom: 10px;">@outfit.Occasion</p>
-
-                    @if (outfit.Items.Any())
+            <div class="favorites-scroll-area">
+                <div class="favorites-grid">
+                    @foreach (var outfit in favoriteOutfits)
                     {
-                        <div class="outfit-grid">
-                            @foreach (var item in outfit.Items)
-                            {
-                                <div><img src="@item.ImageData" alt="@item.Name" /></div>
-                            }
+                        <div class="outfit-card-editorial glass-effect">
+                            <div class="outfit-card-header">
+                                <span class="outfit-name-tag">@outfit.Name</span>
+                                <button class="remove-fav-btn" @onclick="() => RemoveFromFavorites(outfit.Id)">✕</button>
+                            </div>
+                            <div class="outfit-images-preview">
+                                @foreach (var item in outfit.Items.Take(3))
+                                {
+                                    <div class="preview-tile">
+                                        <img src="@GetImageSource(item.ImageData)" alt="item" />
+                                    </div>
+                                }
+                            </div>
                         </div>
                     }
                 </div>
-            }
-        </div>
-    }
+            </div>
+        }
+    </div>
 </div>
 
 <NavBar CurrentPage="favorites" />
+
+<style>
+    /* DESIGN FUNDAL ȘI LAYOUT GENERAL */
+    .favorites-page-wrapper {
+        position: fixed;
+        inset: 0;
+        background: #fff;
+        overflow: hidden;
+    }
+
+    .editorial-bg-blur {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+
+        .editorial-bg-blur img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.5;
+            filter: blur(5px);
+        }
+
+    .light-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    .content-overlay-editorial {
+        position: relative;
+        z-index: 10;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 40px 25px 100px;
+        box-sizing: border-box;
+    }
+
+    /* HEADER ȘI LOGO */
+    .favorites-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 30px;
+    }
+
+    .brand-logo-text {
+        font-family: 'Playfair Display', serif;
+        font-size: 38px; /* Mărit de la 32px pentru a fi identic cu Closet */
+        font-weight: 900;
+        color: #1a1517;
+        line-height: 0.8; /* Sincronizat pentru aliniere verticală */
+        margin: 0;
+        border: none !important;
+    }
+
+    .no-border {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    .view-subtitle {
+        font-size: 10px;
+        font-weight: 800;
+        color: #7a5c68;
+        letter-spacing: 3px; /* Spațiere identică cu tag-ul din Closet */
+        display: block;
+        margin-top: 5px;
+        text-transform: uppercase;
+    }
+
+    /* ICONIȚĂ PROFIL */
+    .profile-circle-nav {
+        width: 44px;
+        height: 44px;
+        background: #ffffff;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        cursor: pointer;
+    }
+
+    .icon-user-pink {
+        width: 22px;
+        height: 22px;
+        fill: #d946ef;
+    }
+
+    /* TITLURI */
+    .section-title-bold {
+        font-family: 'Inter', sans-serif;
+        font-size: 36px;
+        font-weight: 900;
+        color: #1a1517;
+        margin: 0;
+    }
+
+    .stats-text-large {
+        font-size: 11px;
+        font-weight: 800;
+        color: #aaa;
+        letter-spacing: 2px;
+        margin-top: 5px;
+    }
+
+    .empty-state-full-favorites {
+        display: flex;
+        justify-content: center;
+        align-items: center; /* Centrare verticală activată */
+        flex-grow: 1; /* Ocupă tot spațiul până la NavBar pentru a centra box-ul pe mijlocul ecranului */
+        margin-top: -5vh; /* Ajustare fină pentru a compensa înălțimea header-ului */
+    }
+
+    .empty-box-dashed-favorites {
+        width: 100%;
+        max-width: 850px; /* Aceeași dimensiune ca în My Closet */
+        height: 350px; /* Aceeași dimensiune ca în My Closet */
+        padding: 60px 40px;
+        border: 2px dashed rgba(217, 70, 239, 0.4); /* Bordura punctată roz */
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        text-align: center;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Centrează conținutul din interiorul box-ului */
+        align-items: center;
+        transition: transform 0.3s ease;
+    }
+
+    /* Asigură-te că overlay-ul general permite centrarea */
+    .content-overlay-editorial {
+        position: relative;
+        z-index: 10;
+        height: 100vh;
+        display: flex;
+        flex-direction: column; /* Stack vertical: Header -> Titlu -> Box */
+        padding: 40px 30px 100px;
+        box-sizing: border-box;
+    }
+        .empty-box-dashed-favorites:hover {
+            transform: scale(1.01);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+    .plus-large-favorites {
+        display: block;
+        font-size: 64px;
+        color: #d946ef;
+        margin-bottom: 20px;
+        font-weight: 200;
+        line-height: 1;
+    }
+
+    .empty-msg-main {
+        font-size: 18px;
+        color: black;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .sub-text-favorites {
+        font-size: 13px;
+        color: #7a5c68;
+        font-weight: 400;
+        margin-top: 10px;
+        opacity: 0.8;
+    }
+
+    /* GRID REZULTATE */
+    .favorites-scroll-area {
+        flex: 1;
+        overflow-y: auto;
+        scrollbar-width: none;
+    }
+
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(10px);
+        border-radius: 25px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    .outfit-images-preview {
+        display: flex;
+        gap: 10px;
+    }
+
+    .preview-tile {
+        flex: 1;
+        aspect-ratio: 1;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fdf2f8;
+    }
+
+        .preview-tile img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .remove-fav-btn {
+        background: none;
+        border: none;
+        color: #ccc;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 @code {
     [Inject] NavigationManager NavigationManager { get; set; } = default!;
     [Inject] WardrobeServices WardrobeService { get; set; } = default!;
 
-    // --- VARIABILE PENTRU OUTFIT-URI ---
     private List<Outfit> favoriteOutfits = new();
-    private List<ClothingItem> favoriteClothes = new();
-
-    // --- VARIABILE PENTRU FILTRARE ARTIcole ---
-    private FilterModel Filter = new FilterModel();
-    private IEnumerable<ClothingItem> AllItemsInFavorites = new List<ClothingItem>(); // Lista tuturor articolelor din outfit-urile favorite
-    private IEnumerable<ClothingItem> FilteredItems = new List<ClothingItem>();      // Lista articolelor după filtrare
-
-    // Păstrăm listele, deși nu le folosim în UI, pentru a ne asigura că ApplyFilters nu dă erori de referință
-    private List<string> AllCategories = new List<string> { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
-    private List<string> AllSeasons = new List<string> { "Summer", "Winter", "Spring", "Autumn" };
-    private List<string> AllStyles = new List<string> { "Casual", "Elegant", "Sport", "Business" };
-    private List<string> AvailableSubcategories = new List<string>(); // Păstrăm și SubcategoryMap pentru căutarea textului liber
-
-    // Logica complexă nu mai este necesară, dar este păstrată pentru compatibilitatea cu câmpurile de model
-    private Dictionary<string, List<string>> SubcategoryMap = new Dictionary<string, List<string>>
-    {
-        { "Tops", new List<string> { "T-shirt", "Blouse", "Hoodie", "Sweater" } },
-        { "Bottoms", new List<string> { "Jeans", "Trousers", "Skirt", "Shorts" } },
-        { "Dress", new List<string> { "Cocktail", "Maxi", "Mini", "Evening" } },
-        { "Outerwear", new List<string> { "Jacket", "Coat", "Blazer", "Vest" } },
-        { "Shoes", new List<string> { "Sneakers", "Boots", "Sandals", "Heels" } },
-        { "Accessories", new List<string> { "Scarf", "Belt", "Jewelry", "Hat" } }
-    };
 
     protected override void OnInitialized()
     {
+        RefreshData();
+        WardrobeService.OnChange += RefreshData;
+    }
+
+    private void RefreshData()
+    {
         favoriteOutfits = WardrobeService.GetFavoriteOutfits();
-
-        // 💡 COLECTEAZĂ TOATE ARTICOLELE UNICE DIN OUTFIT-URILE FAVORITE
-        AllItemsInFavorites = favoriteOutfits
-            .SelectMany(o => o.Items) // Platizează toate articolele
-            .DistinctBy(i => i.Id)    // Păstrează doar articolele unice
-            .ToList();
-
-        FilteredItems = AllItemsInFavorites;
-        favoriteClothes = WardrobeService.GetAllClothes().Where(i => i.IsFavorite).ToList();
-
-        WardrobeService.OnChange += StateHasChanged;
-        // Nu mai apelăm UpdateAvailableSubcategories pentru că nu ne interesează UI-ul
-
-        WardrobeService.OnChange += StateHasChanged;
+        InvokeAsync(StateHasChanged);
     }
 
     private void RemoveFromFavorites(string outfitId)
     {
         WardrobeService.ToggleFavorite(outfitId);
-
-        // Reîncărcă datele și re-filtrează lista de articole favorite
-        favoriteOutfits = WardrobeService.GetFavoriteOutfits();
-        AllItemsInFavorites = favoriteOutfits
-            .SelectMany(o => o.Items)
-            .DistinctBy(i => i.Id)
-            .ToList();
-
-        ApplyFilters();
+        RefreshData();
     }
 
-    // Logica dependentă OnCategoryFilterChanged și UpdateAvailableSubcategories nu mai este necesară/apelată
-    // pentru că nu avem select-uri, dar o poți șterge sau lăsa dacă vrei să păstrezi structura.
-
-    // 💡 METODA DE FILTRARE (Acum filtrează doar pe SearchTerm)
-    private void ApplyFilters()
+    private string GetImageSource(byte[]? imageBytes)
     {
-        // 1. Reîncarcă lista de bază în cazul în care un outfit a fost adăugat/șters
-        AllItemsInFavorites = favoriteOutfits
-            .SelectMany(o => o.Items)
-            .DistinctBy(i => i.Id)
-            .ToList();
-
-        var query = AllItemsInFavorites.AsQueryable();
-        var searchTerm = Filter.SearchTerm?.Trim().ToLower() ?? "";
-
-        // --- Căutare Text Liberă (pe toate câmpurile) ---
-        if (!string.IsNullOrEmpty(searchTerm))
-        {
-            query = query.Where(i =>
-                (i.Name != null && i.Name.ToLower().Contains(searchTerm)) ||
-                (i.Category != null && i.Category.ToLower().Contains(searchTerm)) ||
-                (i.Subcategory != null && i.Subcategory.ToLower().Contains(searchTerm)) ||
-                (i.Color != null && i.Color.ToLower().Contains(searchTerm)) ||
-                (i.Season != null && i.Season.ToLower().Contains(searchTerm)) ||
-                (i.Style != null && i.Style.ToLower().Contains(searchTerm))
-            );
-        }
-        else
-        {
-            // Dacă nu există termen de căutare, afișăm o listă goală de articole filtrate
-            // pentru a afișa lista completă de outfit-uri în continuare.
-            FilteredItems = new List<ClothingItem>();
-            StateHasChanged();
-            return;
-        }
-
-        FilteredItems = query.ToList();
-
-        // Actualizăm starea pentru a forța reafișarea
-        StateHasChanged();
+        if (imageBytes == null || imageBytes.Length == 0) return "Images/placeholder.png";
+        return $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
     }
 
     public void Dispose()
     {
-        WardrobeService.OnChange -= StateHasChanged;
+        WardrobeService.OnChange -= RefreshData;
     }
 }
