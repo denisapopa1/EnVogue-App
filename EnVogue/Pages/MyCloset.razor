@@ -7,9 +7,6 @@
 @layout EmptyLayout
 
 <div class="closet-page-wrapper">
-    <div class="editorial-background">
-        <img src="Images/minimalist_luxury_closet_texture.png" alt="Closet Texture" />
-    </div>
 
     <div class="content-overlay">
         <div class="editorial-header">
@@ -261,36 +258,45 @@
         line-height: 0.8;
     }
 
-    .closet-page-wrapper {
-        position: fixed;
-        inset: 0;
-        background: #fdf2f8;
-        overflow: hidden;
-        z-index: 1;
-    }
+.closet-page-wrapper {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
 
-    .editorial-background {
-        position: absolute;
-        inset: 0;
-        z-index: 1;
-        opacity: 0.5;
-    }
+    background:
+        linear-gradient(rgba(253,242,248,0.75), rgba(253,242,248,0.75)),
+        url('Images/minimalist_luxury_closet_texture.png');
 
-        .editorial-background img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.editorial-background {
+    position: absolute;
+    inset: 0;
+    z-index: 0;          /* sub tot */
+    pointer-events: none; /* nu blochează click-uri */
+}
 
-    .content-overlay {
-        position: relative;
-        z-index: 10;
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        padding: 40px 25px 100px;
-        box-sizing: border-box;
-    }
+.editorial-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.5;
+}
+.content-overlay {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    padding: clamp(30px, 4vh, 60px) 20px 80px;
+    box-sizing: border-box;
+
+    overflow: hidden;   /* foarte important */
+    width: 100%;
+    margin: 0;
+}
 
     .editorial-header {
         display: flex;
@@ -339,6 +345,7 @@
 
     .editorial-controls {
         margin-bottom: 15px;
+        position: relative;
     }
 
     .control-row {
@@ -346,6 +353,7 @@
         gap: 12px;
         margin-bottom: 12px;
         align-items: center;
+        position: relative; /* Esențial pentru alinierea panourilor */
     }
 
     .filter-sort-btn {
@@ -401,32 +409,31 @@
     }
 
     /* GRID */
-    .wardrobe-scroll-area {
-        flex: 1;
-        overflow-y: auto;
-        padding-bottom: 20px;
-        scrollbar-width: none;
-    }
+.wardrobe-scroll-area {
+    flex: 1;
+    min-height: 0;        /* CRUCIAL pentru flex scroll fix */
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 20px;
+    scrollbar-width: none; /* Ascunde bara inestetică */
+}
 
         .wardrobe-scroll-area::-webkit-scrollbar {
             display: none;
         }
 
-    .editorial-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 3 coloane pe ecrane mici */
-        gap: 10px;
-        width: 100%;
-    }
-    @@media (min-width: 768px) {
-        .editorial-grid
+.editorial-grid {
+    display: grid;
+    /* Folosim auto-fill pentru a umple rândul cu carduri de dimensiune fixă */
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); 
+    /* Schimbăm din center în start pentru a elimina spațiul dintre primul card și margine */
+    justify-content: start; 
+    gap: 20px;
+    width: 100%;
+}
+  
 
-    {
-        grid-template-columns: repeat(5, 1fr); /* 5 coloane pe desktop pentru boxuri mici */
-        gap: 20px;
-    }
-
-    }
+    
 
     .wardrobe-card-editorial {
         aspect-ratio: 0.72;
@@ -509,20 +516,19 @@
         box-shadow: 0 8px 25px rgba(217, 70, 239, 0.15);
     }
 
-    .empty-state-full {
-        grid-column: 1 / -1; /* Ocupă toate coloanele grid-ului */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 60px 0; /* Spațiu generos sus-jos */
-        min-height: 400px; /* Înălțime minimă pentru a părea centrat pe pagină */
-    }
+.empty-state-full {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
     /* Chenarul punctat mărit și stilizat */
     .empty-box-dashed {
         width: 100%;
-        max-width: 850px; /* Mai lat decât înainte */
-        height:350px;
-        padding: 60px 40px; /* Spațiu intern mai mare */
+        max-width: min(850px, 95vw);
+        height: clamp(260px, 40vh, 420px);
+        padding: clamp(30px, 4vw, 60px);
         border: 2px dashed rgba(217, 70, 239, 0.4); /* Roz accent mai vizibil */
         border-radius: 30px; /* Colțuri mai rotunjite editorial */
         background: rgba(255, 255, 255, 0.6); /* Mai opac pe fundalul texturat */
@@ -642,15 +648,18 @@
         fill: #d946ef;
     }
 
-    .editorial-panel {
-        background: white;
-        border-radius: 25px;
-        padding: 20px;
-        margin-top: 10px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        max-height: 400px;
-        overflow-y: auto;
-    }
+.editorial-panel {
+    background: white;
+    border-radius: 25px;
+    padding: 20px;
+    margin-top: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    /* Mărim limita de înălțime ca să nu mai fie tăiat */
+    max-height: 60vh; 
+    overflow-y: auto; /* Activează scroll doar în interiorul filtrului dacă e prea lung */
+    scrollbar-width: none;
+}
+.editorial-panel::-webkit-scrollbar { display: none; }
 
     .pills-grid {
         display: flex;
@@ -757,6 +766,60 @@
         letter-spacing: 1px;
         text-transform: uppercase;
     }
+    @@media (max-width: 768px) {
+    .wardrobe-scroll-area {
+        padding: 0 10px 20px;
+    }
+
+    .editorial-grid {
+        display: grid;
+        /* Folosim repeat(auto-fill) cu o lățime minimă mai mică pentru a forța 2 coloane */
+        grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); 
+        gap: 12px;
+        width: 100%;
+    }
+
+    .wardrobe-card-editorial {
+        padding: 8px;
+        border-radius: 12px;
+        /* Reducem dimensiunea fontului pe mobil pentru a nu împinge cardul */
+    }
+    /* Containerul devine o celulă care ocupă tot spațiul rămas și centrează box-ul */
+    .empty-state-full {
+        flex: 1;
+        display: flex;
+        align-items: center;    /* Centrare verticală perfectă */
+        justify-content: center; /* Centrare orizontală perfectă */
+        width: 100%;
+        min-height: 50vh; 
+    }
+
+    /* Box-ul propriu-zis: mai mic și compact */
+    .empty-box-dashed {
+        width: 80%;             /* Îl facem mult mai scurt în lățime */
+        max-width: 280px;       /* Îi punem o barieră să nu crească prea mult */
+        height: 300px;          /* Îi dăm o înălțime fixă elegantă */
+        padding: 30px;
+        border-radius: 35px;    /* Colțuri rotunjite editorial */
+        
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05); /* Umbră discretă pentru adâncime */
+    }
+
+    .plus-large {
+        font-size: 48px;        /* Plusul devine mai delicat */
+        margin-bottom: 15px;
+    }
+
+    .empty-box-dashed p {
+        font-size: 14px;        /* Textul se adaptează box-ului mic */
+    }
+    .item-brand-label { font-size: 13px; }
+    .item-sub-label { font-size: 10px; }
+}
     @@keyframes pulse {
         0%, 100%
 
