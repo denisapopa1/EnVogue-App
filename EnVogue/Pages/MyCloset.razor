@@ -11,10 +11,22 @@
     <div class="content-overlay">
         <div class="editorial-header">
             <div class="header-left">
-                <h1 class="brand-title" tabindex="-1">EnVogue</h1>
-                <span class="collection-tag">MY COLLECTION</span>
-            </div>
-          
+    <div class="brand-nav-group" style="display: flex; align-items: flex-start; gap: 15px;">
+        @* Butonul Săgeată (Back) adăugat pentru uniformitate *@
+        <button class="profile-circle back-btn" @onclick='() => NavigationManager.NavigateTo("/home")'>
+            <svg viewBox="0 0 24 24" fill="none" stroke="#d946ef" stroke-width="2.5" style="width: 22px; height: 22px;">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+        </button>
+
+        @* Containerul nou care pune textul tău pe verticală *@
+        <div class="brand-text-wrapper" style="display: flex; flex-direction: column; align-items: flex-start;">
+            <h1 class="brand-title" tabindex="-1">EnVogue</h1>
+            <span class="collection-tag">MY COLLECTION</span>
+        </div>
+    </div>
+</div>
 
             <div class="header-right">
                 <button class="profile-circle" @onclick='() => NavigationManager.NavigateTo("/profile")'>
@@ -624,19 +636,18 @@
     }
 
     /* PROFILE */
-    .profile-circle {
-        width: 48px;
-        height: 48px;
-        background: white;
-        border: none;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        cursor: pointer;
-        transition: 0.3s;
-    }
+.profile-circle {
+    width: 48px;
+    height: 48px;
+    background: white !important;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    cursor: pointer;
+}
 
         .profile-circle:hover {
             transform: scale(1.1);
@@ -832,6 +843,16 @@
     }
 
     }
+    @@media (max-width: 768px) {
+    .profile-circle {
+        width: 38px; /* Identic cu Add Item */
+        height: 38px;
+    }
+    .profile-circle svg {
+        width: 18px; /* Identic cu Add Item */
+        height: 18px;
+    }
+}
 </style>
 
 @code {
