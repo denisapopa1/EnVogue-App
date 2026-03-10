@@ -222,6 +222,54 @@
         max-height: 60vh; /* Protecție la depășirea verticală */
         overflow-y: auto;
         scrollbar-width: none;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .manual-canvas-area, .ai-stylist-area-white {
+        animation: fadeInScale 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    /* Efect de strălucire discretă în timpul generării AI */
+    .ai-white-card.generating::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -150%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(to right, transparent, rgba(217, 70, 239, 0.1), transparent);
+        transform: skewX(-25deg);
+        animation: aiShimmer 1.5s infinite;
+    }
+
+    @@keyframes aiShimmer {
+        to
+
+    {
+        left: 150%;
+    }
+
+    }
+
+    /* Transformăm butonul în timpul generării */
+    .ai-generate-btn-black:disabled {
+        background: #333;
+        cursor: wait;
+        transform: scale(0.98);
+    }
+    
+    @@keyframes fadeInScale {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+
     }
     .luxury-form-card::-webkit-scrollbar { display: none; }
 
@@ -240,43 +288,217 @@
     .ai-generate-btn-black:hover { background: #d946ef; }
     .full-w { width: 100% !important; }
 
-    .plus-circle-btn { width: clamp(50px, 8vh, 64px); height: clamp(50px, 8vh, 64px); border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .plus-circle-btn {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        width: clamp(50px, 8vh, 64px);
+        height: clamp(50px, 8vh, 64px);
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.05);
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+        .plus-circle-btn:hover {
+            transform: rotate(90deg) scale(1.1);
+            background: rgba(217, 70, 239, 0.2);
+            border-color: #d946ef;
+        }
+
+            .plus-circle-btn:hover .plus-sign {
+                color: #d946ef;
+            }
     .plus-sign { color: white; font-size: clamp(32px, 4vh, 38px); font-weight: 200; }
     .canvas-title { font-family: 'Inter', sans-serif; font-weight: 800; font-size: clamp(20px, 3vh, 24px); color: white; margin-bottom: 8px; }
     .canvas-desc { font-size: 11px; color: rgba(255, 255, 255, 0.6); margin-bottom: 20px; line-height: 1.5; max-width: 260px; margin-left: auto; margin-right: auto; }
-    .action-pill-btn-white { width: 100%; padding: 14px 18px; background: white; color: black; border: none; border-radius: 30px; font-weight: 800; font-size: 11px; cursor: pointer; }
 
+    .action-pill-btn-white {
+        transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        position: relative;
+        overflow: hidden; /* Necesar pentru efectul de sclipire */
+        width: 100%;
+        padding: 14px 18px;
+        background: white;
+        color: black;
+        border: none;
+        border-radius: 30px;
+        font-weight: 800;
+        font-size: 11px;
+        cursor: pointer;
+    }
+
+        .action-pill-btn-white::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient( 120deg, transparent, rgba(217, 70, 239, 0.15), /* O urmă palidă din rozul EnVogue */
+            transparent );
+            transition: all 0.6s;
+        }
+
+        /* Animația butonului la Hover */
+        .action-pill-btn-white:hover {
+            transform: translateY(-3px) scale(1.05); /* Se ridică și crește discret */
+            background: white;
+            color: #d946ef; /* Textul devine roz la hover */
+            box-shadow: 0 10px 25px rgba(217, 70, 239, 0.25);
+        }
+
+            .action-pill-btn-white:hover::before {
+                left: 100%; /* Sclipirea traversează butonul la hover */
+            }
+
+        /* Feedback la apăsare (Click) */
+        .action-pill-btn-white:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+    /* Animație de plutire pentru întregul conținut din Manual Canvas */
+    .manual-canvas-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: floatingCanvas 3s ease-in-out infinite; /* Mișcare foarte lentă și subtilă */
+    }
+    @@keyframes floatingCanvas {
+        0%, 100%
+
+    {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+
+    }
+
+    .canvas-desc {
+        transition: opacity 0.3s ease;
+    }
+
+    .manual-canvas-area:hover .canvas-desc {
+        opacity: 1; /* Se clarifică descrierea la interacțiune */
+    }
     .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .outfit-display-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-    .result-item-card { aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.05); }
+
+    .result-item-card {
+        opacity: 0;
+        animation: itemPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        aspect-ratio: 1;
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(255,255,255,0.05);
+    }
     .result-item-card img { width: 100%; height: 100%; object-fit: cover; }
     .text-reset-link { background: none; border: none; color: #d946ef; font-weight: 800; cursor: pointer; font-size: 11px; }
 
+    .result-item-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .result-item-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .result-item-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .result-item-card:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+    @@keyframes
+
+    itemPopIn {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }
     /* MOBILE REGLAJE FINALE */
     @@media (max-width: 768px) {
-        .add-item-page-wrapper { 
-            justify-content: center; 
-            padding-bottom: 100px;
+        /* HEADER IDENTIC CU CLOSET & ADD ITEM */
+        .editorial-header-unified {
+            padding: clamp(30px, 4vh, 60px) 20px 0;
+            align-items: flex-start;
         }
 
-        /* MICȘORARE ICONIȚE PE MOBILE */
+        .brand-title-unified {
+            font-family: 'Playfair Display', serif;
+            font-size: 38px; /* IDENTIC */
+            font-weight: 900;
+            line-height: 0.8;
+        }
+
+        .collection-tag-unified {
+            font-size: 10px; /* IDENTIC */
+            font-weight: 800;
+            letter-spacing: 3px;
+        }
+        /* ICONIȚE IDENTICE */
         .profile-circle {
             width: 38px;
             height: 38px;
         }
-        .profile-circle svg {
-            width: 18px;
-            height: 18px;
+
+            .profile-circle svg {
+                width: 18px;
+                height: 18px;
+            }
+        /* LAYOUT FĂRĂ OFFSET GREȘIT */
+        .add-item-page-wrapper {
+            justify-content: center; /* centrare verticală */
+            padding-top: 140px; /* spațiu sub logo */
+            padding-bottom: 120px;
         }
 
-        .editorial-header-unified { padding-top: 20px; }
-        .brand-title-unified { font-size: 28px; }
-        .collection-tag-unified { font-size: 8px; }
-        .content-container { justify-content: center; padding-top: 110px; transform: none; max-width: 100%; padding: 0 10px; }
-        .header-text-group-fit { margin-bottom: 15px; }
-        .bold-title { font-size: 32px; }
-        .toggle-container-editorial { margin-bottom: 20px; }
-        .luxury-form-card { padding: clamp(25px, 6vh, 40px) 30px; max-height: none; width: 90%; border-radius: 30px; }
+        .content-container {
+            transform: none;
+            max-width: 100%;
+            padding: 0 16px;
+        }
+
+        .header-text-group-fit {
+            margin-bottom: 28px;
+            padding: 0 10px;
+        }
+
+        .bold-title {
+            font-size: 24px; /* mai proporțional */
+        }
+
+        .bold-subtitle {
+            font-size: 9px;
+            letter-spacing: 2px;
+        }
+
+        .toggle-container-editorial {
+            margin-bottom: 28px;
+        }
+        /* CARD CONTROLAT – NU DEPĂȘEȘTE VIEWPORT */
+        .luxury-form-card {
+            width: 92%;
+            max-width: 420px;
+            padding: 22px 18px;
+            border-radius: 24px;
+            max-height: calc(100vh - 240px);
+            overflow-y: auto;
+        }
     }
 </style>
 

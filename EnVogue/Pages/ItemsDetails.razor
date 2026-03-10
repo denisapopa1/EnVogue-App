@@ -1,303 +1,653 @@
 ﻿@page "/item-details/{ItemId}"
 @using EnVogue.Models
 @using EnVogue.Services
+@using EnVogue.Shared
 @inject WardrobeServices WardrobeService
 @inject NavigationManager Nav
 @inject NotificationService Toast
+@layout EmptyLayout
 
-<div class="page-container with-nav">
-    @* Top Bar *@
-    <div class="top-detail-bar" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;">
-        <button class="icon-button-top" @onclick='() => Nav.NavigateTo("/closet")'>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-        </button>
-
-        <h2 class="brand" style="font-size: 20px; margin: 0;">@(isEditing ? "Editing Item" : "Item Details")</h2>
-
-        @* Secțiune Butoane Stilate *@
-        <div style="display: flex; gap: 15px; align-items: center;">
-            @if (isEditing)
-            {
-                @* Buton OK / Salvare *@
-                <button class="action-btn-large btn-success" title="Save Changes" @onclick="SaveChanges">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                </button>
-
-                @* Buton CANCEL / Anulare *@
-                <button class="action-btn-large btn-cancel" title="Cancel" @onclick="CancelEdit">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            }
-            else
-            {
-                @* Buton EDIT *@
-                <button class="action-btn-large btn-edit" title="Edit Item" @onclick="() => isEditing = true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
-                </button>
-
-                @* Buton DELETE *@
-                <button class="action-btn-large btn-delete" title="Delete Item" @onclick="HandleDelete">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                </button>
-            }
-        </div>
+<div class="item-details-page-wrapper">
+    @* FUNDAL EDITORIAL BLURAT *@
+    <div class="editorial-background-container">
+        <img src="Images/img_for_items_details.png" alt="Satin Background" />
+        <div class="overlay-gradient"></div>
     </div>
+
+    @* HEADER UNIFICAT IDENTIC CU ADD ITEM *@
+    <header class="editorial-header-unified">
+        <div class="header-left">
+            <div class="brand-nav-group">
+                <button class="profile-circle back-btn" @onclick='() => Nav.NavigateTo("/closet")'>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <div class="brand-text-block">
+                    <h1 class="brand-title-unified no-border">EnVogue</h1>
+                    <span class="collection-tag-unified closet-color">ITEM ARCHIVE</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="profile-circle" @onclick='() => Nav.NavigateTo("/profile")'>
+                <svg viewBox="0 0 24 24" class="profile-svg"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+            </button>
+        </div>
+    </header>
 
     @if (item != null)
     {
-        <div class="center animate-fade-in" style="margin-bottom: 30px;">
-            <img src="@item.ImageData" style="width: 100%; max-width: 500px; border-radius: var(--radius-lg); box-shadow: var(--shadow-2); border: 1px solid var(--border-1);" />
-        </div>
+        <div class="details-content-container">
+            <div class="editorial-grid">
 
-        <div class="card card-glass animate-fade-in" style="max-width: 600px; margin: 0 auto;">
-            <h3 style="font-size: 16px; margin-bottom: 20px; color: var(--accent);">👕 Basic Information</h3>
+                @* GRUP NOU: BUTOANE + POZĂ (CONTROLAT DOAR PE MOBILE PRIN CSS) *@
+                <div class="mobile-media-group">
+                    @* IMAGINEA ITEMULUI *@
+                    <div class="image-showcase animate-fade-in">
+                        <div class="image-wrapper">
+                            <img src="@GetImageSource(item.ImageData)" alt="@item.Brand" />
+                        </div>
+                    </div>
+                </div>
 
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-                @* Category *@
-                <div class="detail-row">
-                    <span class="text-muted">Category</span>
-                    @if (isEditing)
-                    {
-                        <select class="input-field-small centered-select" @onchange="OnCategoryChanged">
-                            @foreach (var cat in Categories)
+                @* BOXUL CU INFORMAȚII *@
+                <div class="info-showcase animate-slide-right">
+                    @* BUTOANE ACȚIUNE POZIȚIONATE DEASUPRA POZEI PE MOBIL *@
+                    <div class="action-header-inline">
+                        @if (isEditing)
+                        {
+                            <button class="small-action-btn success" @onclick="SaveChanges"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                            <button class="small-action-btn cancel" @onclick="CancelEdit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                        }
+                        else
+                        {
+                            <button class="small-action-btn edit" @onclick="() => isEditing = true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                            <button class="small-action-btn delete" @onclick="HandleDelete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        }
+                    </div>
+                    <div class="luxury-info-card">
+                        <div class="brand-edit-block">
+                            <label>Brand</label>
+                            @if (isEditing)
                             {
-                                <option value="@cat" selected="@(cat == item.Category)">@cat</option>
+                                <input class="brand-input-luxury" placeholder="Zara, Nike..." @bind="item.Brand" />
                             }
-                        </select>
-                    }
-                    else
-                    {
-                        <span class="info-val">@item.Category</span>
-                    }
-                </div>
-
-                @* Subcategory *@
-                <div class="detail-row">
-                    <span class="text-muted">Subcategory</span>
-                    @if (isEditing)
-                    {
-                        <select class="input-field-small centered-select" @bind="item.Subcategory">
-                            @foreach (var sub in GetSubcategories(item.Category))
+                            else
                             {
-                                <option value="@sub" selected="@(sub == item.Subcategory)">@sub</option>
+                                <h2 class="brand-title">@(string.IsNullOrWhiteSpace(item.Brand) ? "Essential Piece" : item.Brand)</h2>
                             }
-                        </select>
-                    }
-                    else
-                    {
-                        <span class="info-val">@item.Subcategory</span>
-                    }
-                </div>
+                        </div>
 
-                @* Season *@
-                <div class="detail-row">
-                    <span class="text-muted">Season</span>
-                    @if (isEditing)
-                    {
-                        <select class="input-field-small centered-select" @bind="item.Season">
-                            @foreach (var s in Seasons)
-                            {
-                                <option value="@s" selected="@(s == item.Season)">@s</option>
-                            }
-                        </select>
-                    }
-                    else
-                    {
-                        <span class="info-val">@item.Season</span>
-                    }
-                </div>
+                        <div class="details-grid-fancy">
+                            <div class="detail-item-fancy">
+                                <label>Category</label>
+                                @if (isEditing)
+                                {
+                                    <select class="luxury-select" @onchange="OnCategoryChanged">
+                                        @foreach (var cat in MainCategories)
+                                        {
+                                            <option value="@cat" selected="@(cat == item.Category)">@cat</option>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
 
-                @* Color *@
-                <div class="detail-row">
-                    <span class="text-muted">Color</span>
-                    @if (isEditing)
-                    {
-                        <input type="text" class="input-field-small centered-input" @bind="item.Color" placeholder="e.g. Red, Blue..." />
-                    }
-                    else
-                    {
-                        <span class="info-val">@(string.IsNullOrWhiteSpace(item.Color) ? "Not specified" : item.Color)</span>
-                    }
-                </div>
-                @* Style Row *@
-                <div class="detail-row">
-                    <span class="text-muted">Style</span>
-                    @if (isEditing)
-                    {
-                        <select class="input-field-small centered-select" @bind="item.Style">
-                            @foreach (var style in Styles)
-                            {
-                                <option value="@style">@style</option>
-                            }
-                        </select>
-                    }
-                    else
-                    {
-                        @* Verificăm dacă stilul este gol sau "None" *@
-                        <span class="info-val">@(string.IsNullOrWhiteSpace(item.Style) || item.Style == "None" ? "Not specified" : item.Style)</span>
-                    }
-                </div>
-                <div class="detail-row">
-                    <span class="text-muted">Brand</span>
-                    @if (isEditing)
-                    {
-                        <input type="text" class="input-field-small centered-input" @bind="item.Brand" placeholder="Enter brand..." />
-                    }
-                    else
-                    {
-                        <span class="info-val">@(string.IsNullOrWhiteSpace(item.Brand) ? "Not specified" : item.Brand)</span>
-                    }
+                                    <span>@item.Category</span>
+                                }
+                            </div>
+
+                            <div class="detail-item-fancy">
+                                <label>Type</label>
+                                @if (isEditing)
+                                {
+                                    <select class="luxury-select" @bind="item.Subcategory">
+                                        @foreach (var sub in AvailableSubcategories)
+                                        {
+                                            <option value="@sub">@sub</option>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+
+                                    <span>@item.Subcategory</span>
+                                }
+                            </div>
+
+                            <div class="detail-item-fancy">
+                                <label>Aesthetic</label>
+                                @if (isEditing)
+                                {
+                                    <select class="luxury-select" @bind="item.Style">
+                                        @foreach (var st in Styles)
+                                        {
+                                            <option value="@st">@st</option>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+
+                                    <span>@item.Style</span>
+                                }
+                            </div>
+
+                            <div class="detail-item-fancy">
+                                <label>Color</label>
+                                @if (isEditing)
+                                {
+                                    <input class="luxury-input" placeholder="Black, Beige..." @bind="item.Color" />
+                                }
+                                else
+                                {
+
+                                    <span>@(string.IsNullOrEmpty(item.Color) ? "-" : item.Color)</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="curation-notes-section">
+                            <label>Curation Notes</label>
+                            <p>This piece is a vital part of your @(item.Style) collection for @item.Season. Its @item.Subcategory silhouette offers timeless versatility for your digital wardrobe.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     }
 </div>
-@* 💡 DIALOGURILE SE PUN AICI, LA FINAL, IN AFARA ORICARUI DIV *@
 
-<ConfirmDialog IsVisible="showDeleteConfirm"
-               Title="Delete Item"
-               Message="This action cannot be undone. Permanently remove this item?"
-               ConfirmText="Delete"
-               CancelText="Keep it"
-               ConfirmButtonClass="btn-delete-modal"
-               OnConfirm="ConfirmDelete"
-               OnCancel="() => showDeleteConfirm = false" />
+<ConfirmDialog IsVisible="showDeleteConfirm" Title="Delete Item?" Message="Are you sure?" ConfirmText="Delete" CancelText="Keep" ConfirmButtonClass="btn-delete-modal" OnConfirm="ConfirmDelete" OnCancel="() => showDeleteConfirm = false" />
+<ConfirmDialog IsVisible="showDiscardConfirm" Title="Discard Changes" Message="Revert to original?" ConfirmText="Discard" OnConfirm="ConfirmDiscard" OnCancel="() => showDiscardConfirm = false" />
 
-<ConfirmDialog IsVisible="showDiscardConfirm"
-               Title="Discard Changes"
-               Message="You have unsaved changes. Are you sure you want to revert?"
-               ConfirmText="Discard"
-               CancelText="Keep Editing"
-               ConfirmButtonClass="btn-accent-modal"
-               OnConfirm="ConfirmDiscard"
-               OnCancel="() => showDiscardConfirm = false" />
+<NavBar CurrentPage="home" />
+
 <style>
-    .detail-row {
+    /* LAYOUT & SCALING */
+    .item-details-page-wrapper {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .editorial-background-container {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+
+        .editorial-background-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(10px);
+            opacity: 0.65;
+        }
+
+    /* HEADER UNIFICAT */
+    .editorial-header-unified {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid var(--border-1);
+        align-items: flex-start;
+        padding: clamp(25px, 4vh, 60px) 20px 0;
+        z-index: 1000;
     }
 
-    .info-val {
-        font-weight: 600;
-        color: var(--text-1);
+    .brand-nav-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
     }
 
-    /* --- Stil Butoane Mari Stilate --- */
-    .action-btn-large {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
-        border: 1px solid var(--border-2);
-        background: var(--glass-strong);
+    .brand-title-unified {
+        font-family: 'Playfair Display', serif;
+        font-size: 38px;
+        font-weight: 900;
+        line-height: 0.8;
+        color: black;
+        /* ELIMINARE CHENAR */
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        user-select: none; /* Previne selectarea accidentală a textului */
+    }
+
+    .back-btn svg {
+        width: 22px;
+        height: 22px;
+        stroke: #d946ef;
+    }
+
+    .collection-tag-unified {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        display: block;
+        margin-top: 5px;
+        text-transform: uppercase;
+        color: #7a5c68;
+    }
+
+    .profile-circle {
+        width: 48px;
+        height: 48px;
+        background: white;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         cursor: pointer;
-        transition: all 0.25s ease;
-        color: var(--text-1);
-        backdrop-filter: blur(8px);
+        border: none;
     }
 
-    .btn-edit:hover {
-        background: rgba(34, 211, 238, 0.15);
-        border-color: var(--info);
-        color: var(--info);
-        box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+    .profile-svg {
+        fill: #d946ef;
+        width: 22px;
     }
 
-    .btn-delete:hover {
-        background: rgba(239, 68, 68, 0.15);
-        border-color: var(--error);
-        color: var(--error);
-        box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+    .brand-edit-block label {
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #7a5c68;
+        display: block;
+        margin-bottom: 6px;
     }
 
-    .btn-success:hover {
-        background: rgba(16, 185, 129, 0.15);
-        border-color: var(--success);
-        color: var(--success);
-        box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
-    }
-
-    .btn-cancel:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: var(--text-2);
-    }
-
-    .action-btn-large svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    /* --- Stiluri Input-uri --- */
-    .input-field-small {
-        background: var(--bg-1);
-        border: 1px solid var(--border-2);
-        color: var(--text-1);
-        border-radius: 8px;
-        padding: 6px 12px;
-        min-width: 160px;
+    .brand-input-luxury {
+        width: 100%;
+        border: none;
+        border-bottom: 2px solid #f3e8f5;
+        font-size: 22px;
+        font-weight: 800;
+        font-family: 'Inter',sans-serif;
+        padding: 6px 2px;
+        background: transparent;
         outline: none;
+        color: #2d1b24;
+        transition: all .25s ease;
     }
 
-    .centered-select {
-        text-align: center;
-        text-align-last: center;
+        .brand-input-luxury:focus {
+            border-color: #d946ef;
+        }
+
+    .luxury-select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #f0e4f2;
+        background: white;
+        font-weight: 600;
+        color: #2d1b24;
+        transition: all .2s ease;
     }
 
-    .centered-input {
-        text-align: center;
+        .luxury-select:focus {
+            outline: none;
+            border-color: #d946ef;
+            box-shadow: 0 0 0 3px rgba(217,70,239,0.15);
+        }
+
+    .luxury-input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #f0e4f2;
+        font-weight: 600;
+        background: white;
     }
 
-    select.input-field-small option {
-        background: #111;
+        .luxury-input:focus {
+            outline: none;
+            border-color: #d946ef;
+            box-shadow: 0 0 0 3px rgba(217,70,239,0.15);
+        }
+    /* GRID ADAPTAT PENTRU POZĂ MAI MICĂ */
+    .details-content-container {
+        position: relative;
+        z-index: 10;
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 100px 40px 80px;
+        max-width: 1100px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .editorial-grid {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 50px;
+        align-items: center;
+        width: 100%;
+        max-height: 80vh;
+    }
+
+    .image-wrapper {
+        aspect-ratio: 3/4;
+        border-radius: 35px;
+        overflow: hidden;
+        border: 6px solid white;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        background: white;
+        max-height: 65vh;
+        margin: 0 auto;
+    }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    /* ACTION BUTTONS DEASUPRA BOXULUI */
+    .action-header-inline {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .small-action-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+        .small-action-btn.edit:hover {
+            transform: translateY(-3px);
+            background: #fdf2f8;
+            box-shadow: 0 8px 18px rgba(217,70,239,0.25);
+        }
+
+    .edit {
+        background: white;
+        color: #2d1b24;
+    }
+
+    .delete {
+        background: #2d1b24;
         color: white;
-        text-align: center;
     }
+
+    .small-action-btn.delete:hover {
+        transform: translateY(-3px);
+        background: #000;
+        box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    }
+
+    .save {
+        background: #d946ef;
+        color: white;
+    }
+
+    .small-action-btn.success:hover {
+        transform: translateY(-3px);
+        background: #c026d3;
+    }
+
+    .small-action-btn.cancel:hover {
+        transform: translateY(-3px);
+        background: #f5f5f5;
+    }
+    .cancel {
+        background: #fff;
+        border: 1px solid #eee;
+        color: #7a5c68;
+    }
+
+    .small-action-btn svg {
+        width: 18px;
+    }
+
+    /* INFO CARD */
+    .luxury-info-card {
+        background: rgba(255,255,255,0.92);
+        backdrop-filter: blur(16px);
+        padding: 35px;
+        border-radius: 35px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.04);
+        transition: all 0.35s ease;
+    }
+
+        .luxury-info-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.12);
+        }
+    .category-tag {
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.3em;
+        color: #d946ef;
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .brand-title {
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 26px;
+        color: #2d1b24;
+        font-style: italic;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .details-grid-fancy {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin: 25px 0;
+        border-top: 1px solid #fce7f3;
+        padding-top: 25px;
+    }
+
+    .detail-item-fancy label {
+        font-size: 9px;
+        font-weight: 900;
+        text-transform: uppercase;
+        color: #7a5c68;
+        letter-spacing: 0.1em;
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .detail-item-fancy span {
+        font-weight: 700;
+        font-size: 16px;
+        color: #2d1b24;
+    }
+
+    .curation-notes-section {
+        border-top: 1px solid #fce7f3;
+        padding-top: 20px;
+    }
+
+        .curation-notes-section label {
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: #7a5c68;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .curation-notes-section p {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #7a5c68;
+            margin: 0;
+        }
+
+    @@media (max-width: 600px) {
+        .details-content-container {
+            height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0 15px;
+            transform: translateY(3vh);
+        }
+
+        .editorial-grid {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 310px;
+            gap: 0;
+        }
+
+        .action-header-inline {
+            order: 1;
+            width: 100%;
+            margin-bottom: 8px;
+            justify-content: flex-end;
+        }
+
+        .small-action-btn {
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 8px !important;
+            outline: none !important;
+        }
+
+        .image-showcase {
+            order: 2;
+            width: 100%;
+        }
+
+        .image-wrapper {
+            width: 100% !important;
+            max-height: 32vh !important;
+            aspect-ratio: auto !important;
+            border-width: 4px !important;
+            border-radius: 25px !important;
+            margin-bottom: 10px !important;
+        }
+
+        .info-showcase {
+            order: 3;
+            width: 100%;
+        }
+
+        .luxury-info-card {
+            padding: 20px !important;
+            border-radius: 25px !important;
+            width: 100% !important;
+            margin: 0 !important;
+        }
+
+        .brand-input-luxury {
+            font-size: 16px !important;
+            padding: 2px 0 !important;
+        }
+
+        .brand-title {
+            font-size: 18px !important;
+        }
+
+        .details-grid-fancy {
+            gap: 10px !important;
+            margin: 15px 0 !important;
+        }
+
+        .brand-edit-block {
+            margin-bottom: 10px !important;
+        }
+    }
+    /* MOBILE */
+    /* REGLAJE FINALE PENTRU MOBIL: COMPACTARE ȘI EVITARE SUPRAPUNERE */
+    /* REGLAJE FINALE PENTRU MOBIL: IMAGINE SINCRO CU BOXUL */
+
+        @@keyframes fadeIn {
+            from
+
+    {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    @@keyframes slideRight {
+        from
+
+    {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    }
+
+    
 </style>
 
 @code {
     [Parameter] public string ItemId { get; set; } = "";
     private ClothingItem? item;
     private bool isEditing = false;
-    private bool showDeleteConfirm = false; // 💡 Adaugă această variabilă
+    private bool showDeleteConfirm = false;
     private bool showDiscardConfirm = false;
 
-    private List<string> Categories = new() { "Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Accessories" };
     private List<string> Seasons = new() { "Spring", "Summer", "Autumn", "Winter", "All Seasons" };
-    private List<string> Styles = new() { "Not specified", "Elegant", "Casual", "Sport", "Business" }; // 💡 ADAUGĂ ACEASTĂ LINIE
+    private List<string> Styles = new() { "Casual Style", "Elegant Style", "Formal Wear", "Sporty Look" };
     private Dictionary<string, List<string>> SubcategoryMap = new()
-    {
-        { "Tops", new() { "T-shirt", "Shirt", "Blouse", "Hoodie", "Sweater" } },
-        { "Bottoms", new() { "Jeans", "Trousers", "Skirt", "Shorts" } },
-        { "Dresses", new() { "Casual Dress", "Evening Dress", "Maxi Dress" } },
-        { "Outerwear", new() { "Jacket", "Coat", "Blazer" } },
-        { "Shoes", new() { "Sneakers", "Boots", "Sandals", "Heels" } },
-        { "Accessories", new() { "Scarf", "Belt", "Jewelry", "Hat" } }
-    };
+{
+    { "Tops", new() { "T-shirt", "Shirt", "Blouse", "Hoodie", "Sweater" } },
+    { "Bottoms", new() { "Jeans", "Trousers", "Skirt", "Shorts" } },
+    { "Dresses", new() { "Cocktail", "Maxi", "Mini", "Evening" } },
+    { "Outerwear", new() { "Jacket", "Coat", "Blazer", "Vest" } },
+    { "Shoes", new() { "Sneakers", "Boots", "Sandals", "Heels" } },
+    { "Accessories", new() { "Scarf", "Belt", "Jewelry", "Hat" } }
+};
+    private List<string> MainCategories = new()
+{
+    "Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Accessories"
+};
 
+    private List<string> AvailableSubcategories = new();
     protected override void OnInitialized() => LoadItemData();
 
     private void LoadItemData()
     {
         var original = WardrobeService.GetAllClothes().FirstOrDefault(i => i.Id == ItemId);
+
         if (original != null)
         {
-            // Cream o clonă a obiectului pentru a permite anularea (Cancel)
             item = new ClothingItem
             {
                 Id = original.Id,
@@ -306,69 +656,43 @@
                 Color = original.Color,
                 ImageData = original.ImageData,
                 Season = original.Season,
-                Style = original.Style,// 💡 ADAUGĂ ACEASTĂ LINIE
+                Style = original.Style,
                 Brand = original.Brand
             };
+
+            UpdateSubcategories();
         }
     }
 
+    private void UpdateSubcategories()
+    {
+        if (item == null) return;
+
+        AvailableSubcategories = SubcategoryMap.ContainsKey(item.Category)
+            ? SubcategoryMap[item.Category]
+            : new List<string>();
+
+        if (!AvailableSubcategories.Contains(item.Subcategory))
+            item.Subcategory = AvailableSubcategories.FirstOrDefault() ?? "";
+    }
     private void OnCategoryChanged(ChangeEventArgs e)
     {
-        if (item != null)
-        {
-            item.Category = e.Value?.ToString() ?? "";
-            item.Subcategory = GetSubcategories(item.Category).FirstOrDefault() ?? "";
-        }
+        if (item == null) return;
+
+        item.Category = e.Value?.ToString() ?? "Tops";
+        UpdateSubcategories();
     }
 
-    private List<string> GetSubcategories(string category) =>
-        SubcategoryMap.ContainsKey(category) ? SubcategoryMap[category] : new List<string>();
-
-    // Actualizează metoda CancelEdit pentru a folosi dialogul
-    private void CancelEdit()
+    private string GetImageSource(byte[]? imageBytes)
     {
-        var original = WardrobeService.GetAllClothes().FirstOrDefault(i => i.Id == ItemId);
-
-        // Verificăm dacă s-a schimbat ceva față de original
-        if (original != null && item != null && (
-            item.Brand != original.Brand ||
-            item.Color != original.Color ||
-            item.Category != original.Category ||
-            item.Subcategory != original.Subcategory ||
-            item.Style != original.Style ||
-            item.Season != original.Season))
-        {
-            showDiscardConfirm = true; // Arătăm dialogul de confirmare
-        }
-        else
-        {
-            isEditing = false;
-            LoadItemData();
-        }
+        if (imageBytes == null || imageBytes.Length == 0) return "Images/placeholder.png";
+        return $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
     }
 
-    private void SaveChanges() { 
-        if (item != null) {
-            WardrobeService.UpdateClothingItem(item); 
-            Toast.Show("Changes saved successfully!", "success");
-            isEditing = false;
-        }
-    }
-    private void HandleDelete()
-    {
-        showDeleteConfirm = true; // 💡 Doar afișăm dialogul, nu ștergem încă
-    }
-    private void ConfirmDelete()
-    {
-        WardrobeService.RemoveClothingItem(ItemId);
-        showDeleteConfirm = false;
-        Toast.Show("Item removed", "error"); // Feedback vizual roșu
-        Nav.NavigateTo("/closet");
-    }
-    private void ConfirmDiscard()
-    {
-        showDiscardConfirm = false;
-        isEditing = false;
-        LoadItemData(); // Revenim la datele inițiale
-    }
+    private List<string> GetSubcategories(string category) => SubcategoryMap.ContainsKey(category) ? SubcategoryMap[category] : new();
+    private void SaveChanges() { if (item != null) { WardrobeService.UpdateClothingItem(item); Toast.Show("Updated!", "success"); isEditing = false; } }
+    private void CancelEdit() { isEditing = false; LoadItemData(); }
+    private void HandleDelete() => showDeleteConfirm = true;
+    private void ConfirmDelete() { WardrobeService.RemoveClothingItem(ItemId); Nav.NavigateTo("/closet"); }
+    private void ConfirmDiscard() { showDiscardConfirm = false; isEditing = false; LoadItemData(); }
 }

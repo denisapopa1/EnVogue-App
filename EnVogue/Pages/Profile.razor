@@ -4,57 +4,486 @@
 @inject UserState UserState
 @inject NavigationManager Nav
 @inject NotificationService Toast
+@inject WardrobeServices WardrobeService
+@layout EmptyLayout
 
-<div class="page-container with-nav">
-    @if (!UserState.IsLoggedIn)
-    {
-        <div class="center-content animate-fade-in" style="padding: 40px; text-align: center;">
-            <p style="margin-bottom: 20px; opacity: 0.7;">You are not logged in.</p>
-            <button class="btn-primary" @onclick="@(() => Nav.NavigateTo("/login"))">Go to Login</button>
-        </div>
-    }
-    else
-    {
-        <h2 style="margin-bottom: 24px; font-weight: 800;">My Profile</h2>
-
-        <div class="card card-glass animate-fade-in" style="padding: 24px; border-radius: 20px;">
-            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
-                <div style="width: 56px; height: 56px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; font-weight: 700; box-shadow: 0 4px 12px rgba(231, 76, 116, 0.3);">
-                    @UserState.Email.Substring(0, 1).ToUpper()
-                </div>
-                <div>
-                    <p style="margin: 0; opacity: 0.5; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Account</p>
-                    <p style="margin: 0; font-weight: 600; font-size: 17px;">@UserState.Email</p>
+<div class="profile-page-wrapper">
+    @* HEADER UNIFICAT IDENTIC CU ADD ITEM / STUDIO *@
+    <header class="editorial-header-unified">
+        <div class="header-left">
+            <div class="brand-nav-group">
+                @* BUTON BACK UNIFICAT (CERC ALB) - AFIȘAT PESTE TOT *@
+                <button class="profile-circle back-btn" @onclick='() => Nav.NavigateTo("/home")'>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#d946ef" stroke-width="2.5">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <div class="brand-text-block">
+                    <h1 class="brand-title-unified no-border">EnVogue</h1>
+                    <span class="collection-tag-unified closet-color">MEMBER PROFILE</span>
                 </div>
             </div>
-
-            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;" />
-
-            <button class="btn-primary"
-                    style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;"
-                    @onclick="HandleLogoutRequest">
-                Logout
-            </button>
         </div>
-    }
+    </header>
+
+    <div class="content-container">
+        @if (!UserState.IsLoggedIn)
+        {
+            @* STATE PENTRU UTILIZATOR NEAUTENTIFICAT - FANCY ȘI CENTRAT DUPĂ ACELAȘI MODEL *@
+            <div class="profile-main-layout animate-fade-in">
+
+                @* ICONIȚĂ GUEST CENTRATĂ PERFECT PE TOATE REZOLUȚIILE *@
+                <div class="avatar-section">
+                    <div class="large-avatar-circle auth-placeholder">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <div class="user-info-text">
+                        <h2 class="user-display-name">Guest Archive</h2>
+                        <p class="user-display-email">Sign in to sync your collection</p>
+                    </div>
+                </div>
+
+                @* BOX ALB FANCY CU BUTOANE DE ACCES *@
+                <div class="luxury-form-card profile-card center-content">
+                    <p class="auth-description">Create your digital designer archive and never lose a look again.</p>
+
+                    <div class="auth-btn-group">
+                        <button class="add-piece-btn full-width" @onclick='() => Nav.NavigateTo("/login")'>
+                            LOG IN TO ACCOUNT
+                        </button>
+
+                        <div class="divider-text">OR</div>
+
+                        <button class="action-pill-btn-white full-width" @onclick='() => Nav.NavigateTo("/create-account")'>
+                            CREATE NEW ACCOUNT
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* DESIGN PENTRU UTILIZATOR LOGAT - CENTRAT ȘI RIDICAT VISUAL *@
+            <div class="profile-main-layout animate-fade-in">
+                <div class="avatar-section">
+                    @* INIȚIALĂ CENTRATĂ PERFECT PE TOATE REZOLUȚIILE *@
+                    <div class="large-avatar-circle">
+                        @UserState.Email.Substring(0, 1).ToUpper()
+                    </div>
+                    <div class="user-info-text">
+                        <h2 class="user-display-name">@UserState.Email.Split('@')[0]</h2>
+                        <p class="user-display-email">@UserState.Email</p>
+                    </div>
+                </div>
+
+                <div class="luxury-form-card profile-card">
+                    <div class="profile-menu-item" @onclick='() => Nav.NavigateTo("/closet")'>
+                        <div class="menu-icon-bg user-icon">👤</div>
+                        <div class="menu-text">
+                            <span class="menu-label">My Account</span>
+                            <span class="menu-sub">EDIT YOUR DETAILS</span>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+
+                    <div class="profile-menu-item" @onclick='() => Nav.NavigateTo("/favorites")'>
+                        <div class="menu-icon-bg fav-icon">♡</div>
+                        <div class="menu-text">
+                            <span class="menu-label">My Favorites</span>
+                            <span class="menu-sub">ITEMS YOU LOVE</span>
+                        </div>
+                        <div class="menu-count">@favoriteCount</div> @* Acesta va fi acum negru *@
+                    </div>
+
+                    <div class="profile-menu-item no-border">
+                        <div class="menu-icon-bg privacy-icon">🛡️</div>
+                        <div class="menu-text">
+                            <span class="menu-label">Privacy</span>
+                            <span class="menu-sub">SECURITY SETTINGS</span>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+
+                    <button class="logout-btn-black" @onclick="HandleLogoutRequest">
+                        <span class="logout-icon">⇥</span> LOG OUT
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
 </div>
 
-@* 💡 Dialogul stă în afara containerelor principale pentru a evita erorile de randare *@
 <ConfirmDialog IsVisible="showLogoutConfirm"
                Title="Logout"
-               Message="Are you sure you want to log out of your EnVogue account?"
+               Message="Are you sure you want to log out?"
                ConfirmText="Logout"
                CancelText="Stay"
                ConfirmButtonClass="btn-confirm-accent"
                OnConfirm="ConfirmLogout"
                OnCancel="() => showLogoutConfirm = false" />
 
+<NavBar CurrentPage="profile" />
+
+<style>
+    /* FUNDAL SATIN ROZ UNIFICAT */
+    .profile-page-wrapper {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(rgba(253,242,248,0.65), rgba(253,242,248,0.65)), url('Images/minimalist_luxury_interior_texture_for_profile.png');
+        background-size: cover;
+        background-position: center;
+        overflow: hidden;
+    }
+
+    /* HEADER CSS UNIFICAT */
+    .editorial-header-unified {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        /* Am preluat padding-ul exact din Favorites.razor */
+        padding: clamp(25px, 4vh, 60px) 20px 0;
+        z-index: 1000;
+    }
+
+    .brand-nav-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px; /* Spațierea identică între butonul Back și Logo */
+    }
+
+    .brand-text-block {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .brand-title-unified {
+        font-family: 'Playfair Display', serif;
+        font-size: 38px;
+        font-weight: 900;
+        line-height: 0.8;
+        margin: 0;
+        color: black;
+    }
+
+    /* Logo fancy, curat */
+    .no-border {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    .collection-tag-unified {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        display: block;
+        margin-top: 5px;
+        text-transform: uppercase;
+        opacity: 0.8;
+    }
+    .closet-color {
+        color: #7a5c68;
+    }
+
+    /* BUTOANE CIRCULARE STANDARDIZATE (CERC ALB) */
+    .profile-circle {
+        display: flex; /* Asigură afișarea */
+        width: 48px;
+        height: 48px;
+        background: white !important;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        cursor: pointer;
+        transition: transform 0.3s;
+        border: none;
+    }
+
+        .profile-circle svg {
+            width: 22px;
+            height: 22px;
+        }
+
+    /* CONTAINER CENTRAT VERTICAL ȘI ORIZONTAL */
+    .content-container {
+        height: 100vh; /* Obligă containerul să fie cât tot ecranul */
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Centrează grupul pe verticală */
+        align-items: center; /* Centrează grupul pe orizontală */
+        padding: 0 20px;
+        z-index: 10;
+        /* Ridică totul puțin (-4vh) pentru a nu părea "căzut" spre bară */
+        transform: translateY(-4vh);
+    }
+
+    .profile-main-layout {
+        width: 100%;
+        max-width: 420px;
+        display: flex;
+        flex-direction: column;
+        align-items: center; /* Aliniază avatarul cu boxul alb pe centru */
+        gap: 20px; /* Spațiu egal între elemente */
+        margin: 0 auto; /* Siguranță suplimentară pentru centrare orizontală */
+    }
+
+    /* AVATAR ȘI INIȚIALĂ CENTRATĂ */
+    .large-avatar-circle {
+        width: 100px;
+        height: 100px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 42px;
+        color: #d946ef;
+        box-shadow: 0 15px 35px rgba(217, 70, 239, 0.2);
+        border: 4px solid rgba(255,255,255,0.8);
+        margin-bottom: 25px; /* Spațiu între cerc și text */
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+
+    }
+
+    .auth-placeholder {
+        font-weight: 100;
+        opacity: 0.7;
+    }
+
+    .user-info-text {
+        text-align: center;
+    }
+
+    .user-display-name {
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 26px;
+        color: #1a1517;
+        margin: 0;
+    }
+
+    .user-display-email {
+        font-size: 13px;
+        font-weight: 600;
+        color: #7a5c68;
+        margin-top: 5px;
+        opacity: 0.8;
+    }
+
+    /* CARD DE MENIU */
+    .profile-card {
+        width: 100%;
+        padding: 25px !important;
+        border-radius: 35px !important;
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 25px 60px rgba(0,0,0,0.06);
+        text-align: center;
+    }
+
+    .auth-description {
+        font-size: 13px;
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 25px;
+    }
+
+    .profile-menu-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 12px;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+        transition: all 0.3s ease; /* Animație fluidă */
+        border-radius: 15px;
+    }
+
+        .profile-menu-item:hover {
+            background: rgba(255, 255, 255, 0.9); /* Fundal ușor schimbat */
+            transform: translateX(8px); /* Mișcare laterală discretă */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+    .menu-icon-bg {
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-size: 18px;
+        background: #fdf2f8;
+        color: #d946ef;
+    }
+
+    .menu-text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+    }
+
+    .menu-label {
+        font-weight: 800;
+        font-size: 14px;
+        color: #1a1517;
+    }
+
+    .menu-sub {
+        font-size: 8px;
+        font-weight: 900;
+        color: #aaa;
+        letter-spacing: 0.5px;
+    }
+
+    /* BUTOANE FANCY */
+    .logout-btn-black, .add-piece-btn {
+        width: 100%;
+        padding: 16px;
+        background: #1a1517;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .menu-arrow {
+        color: #000000 !important; /* Forțează culoarea neagră */
+        font-size: 20px;
+        font-weight: 700; /* Le face puțin mai groase pentru un aspect premium */
+        opacity: 1; /* Elimină transparența gri */
+    }
+        .add-piece-btn:hover, .logout-btn-black:hover {
+            background: #d946ef;
+        }
+
+    .action-pill-btn-white {
+        padding: 14px;
+        background: white;
+        color: #1a1517;
+        border: 1px solid #eee;
+        border-radius: 20px;
+        font-weight: 800;
+        font-size: 12px;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .menu-count {
+        background: transparent; /* Elimină fundalul roz */
+        color: #000000 !important; /* Setează textul numărului în negru */
+        font-size: 14px; /* Mărește puțin pentru lizibilitate */
+        font-weight: 800;
+        padding: 0; /* Elimină padding-ul de cerc */
+    }
+
+    .profile-menu-item:hover .menu-arrow {
+        color: #000000; /* Păstrează săgeata neagră la hover */
+    }
+
+    .divider-text {
+        margin: 15px 0;
+        font-size: 10px;
+        font-weight: 900;
+        color: #ccc;
+        letter-spacing: 2px;
+    }
+
+    /* MEDIA QUERIES MOBILE */
+    @@media (max-width: 768px) {
+        .editorial-header-unified {
+            padding: clamp(30px, 4vh, 60px) 20px 0 !important;
+            align-items: flex-start !important;
+        }
+
+    .brand-title-unified {
+        font-size: 38px !important;
+    }
+
+        .collection-tag-unified {
+            font-size: 10px !important;
+            letter-spacing: 3px !important;
+        }
+    /* Iconițe micșorate pe mobile */
+    .profile-circle {
+        width: 38px !important;
+        height: 38px !important;
+    }
+
+        .profile-circle svg {
+            width: 18px !important;
+            height: 18px !important;
+        }
+
+    .content-container {
+        padding-top: 100px;
+        transform: translateY(-2vh);
+    }
+
+    .profile-card {
+        width: 85% !important;
+        max-height: 52vh;
+        overflow-y: auto;
+    }
+
+    .large-avatar-circle {
+        width: 85px;
+        height: 85px;
+        font-size: 34px;
+        margin-bottom: 20px;
+    }
+        /* Spațierea în grupul de navigare mobil */
+        .brand-nav-group {
+            gap: 10px !important;
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out;
+    }
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+</style>
+
 @code {
     private bool showLogoutConfirm = false;
+    private int favoriteCount = 0;
 
-    private void HandleLogoutRequest()
+    private void HandleLogoutRequest() => showLogoutConfirm = true;
+
+    protected override void OnInitialized()
     {
-        showLogoutConfirm = true;
+        // Calculează numărul real de elemente salvate
+        favoriteCount = WardrobeService.GetFavoriteOutfits().Count;
     }
 
     private void ConfirmLogout()

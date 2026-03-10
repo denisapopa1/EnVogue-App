@@ -128,14 +128,18 @@
     /* HEADER IDENTIC CU CLOSET */
     .editorial-header-unified {
         position: fixed;
-        top: 0; left: 0; right: 0;
+        top: 0;
+        left: 0;
+        right: 0;
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        padding: clamp(25px, 4vh, 60px) 20px 0;
+        /* Reducem padding-ul de jos pentru a lăsa spațiu titlului */
+        padding: clamp(20px, 4vh, 40px) 20px 10px;
         z-index: 1000;
+        /* Adăugăm un fundal gradient subtil sus pentru lizibilitate */
+        background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%);
     }
-
     .brand-nav-group { display: flex; align-items: flex-start; gap: 15px; }
     
     .brand-title-unified {
@@ -158,8 +162,22 @@
         margin-top: 5px;
         text-transform: uppercase;
         opacity: 0.9;
+      
+    }
+    @@keyframes fadeInDown {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(-10px);
     }
 
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
     /* BUTOANE CERC */
     .profile-circle {
         width: 48px;
@@ -185,11 +203,13 @@
         inset: 0;
         display: flex;
         flex-direction: column;
-        justify-content: center; 
+        justify-content: center; /* ← SCHIMBĂ din nimic în center */
+        align-items: center; /* ← ADAUGĂ */
+        padding-top: 0; /* ← ELIMINĂ padding-top fix */
+        padding-bottom: 80px; /* spațiu pentru NavBar */
         overflow-y: auto;
-        padding: 60px 0 80px;
+        -webkit-overflow-scrolling: touch;
     }
-
     .content-container {
         position: relative;
         z-index: 10;
@@ -199,25 +219,25 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        /* Scaling dinamic pentru desktop */
-        transform: translateY(clamp(-30px, -4vh, 0px));
+        /* Elimină transform: translateY(...) care cauza suprapunerea în image_731361.jpg */
+        transform: none;
     }
 
     .header-text-group-fit { width: 100%; margin-bottom: 15px; padding: 0 40px; }
     .bold-title { font-family: 'Inter', sans-serif; font-size: clamp(24px, 4vw, 34px); font-weight: 900; margin: 0; color: white; }
     .bold-subtitle { font-size: clamp(8px, 1vw, 10px); font-weight: 800; letter-spacing: 3px; opacity: 0.8; color: white; text-transform: uppercase; }
 
-    /* CARD-UL ALB */
     .luxury-form-card {
         background: rgba(255, 255, 255, 0.98);
         backdrop-filter: blur(20px);
         border-radius: 30px;
-        padding: clamp(25px, 4vh, 45px) 40px;
+        padding: clamp(15px, 3vh, 40px);
         box-shadow: 0 25px 60px rgba(0,0,0,0.35);
-        width: 90%;
-        max-height: 75vh;
-        overflow-y: auto;
-        scrollbar-width: none;
+        /* ASIGURĂRI ÎMPOTRIVA DEBORDĂRII */
+        width: 92%; /* Nu atinge marginile laterale */
+        max-width: 780px;
+        margin: 0 auto;
+        box-sizing: border-box;
     }
     .luxury-form-card::-webkit-scrollbar { display: none; }
 
@@ -249,37 +269,227 @@
         color: white; border: none; border-radius: 15px;
         font-weight: 900; letter-spacing: 1px; margin-top: 10px;
         cursor: pointer; transition: 0.3s;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
     }
-    .add-piece-btn:hover { background: #d946ef; }
 
+        .add-piece-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(217, 70, 239, 0.3);
+            background: #d946ef;
+        }
+
+        .add-piece-btn:active {
+            transform: scale(0.98);
+        }
+
+    @@media (max-height: 600px) {
+        .image-upload-section
+
+    {
+        max-height: 120px !important;
+    }
+
+    .add-item-page-wrapper {
+        padding-top: 80px;
+    }
+
+    }
     /* MOBILE REGLAJE FINALE */
     @@media (max-width: 768px) {
-        .add-item-page-wrapper { 
-            justify-content: center; 
-            padding-bottom: 100px;
-        }
+        /* HEADER IDENTIC */
+        .editorial-header-unified
 
-        /* MICȘORARE ICONIȚE PE MOBILE */
-        .profile-circle {
-            width: 38px;
-            height: 38px;
-        }
+    {
+        padding: clamp(30px, 4vh, 60px) 20px 0;
+        align-items: flex-start;
+    }
+
+    .brand-title-unified {
+        font-family: 'Playfair Display', serif;
+        font-size: 38px;
+        font-weight: 900;
+        line-height: 0.8;
+    }
+
+    .collection-tag-unified {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 3px;
+    }
+
+    .profile-circle {
+        width: 38px;
+        height: 38px;
+    }
 
         .profile-circle svg {
             width: 18px;
             height: 18px;
         }
 
-        .editorial-header-unified { padding-top: 20px; }
-        .brand-title-unified { font-size: 28px; }
-        .collection-tag-unified { font-size: 8px; }
-        .content-container { transform: none; max-width: 100%; padding: 0 10px; }
-        .header-text-group-fit { padding: 0 8%; margin-bottom: 10px; }
-        .bold-title { font-size: 24px; }
-        .form-grid { grid-template-columns: 1fr; gap: 15px; }
-        .image-upload-section { max-width: 100%; aspect-ratio: 1.4; } 
-        .luxury-form-card { width: 90%; padding: 25px 20px; max-height: none; }
+        .add-item-page-wrapper {
+            justify-content: flex-start; /* centru vertical real */
+            padding-top: 150px; /* spațiu sub header */
+            padding-bottom: 100px;
+        }
+
+        .content-container {
+            transform: none;
+            margin-top: 0; /* eliminăm împingerea în jos */
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+    .header-text-group-fit {
+        margin-bottom: 20px;
+            text-align: center;
     }
+
+    .bold-title {
+        font-size: 22px;
+    }
+
+    /* 📦 CARD CONTROLAT – NU DEPĂȘEȘTE VIEWPORT */
+        .luxury-form-card {
+            width: 88%; /* mai îngust */
+            padding: 16px 14px; /* mai compact */
+            border-radius: 20px;
+            max-height: calc(100vh - 260px); /* mai mult spațiu sus/jos */
+            overflow-y: auto;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.25); /* shadow mai fin */
+        }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+        .image-upload-section {
+            aspect-ratio: 1.3; /* mai dreptunghiular, ocupă mai puțin */
+            max-height: 170px; /* mai mic decât 200px */
+        }
+
+    .add-piece-btn {
+        padding: 14px;
+    }
+        /* Animație pentru cardul principal */
+        .luxury-form-card.animate-fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: cardReveal 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+        @@keyframes cardReveal {
+            to
+
+    {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    /* Animație secvențială pentru câmpurile de text (Stagger) */
+    .details-input-section > div {
+        opacity: 0;
+        animation: fadeInRight 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    }
+
+    /* Delay-uri pentru efectul de cascadă */
+    .details-input-section div:nth-child(1) {
+        animation-delay: 0.2s;
+    }
+
+    .details-input-section div:nth-child(2) {
+        animation-delay: 0.3s;
+    }
+
+    .details-input-section div:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    .add-piece-btn {
+        animation: fadeInUp 0.6s ease 0.6s forwards;
+        opacity: 0;
+    }
+
+    @@keyframes fadeInRight {
+        from
+
+    {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    }
+
+    @@keyframes fadeInUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+
+    /* Efect de focalizare elegant pe Input-uri */
+    .input-block-fit input, .input-block-fit select {
+        transition: all 0.3s ease;
+        border: 1px solid #eee;
+    }
+
+        .input-block-fit input:focus, .input-block-fit select:focus {
+            border-color: #d946ef;
+            box-shadow: 0 0 0 4px rgba(217, 70, 239, 0.1);
+            transform: translateY(-2px);
+            background: white;
+        }
+
+    /* Puls discret pentru zona de Upload când este goală */
+    .upload-box-dashed {
+        transition: all 0.3s ease;
+    }
+
+        .upload-box-dashed:hover {
+            border-color: #d946ef;
+            background: #fdf2f8;
+            transform: scale(1.02);
+        }
+
+    /* Animație pentru apariția pozei după selectare */
+    .image-preview-container img {
+        animation: zoomIn 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    @@keyframes zoomIn {
+        from
+
+    {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    }
+    
 </style>
 
 @code {

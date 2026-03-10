@@ -7,7 +7,10 @@
 @layout EmptyLayout
 
 <div class="closet-page-wrapper">
-
+    @if (isFilterOpen || isSortOpen)
+    {
+        <div class="panels-overlay" @onclick="ClosePanels"></div>
+    }
     <div class="content-overlay">
         <div class="editorial-header">
             <div class="header-left">
@@ -43,18 +46,26 @@
                 }
             </div>
         </div>
-
         <div class="search-bar-editorial">
             <div class="search-input-wrapper">
                 <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
+
                 <input type="text" placeholder="Search by brand, style, color..."
-                       value="@Filter.SearchTerm" @oninput="@((e) => { Filter.SearchTerm = e.Value?.ToString() ?? ""; ApplyFilters(); })" />
+                       value="@Filter.SearchTerm"
+                       @oninput="HandleInstantSearch"
+                       @onkeydown="HandleSearchEnter"
+                       @onclick="ClosePanels" /> @* ACUM ESTE CORECT *@
+
+                <button class="search-confirm-btn" @onclick="() => ApplyFilters(true)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
             </div>
         </div>
-
         <div class="editorial-controls">
             <div class="control-row">
                 <button class="filter-sort-btn @(isFilterOpen ? "active" : "")" @onclick="ToggleFilter">
@@ -74,7 +85,8 @@
             <div class="expandable-panels">
                 @if (isFilterOpen)
                 {
-                    <div class="editorial-panel animate-slide-down">
+                    @* Panoul de filtre ocupă partea stângă *@
+                    <div class="editorial-panel filter-panel animate-slide-down">
                         <p class="panel-label">CATEGORY</p>
                         <div class="pills-grid">
                             <button class="pill-btn @(Filter.SelectedCategory == "All" ? "active" : "")" @onclick='() => SetCategory("All")'>All</button>
@@ -83,6 +95,7 @@
                                 <button class="pill-btn @(Filter.SelectedCategory == cat ? "active" : "")" @onclick='() => SetCategory(cat)'>@cat</button>
                             }
                         </div>
+
                         @if (Filter.SelectedCategory != "All" && AvailableSubcategories.Any())
                         {
                             <p class="panel-label" style="margin-top: 20px;">SUBCATEGORY</p>
@@ -94,41 +107,62 @@
                                 }
                             </div>
                         }
+
                         <p class="panel-label" style="margin-top: 20px;">SEASON</p>
-
                         <div class="pills-grid">
-
                             <button class="pill-btn @(Filter.SelectedSeason == "All" ? "active" : "")" @onclick='() => SetSeason("All")'>All</button>
-
                             @foreach (var season in new[] { "Summer", "Winter", "Spring", "Autumn" })
                             {
                                 <button class="pill-btn @(Filter.SelectedSeason == season ? "active" : "")" @onclick='() => SetSeason(season)'>@season</button>
                             }
-
                         </div>
+
                         <p class="panel-label" style="margin-top: 20px;">COLOR PALETTE</p>
                         <div class="color-options-grid">
                             @foreach (var color in PopularColors)
                             {
                                 <div class="color-item @(Filter.Color == color ? "active" : "")" @onclick='() => SetColor(color)'>
-                                    <div class="color-circle" style="background-color:@(GetColorHex(color))"></div>
+                                    <div class="color-circle" style="background-color:@(GetColorHex(color));"></div>
                                 </div>
                             }
+
+                        </div>
+                        <div class="panel-footer" style="display: flex; justify-content:空间-between; align-items: center; width: 100%;">
+                            @* Butonul de Reset (stânga) *@
+                            <button class="reset-inner-btn" @onclick="ResetFilters">Clear All</button>
+
+                            @* Butonul de Apply (dreapta) *@
+                            <button class="apply-btn" @onclick="HandleApply">Apply Filters</button>
                         </div>
                     </div>
                 }
+
+                @* LOGICA PENTRU ALINIERE: 
+       Dacă Sort e deschis DAR Filter e închis, punem un spacer în stânga 
+       pentru a împinge panoul de Sort sub butonul lui din dreapta *@
+                @if (isSortOpen && !isFilterOpen)
+                {
+                    <div class="spacer"></div>
+                }
+
                 @if (isSortOpen)
                 {
-                    <div class="editorial-panel animate-slide-down">
+                    <div class="editorial-panel sort-panel animate-slide-down">
                         <p class="panel-label">SORT ORDER</p>
                         <div class="pills-grid">
                             <button class="pill-btn @(Filter.SortBy == "Newest" ? "active" : "")" @onclick='() => SetSort("Newest")'>Newest First</button>
                             <button class="pill-btn @(Filter.SortBy == "Oldest" ? "active" : "")" @onclick='() => SetSort("Oldest")'>Oldest First</button>
                         </div>
+
+                        @* Footer adăugat pentru sortare *@
+                        <div class="panel-footer">
+                            <button class="reset-inner-btn" @onclick="ResetFilters">Clear All</button>
+                            <button class="apply-btn" @onclick="HandleApply">Apply Sort</button>
+                        </div>
                     </div>
                 }
             </div>
-        </div>
+            </div>
 
         <div class="wardrobe-scroll-area">
             <div class="editorial-grid">
@@ -141,7 +175,7 @@
                 }
                 else if (AllItems == null || !AllItems.Any())
                 {
-                    @* Aici rămâne logica de Empty State centrat *@
+                    @* Statut gol total (fără niciun item în bază) *@
                     <div class="empty-state-full">
                         <div class="empty-box-dashed" @onclick='() => NavigationManager.NavigateTo("/add-item")'>
                             <span class="plus-large">+</span>
@@ -150,37 +184,36 @@
                         </div>
                     </div>
                 }
+                else if (!FilteredItems.Any())
+                {
+                    @* Statut "Nicio potrivire": Ascundem cardul "+" și centrăm textul *@
+                    <div class="no-matches-centered">
+                        <div class="empty-search-icon">🔍</div>
+                        <p class="empty-state-editorial">No matches found for "@Filter.SearchTerm"</p>
+                        <button class="reset-link-editorial" @onclick="ResetFilters" style="margin: 10px auto;">Clear Search</button>
+                    </div>
+                }
                 else
                 {
-                    @* Cardul "+" mic care apare mereu primul în grid *@
+                    @* Cardul "+" apare DOAR dacă avem rezultate sau suntem pe vizualizarea generală *@
                     <div class="wardrobe-card-editorial add-new-dashed" @onclick='() => NavigationManager.NavigateTo("/add-item")'>
                         <span class="plus-symbol">+</span>
                     </div>
-
-                    @* --- AICI PUI CODUL NOU PENTRU CARDURI CU TEXT --- *@
                     @foreach (var item in FilteredItems)
                     {
-                        <div class="wardrobe-card-editorial animate-fade-in" @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
+                        <div class="wardrobe-card-editorial animate-card-stagger"
+                             @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
+
                             <div class="image-container-padded">
                                 <img src="@GetImageSource(item.ImageData)" alt="wardrobe item" />
                             </div>
-
                             <div class="item-details-box">
-                                @* Titlu principal mărit: Brand sau Categorie *@
                                 <h3 class="item-brand-label">@(string.IsNullOrWhiteSpace(item.Brand) ? item.Category : item.Brand)</h3>
-
-                                @* Detaliu secundar: Subcategoria *@
                                 <span class="item-sub-label">@item.Subcategory</span>
-
-                                @* Element de design pentru a umple spațiul: Sezonul ca etichetă elegantă *@
                                 <div class="item-meta-divider"></div>
                                 <span class="meta-season-tag">@item.Season</span>
                             </div>
                         </div>
-                    }
-                    @if (AllItems.Any() && !FilteredItems.Any())
-                    {
-                        <div class="empty-state-editorial">No matches found for these filters.</div>
                     }
                 }
             </div>
@@ -326,7 +359,72 @@
         margin-top: 5px;
         text-transform: uppercase;
     }
+    /* Containerul pentru butonul de apply */
+    .panel-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(217, 70, 239, 0.1);
+        width: 100%;
+    }
 
+    .reset-inner-btn {
+        background: transparent;
+        color: #666;
+        border: none;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: underline;
+        cursor: pointer;
+        padding: 5px 10px;
+        transition: color 0.2s;
+    }
+
+        .reset-inner-btn:hover {
+            color: #d946ef; /* Se face roz la hover */
+        }
+    /* Stilul butonului Apply */
+    .apply-btn {
+        background: #d946ef; /* Rozul tău specific EnVogue */
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 10px rgba(217, 70, 239, 0.2);
+    }
+
+        .apply-btn:hover {
+            background: #c026d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(217, 70, 239, 0.3);
+        }
+
+        .apply-btn:active {
+            transform: translateY(0);
+        }
+
+    /* Asigură-te că panourile au spațiu suficient pentru buton */
+    .editorial-panel {
+        background: white;
+        border-radius: 25px;
+        padding: clamp(12px, 2vh, 20px); /* Padding variabil */
+        margin-top: 10px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        /* LIMITARE ÎNĂLȚIME: Nu mai mult de jumătate din ecran */
+        max-height: 45vh;
+        overflow-y: auto;
+        scrollbar-width: none;
+        flex: 0 0 calc(50% - 6px);
+        width: calc(50% - 6px);
+        box-sizing: border-box;
+    }
     .stats-badge-editorial {
         display: inline-flex;
         align-items: center;
@@ -400,6 +498,8 @@
     .search-input-wrapper {
         position: relative;
         width: 100%;
+        display: flex;
+        align-items: center;
     }
 
     .search-icon {
@@ -419,30 +519,74 @@
     .search-bar-editorial input {
         padding-left: 50px !important; /* Spațiu pentru iconița lupă */
     }
+    
+    .search-confirm-btn {
+        position: absolute;
+        right: 10px;
+        top: 46%; /* Sincronizat cu înălțimea lupei */
+        transform: translateY(-50%);
+        background: #d946ef; /* Rozul tău accent */
+        color: white;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 10px rgba(217, 70, 239, 0.3);
+    }
 
-    /* GRID */
-.wardrobe-scroll-area {
-    flex: 1;
-    min-height: 0;        /* CRUCIAL pentru flex scroll fix */
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-bottom: 20px;
-    scrollbar-width: none; /* Ascunde bara inestetică */
-}
+    .clear-search-btn {
+        background: none;
+        border: none;
+        /* Roz intens pentru butonul de reset */
+        color: #d946ef !important;
+        font-weight: 900;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        cursor: pointer;
+        margin-top: 15px;
+        opacity: 1 !important;
+        border-bottom: 2px solid #d946ef; /* Linie dedesubt pentru evidențiere */
+        padding-bottom: 2px;
+    }
+        .search-confirm-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+            background: #c026d3;
+        }
+
+        .search-confirm-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+    .wardrobe-scroll-area {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 12px;
+    }
 
         .wardrobe-scroll-area::-webkit-scrollbar {
             display: none;
         }
 
-.editorial-grid {
-    display: grid;
-    /* Folosim auto-fill pentru a umple rândul cu carduri de dimensiune fixă */
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); 
-    /* Schimbăm din center în start pentru a elimina spațiul dintre primul card și margine */
-    justify-content: start; 
-    gap: 20px;
-    width: 100%;
-}
+    .editorial-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(210px, 45vw), 1fr));
+        justify-content: start;
+        gap: clamp(10px, 2vw, 20px);
+        width: 100%;
+        padding-top: 10px
+    }
   
 
     
@@ -457,11 +601,17 @@
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         cursor: pointer;
         padding: 10px; /* Marginea albă din jurul întregului conținut */
+        transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+        transform: translateY(0) scale(1);
+        position: relative;
+        overflow: hidden; /* Important pentru a nu ieși poza din cadru la zoom */
+        min-width: 0; /* permite cardurilor să se micșoreze */
+        max-height: calc(100vh - 350px); /* nu depășesc ecranul */
     }
     /* Containerul imaginii cu padding suplimentar */
     .image-container-padded {
         width: 100%;
-        height: 55%; /* Ocupă mai puțin spațiu pentru a lăsa loc textului */
+        height: clamp(80px, 35vh, 200px);
         border-radius: 10px; /* Colțuri rotunjite și pentru poză */
         overflow: hidden;
         background: #fdf2f8; /* Fundal gri deschis în caz că poza nu e pătrată */
@@ -483,8 +633,12 @@
         justify-content: center; /* Centrare verticală în spațiul rămas */
         align-items: center;
         text-align: center;
+        transition: transform 0.4s ease;
     }
 
+    .wardrobe-card-editorial:hover .item-details-box {
+        transform: translateY(-2px); /* Textul se ridică foarte puțin */
+    }
     .item-brand-label {
         font-size: 16px; /* Mărit semnificativ pentru impact */
         font-weight: 900;
@@ -509,6 +663,12 @@
         background: #d946ef;
         margin: 15px 0;
         opacity: 0.3;
+        transition: width 0.4s ease, opacity 0.4s ease;
+    }
+
+    .wardrobe-card-editorial:hover .item-meta-divider {
+        width: 40px; /* Linia se lungește la hover */
+        opacity: 0.8;
     }
 
     .meta-season-tag {
@@ -524,30 +684,39 @@
     }
     /* Efect de hover pentru card */
     .wardrobe-card-editorial:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(217, 70, 239, 0.15);
+        transform: translateY(-6px) scale(1.02) !important; /* Se ridică și crește discret */
+        box-shadow: 0 25px 50px rgba(217, 70, 239, 0.2); /* Umbra devine mai adâncă și ușor roz */
+        border-color: rgba(217, 70, 239, 0.3); /* Bordura se colorează subtil */
     }
 
-.empty-state-full {
-    grid-column: 1 / -1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-}
+    .empty-state-full {
+        grid-column: 1 / -1;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: calc(100vh - 370px); /* scade header + search + filters + navbar */
+        min-height: 200px;
+    }
+    @@media (max-width: 900px) {
+        .empty-state-full
+
+    {
+        transform: translateY(-40px);
+    }
+
+    }
     /* Chenarul punctat mărit și stilizat */
     .empty-box-dashed {
         width: 100%;
-        max-width: min(850px, 95vw);
-        height: clamp(260px, 40vh, 420px);
-        padding: clamp(30px, 4vw, 60px);
-        border: 2px dashed rgba(217, 70, 239, 0.4); /* Roz accent mai vizibil */
-        border-radius: 30px; /* Colțuri mai rotunjite editorial */
-        background: rgba(255, 255, 255, 0.6); /* Mai opac pe fundalul texturat */
-        backdrop-filter: blur(10px); /* Efect de sticlă modern */
+        max-width: 720px;
+        margin: 0 auto;
+        padding: clamp(40px, 6vw, 80px) clamp(20px, 5vw, 60px);
+        border: 2px dashed #e5a8ff;
+        border-radius: 20px;
         text-align: center;
-        cursor: pointer;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: rgba(255,255,255,0.55);
+        backdrop-filter: blur(10px);
     }
 
         .empty-box-dashed:hover {
@@ -563,6 +732,7 @@
         margin-bottom: 20px;
         font-weight: 200; /* Subțire și elegant */
         line-height: 1;
+        font-size: clamp(35px, 8vh, 60px);
     }
 
     .empty-box-dashed p {
@@ -570,6 +740,9 @@
         color: black;
         font-weight: 700;
         margin: 0;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .empty-box-dashed .sub-text {
@@ -659,32 +832,74 @@
         fill: #d946ef;
     }
 
-.editorial-panel {
-    background: white;
-    border-radius: 25px;
-    padding: 20px;
-    margin-top: 10px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    /* Mărim limita de înălțime ca să nu mai fie tăiat */
-    max-height: 60vh; 
-    overflow-y: auto; /* Activează scroll doar în interiorul filtrului dacă e prea lung */
-    scrollbar-width: none;
-}
+    .panels-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: transparent; /* Rămâne invizibil */
+        z-index: 1500; /* Peste grid, dar sub panouri (care au 2000) */
+    }
+
+    .search-bar-editorial, .editorial-controls {
+        position: relative;
+        z-index: 1600; /* Mai mare decât overlay-ul, deci click-ul intră direct în input */
+    }
+    .expandable-panels {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        align-items: flex-start;
+        position: relative;
+        height: 0;
+        z-index: 2000;
+    }
+
+    .spacer {
+        flex: 0 0 calc(50% - 6px); /* 50% minus jumătate din gap */
+    }
+
+    .editorial-panel {
+        background: white;
+        border-radius: 25px;
+        padding: 20px;
+        margin-top: 10px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        max-height: 55vh;
+        overflow-y: auto;
+        scrollbar-width: none;
+        /* MODIFICARE CHEIE: Forțăm lățimea la exact 50% din rând */
+        flex: 0 0 calc(50% - 6px);
+        width: calc(50% - 6px);
+        box-sizing: border-box;
+    }
+
+    .expandable-panels:not(:has(.editorial-panel:first-child)) {
+        justify-content: flex-end;
+    }
+
+    .sort-panel {
+        /* O lățime de 50% sau fixă (ex: 280px) pentru a nu înghesui butoanele */
+        flex: 0 0 calc(50% - 6px);
+        min-width: 280px;
+    }
 .editorial-panel::-webkit-scrollbar { display: none; }
 
     .pills-grid {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
+        justify-content: flex-start;
     }
 
     .pill-btn {
-        padding: 8px 16px;
+        padding: 6px 12px;
         border-radius: 20px;
         border: 1px solid #ddd; /* Bordură vizibilă pe fundal alb */
         background: white;
         color: #1a1517 !important; /* Text negru forțat pentru vizibilitate */
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         cursor: pointer;
         transition: 0.2s;
@@ -717,8 +932,8 @@
     }
 
     .color-circle {
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
         border: 1px solid rgba(0,0,0,0.1);
         cursor: pointer;
@@ -727,22 +942,27 @@
     .reset-link-editorial {
         background: none;
         border: none;
-        color: #d946ef;
-        font-weight: 800;
-        font-size: 12px;
+        color: #d946ef; /* Roz solid */
+        font-weight: 900;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
         cursor: pointer;
-        margin-left: auto;
+        margin-top: 15px;
+        opacity: 1 !important;
     }
 
     .empty-state-editorial {
-        grid-column: span 2;
-        text-align: center;
-        padding: 60px 20px;
-        color: #7a5c68;
-        font-style: italic;
-        font-size: 14px;
+        font-family: 'Playfair Display', serif;
+        font-size: 22px;
+        /* Setăm negru pur și font foarte gros pentru a tăia prin textura fundalului */
+        font-weight: 900;
+        color: #000000 !important;
+        margin: 0;
+        /* Forțăm opacitatea la 100% */
+        opacity: 1 !important;
+        letter-spacing: 0.5px;
     }
-
     .skeleton-card-editorial {
         aspect-ratio: 0.75;
         background: rgba(255,255,255,0.3);
@@ -750,6 +970,24 @@
         animation: pulse 1.5s infinite;
     }
 
+    .no-matches-centered {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 45vh;
+        text-align: center;
+        width: 100%;
+        opacity: 1 !important;
+    }
+
+    .empty-search-icon {
+        font-size: 44px;
+        margin-bottom: 15px;
+        color: #d946ef; /* Folosim rozul tău solid în loc de gri transparent */
+        opacity: 1 !important; /* Eliminăm transparența */
+    }
     .editorial-header {
         display: flex;
         justify-content: space-between;
@@ -763,6 +1001,8 @@
         flex-direction: column;
         align-items: flex-end; /* Aliniază totul la marginea din dreapta */
         text-align: right;
+        min-width: 0; /* ← ADAUGĂ */
+        flex-shrink: 1;
     }
 
     .profile-circle {
@@ -777,24 +1017,33 @@
         letter-spacing: 1px;
         text-transform: uppercase;
     }
+
+    .empty-closet-box {
+        transition: all 0.25s ease;
+    }
+
+        .empty-closet-box:hover {
+            transform: translateY(-3px);
+        }
     @@media (max-width: 768px) {
     .wardrobe-scroll-area {
         padding: 0 10px 20px;
+            padding-top: 8px;
     }
 
-    .editorial-grid {
-        display: grid;
-        /* Folosim repeat(auto-fill) cu o lățime minimă mai mică pentru a forța 2 coloane */
-        grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); 
-        gap: 12px;
-        width: 100%;
-    }
+        .editorial-grid {
+            /* Permitem carduri mai mici (min 130px) pentru a încăpea 2 pe rând fără scroll excesiv */
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+            padding-bottom: 100px; /* Spațiu pentru a nu fi acoperite de Nav-Bar-ul de jos */
+            padding-top: 5px;
 
-    .wardrobe-card-editorial {
-        padding: 8px;
-        border-radius: 12px;
-        /* Reducem dimensiunea fontului pe mobil pentru a nu împinge cardul */
-    }
+        }
+
+        .wardrobe-card-editorial {
+            padding: 6px;
+            border-radius: 15px;
+        }
     /* Containerul devine o celulă care ocupă tot spațiul rămas și centrează box-ul */
     .empty-state-full {
         flex: 1;
@@ -806,30 +1055,195 @@
     }
 
     /* Box-ul propriu-zis: mai mic și compact */
-    .empty-box-dashed {
-        width: 80%;             /* Îl facem mult mai scurt în lățime */
-        max-width: 280px;       /* Îi punem o barieră să nu crească prea mult */
-        height: 300px;          /* Îi dăm o înălțime fixă elegantă */
-        padding: 30px;
-        border-radius: 35px;    /* Colțuri rotunjite editorial */
-        
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.05); /* Umbră discretă pentru adâncime */
-    }
+        .empty-box-dashed {
+            width: 95%;
+            max-width: 850px;
+            /* Înălțime dinamică bazată pe viewport */
+            height: clamp(150px, 30vh, 300px);
+            border: 2px dashed rgba(217, 70, 239, 0.4);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.6);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
 
-    .plus-large {
-        font-size: 48px;        /* Plusul devine mai delicat */
-        margin-bottom: 15px;
-    }
-
+        .plus-large {
+            font-size: clamp(30px, 8vh, 60px); /* Scalare fluidă a iconiței */
+        }
     .empty-box-dashed p {
         font-size: 14px;        /* Textul se adaptează box-ului mic */
     }
     .item-brand-label { font-size: 13px; }
     .item-sub-label { font-size: 10px; }
+        /* Animație pentru intrarea în cascadă a cardurilor */
+        .animate-card-stagger {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: cardEntrance 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+            .animate-card-stagger:nth-child(1) {
+                animation-delay: 0.1s;
+            }
+
+            .animate-card-stagger:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+
+            .animate-card-stagger:nth-child(3) {
+                animation-delay: 0.3s;
+            }
+
+            .animate-card-stagger:nth-child(4) {
+                animation-delay: 0.4s;
+            }
+
+            .animate-card-stagger:nth-child(5) {
+                animation-delay: 0.5s;
+            }
+
+            .animate-card-stagger:nth-child(6) {
+                animation-delay: 0.6s;
+            }
+
+            .animate-card-stagger:nth-child(n+7) {
+                animation-delay: 0.7s;
+            }
+        /* Restul apar împreună după 0.7s */
+        @@media (max-width: 480px) {
+            .stats-badge-editorial {
+                padding: 4px 10px;
+                font-size: 11px;
+                letter-spacing: 0.5px;
+                white-space: nowrap; /* forțează pe un singur rând */
+            }
+
+                .stats-badge-editorial span {
+                    margin-right: 2px;
+                }
+        }
+        @@keyframes cardEntrance {
+            to
+
+    {
+        opacity: 1;
+        transform: translateY(0);
+    }
+            @@media (max-width: 900px) {
+                .empty-closet-box
+
+    {
+        max-width: 520px;
+        padding: 40px 25px;
+    }
+
+    }
+
+    @@media (max-width: 600px) {
+        .empty-closet-box
+
+    {
+        max-width: 92%;
+        padding: 30px 20px;
+    }
+
+    }
+    }
+
+    }
+
+    /* Efect de hover editorial pentru carduri */
+    .wardrobe-card-editorial {
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+        .wardrobe-card-editorial:hover {
+            transform: translateY(-10px) scale(1.02) !important;
+            box-shadow: 0 25px 50px rgba(217, 70, 239, 0.2);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+            .wardrobe-card-editorial:hover .image-container-padded img {
+                transform: scale(1.1); /* Zoom discret pe imagine la hover */
+            }
+
+        .image-container-padded img {
+            transition: transform 0.7s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+    /* Animație pentru panourile de filtrare (slide & fade) */
+    .editorial-panel.animate-slide-down {
+        animation: panelEntrance 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        transform-origin: top center;
+    }
+    @@media (max-height: 650px) {
+        .empty-box-dashed
+
+    {
+        min-height: 180px; /* Reducem box-ul și mai mult dacă ecranul e foarte scund */
+        padding: 15px;
+    }
+
+    .plus-large {
+        font-size: 40px; /* Micșorăm iconița plus */
+        margin-bottom: 10px;
+    }
+
+    }
+    @@keyframes panelEntrance {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(-10px) scaleY(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+    }
+
+    }
+
+    /* Animație pentru overlay-ul invizibil */
+    .panels-overlay {
+        animation: fadeInOverlay 0.3s ease;
+    }
+
+    @@keyframes fadeInOverlay {
+        from
+
+    {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+
+    }
+
+    /* Animație pentru textul de "No Matches" */
+    .no-matches-centered {
+        animation: fadeInUp 0.8s ease;
+    }
+
+    @@keyframes fadeInUp {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
 }
     @@keyframes pulse {
         0%, 100%
@@ -852,6 +1266,78 @@
         width: 18px; /* Identic cu Add Item */
         height: 18px;
     }
+
+        .editorial-grid {
+            /* Permitem carduri mai înguste pentru a încăpea mai multe/a nu domina ecranul */
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        .wardrobe-card-editorial {
+            padding: 6px;
+            border-radius: 12px;
+        }
+
+        .item-brand-label {
+            font-size: 13px;
+        }
+
+        .item-sub-label {
+            font-size: 10px;
+        }
+        /* Imaginea produsului nu trebuie să fie uriașă pe mobile */
+        .image-container-padded {
+            height: 120px;
+            max-height: 120px;
+        }
+
+   
+        /* Link-ul Clear All mai mic pentru a sta pe același rând */
+        .reset-inner-btn {
+            font-size: 10px;
+            padding: 4px 8px;
+        }
+        /* Containerul footer din panou devine mai compact */
+        .panel-footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            /* Ne asigurăm că butoanele stau bine pe același rând fără scroll */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .apply-btn {
+            /* Ajustăm dimensiunea să fie vizibilă dar compactă */
+            padding: 8px 18px;
+            font-size: 12px;
+        }
+
+        .editorial-panel {
+            /* Mărim înălțimea maximă pentru a lăsa butonul Apply să fie vizibil */
+            max-height: 70vh;
+            /* Reducem padding-ul intern pentru a câștiga spațiu vertical */
+            padding: 15px;
+            /* Forțăm panoul să fie mai lat pe mobile pentru a nu înghesui elementele */
+            flex: 0 0 95%;
+            width: 95%;
+            left: 2.5%;
+        }
+        /* Cercurile de culoare mai mici pe rânduri mai dense */
+        .color-circle {
+            width: 18px;
+            height: 18px;
+        }
+        /* Reducem spațiul dintre secțiuni (Category, Season, Color) */
+        .panel-label {
+            margin-top: 10px !important;
+            margin-bottom: 5px !important;
+        }
+        /* Facem rândurile de culori și butoane mai dense */
+        .pills-grid, .color-options-grid {
+            gap: 6px;
+        }
+    
 }
 </style>
 
@@ -928,17 +1414,34 @@
         StateHasChanged();
     }
 
-    private void ToggleFilter() { isFilterOpen = !isFilterOpen; isSortOpen = false; }
-    private void ToggleSort() { isSortOpen = !isSortOpen; isFilterOpen = false; }
+  
     private void SetCategory(string cat) { Filter.SelectedCategory = cat; Filter.Subcategory = ""; UpdateSubcategories(); ApplyFilters(); }
     private void UpdateSubcategories() { AvailableSubcategories = SubcategoryMap.ContainsKey(Filter.SelectedCategory) ? SubcategoryMap[Filter.SelectedCategory] : new(); }
     private void SetSubcategory(string sub) { Filter.Subcategory = sub; ApplyFilters(); }
     private void SetColor(string color) { Filter.Color = color; ApplyFilters(); }
     private void SetSeason(string season) { Filter.SelectedSeason = season; ApplyFilters(); }
     private void SetStyle(string style) { Filter.Style = style; ApplyFilters(); }
-    private void SetSort(string sort) { Filter.SortBy = sort; ApplyFilters(); }
-    private void ResetFilters() { Filter = new FilterModel { SelectedCategory = "All", SelectedSeason = "All", Style = "All", SortBy = "Newest" }; UpdateSubcategories(); ApplyFilters(); }
+    private void SetSort(string sort)
+    {
+        Filter.SortBy = sort;
+        // Am eliminat ApplyFilters() de aici
+    }
+    private void ResetFilters()
+    {
+        Filter = new FilterModel
+        {
+            SelectedCategory = "All",
+            SelectedSeason = "All",
+            Color = "",
+            Subcategory = "",
+            SearchTerm = "",
+            SortBy = "Newest" // Resetăm și ordinea
+        };
 
+        UpdateSubcategories();
+        ApplyFilters();
+        ClosePanels();
+    }
     private string GetColorHex(string colorName) => colorName.ToLower() switch
     {
         "black" => "#1a1a1a",
@@ -956,7 +1459,35 @@
         "gold" => "#ffd700",
         _ => "#808080"
     };
-
+    private void ToggleFilter()
+    {
+        if (!isFilterOpen)
+        {
+            isFilterOpen = true;
+            isSortOpen = false; // Închide sortarea dacă deschizi filtrele
+        }
+        else
+        {
+            isFilterOpen = false;
+        }
+    }
+    private void ToggleSort()
+    {
+        if (!isSortOpen)
+        {
+            isSortOpen = true;
+            isFilterOpen = false; // Închide filtrele dacă deschizi sortarea
+        }
+        else
+        {
+            isSortOpen = false;
+        }
+    }
+    private void HandleApply()
+    {
+        ApplyFilters(); // Acum filtrarea se execută DOAR aici
+        ClosePanels();  // Închidem și panoul
+    }
     private string GetImageSource(byte[]? imageBytes)
     {
         if (imageBytes == null || imageBytes.Length == 0)
@@ -964,17 +1495,55 @@
 
         return $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
     }
+    private void HandleInstantSearch(ChangeEventArgs e)
+    {
+        // Închidem panourile pentru a vedea rezultatele live
+        if (isFilterOpen || isSortOpen)
+        {
+            isFilterOpen = false;
+            isSortOpen = false;
+        }
 
-    private void ApplyFilters()
+        Filter.SearchTerm = e.Value?.ToString() ?? "";
+        ApplyFilters(isStrict: false);
+    }
+
+    private void HandleSearchEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            ApplyFilters(isStrict: true); // Căutare "strictă" (dacă 'dr' nu există ca brand, dă 0 rezultate)
+        }
+    }
+    private void ClosePanels()
+    {
+        isFilterOpen = false;
+        isSortOpen = false;
+        StateHasChanged();
+    }
+    private void ApplyFilters(bool isStrict = false)
     {
         var query = AllItems.AsQueryable();
         var search = Filter.SearchTerm?.Trim().ToLower() ?? "";
         if (!string.IsNullOrEmpty(search))
         {
-            var searchTerms = search.Replace("-", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            foreach (var term in searchTerms)
+            if (isStrict)
             {
-                query = query.Where(i => (i.Brand != null && i.Brand.ToLower().Contains(term)) || (i.Category != null && i.Category.ToLower().Contains(term)) || (i.Subcategory != null && i.Subcategory.ToLower().Replace("-", " ").Contains(term)) || (i.Color != null && i.Color.ToLower().Contains(term)));
+                // Când apeși Enter: caută doar dacă brandul sau categoria este EXACT cuvântul căutat
+                query = query.Where(i =>
+                    (i.Brand != null && i.Brand.ToLower() == search) ||
+                    (i.Category != null && i.Category.ToLower() == search) ||
+                    (i.Color != null && i.Color.ToLower() == search)
+                );
+            }
+            else
+            {
+                // Pe măsură ce tastezi: arată tot ce conține literele respective
+                query = query.Where(i =>
+                    (i.Brand != null && i.Brand.ToLower().Contains(search)) ||
+                    (i.Category != null && i.Category.ToLower().Contains(search)) ||
+                    (i.Color != null && i.Color.ToLower().Contains(search))
+                );
             }
         }
         if (Filter.SelectedCategory != "All") query = query.Where(i => i.Category.Equals(Filter.SelectedCategory, StringComparison.OrdinalIgnoreCase));

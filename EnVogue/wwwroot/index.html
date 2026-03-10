@@ -6,179 +6,128 @@
     <title>EnVogue</title>
     <base href="/" />
 
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
 
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
 
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@300;700;800&family=Playfair+Display:ital,wght@0,900;1,900&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="css/app.css" />
     <link href="EnVogue.styles.css" rel="stylesheet" />
-    <style>
-        /* ... (Stilurile tale de loading rămân neschimbate) ... */
-        .loading-wrapper {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: #0b0f1a;
-            overflow: hidden;
-            color: white;
-            font-family: 'Inter', sans-serif;
-        }
 
-        .logo-group {
-            position: relative;
-            padding: 0 60px;
-            margin-bottom: 30px;
-        }
-
-        .loading-logo {
-            font-family: 'Dancing Script', cursive;
-            font-size: 5.5rem;
-            color: #ff7eb9;
-            margin: 0;
-            text-shadow: 0 0 20px rgba(255, 126, 185, 0.6);
-            z-index: 5;
-            position: relative;
-        }
-
-        .sparkle {
-            position: absolute;
-            color: #ffb3d9;
-            opacity: 0;
-            animation: twinkle-sync 2.5s infinite ease-in-out;
-            z-index: 1;
-        }
-
-        .s1 {
-            top: 10%;
-            left: 0;
-            font-size: 1.8rem;
-        }
-
-        .s2 {
-            top: 50%;
-            left: 25px;
-            font-size: 1.2rem;
-        }
-
-        .s3 {
-            bottom: 0;
-            left: 10px;
-            font-size: 1.5rem;
-        }
-
-        .s4 {
-            top: 15%;
-            right: 5px;
-            font-size: 2.2rem;
-        }
-
-        .s5 {
-            top: 55%;
-            right: 35px;
-            font-size: 1rem;
-        }
-
-        .s6 {
-            bottom: 5%;
-            right: 15px;
-            font-size: 1.6rem;
-        }
-
-        .loader-container {
-            width: 280px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .full-line {
-            width: 100%;
-            height: 1.5px;
-            background: rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            position: absolute;
-            height: 100%;
-            width: 100px;
-            background: linear-gradient(90deg, transparent, #ff7eb9, transparent);
-            animation: move-fast 1.2s infinite linear;
-        }
-
-        .heartbeat-center {
-            position: absolute;
-            width: 40px;
-            height: 20px;
-            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40'%3E%3Cpath d='M0 20 L35 20 L42 5 L50 35 L58 20 L100 20' stroke='%23ff7eb9' stroke-width='4' fill='none'/%3E%3C/svg%3E") no-repeat center;
-            z-index: 10;
-        }
-
-        .loading-text {
-            margin-top: 20px;
-            font-size: 11px;
-            letter-spacing: 3px;
-            opacity: 0.5;
-            text-transform: uppercase;
-        }
-
-        @keyframes move-fast {
-            0% {
-                transform: translateX(-150px);
-            }
-
-            100% {
-                transform: translateX(350px);
-            }
-        }
-
-        @keyframes twinkle-sync {
-            0%, 100% {
-                opacity: 0;
-                transform: scale(0.6);
-            }
-
-            50% {
-                opacity: 0.9;
-                transform: scale(1.1);
-                text-shadow: 0 0 12px #ff7eb9;
-            }
-        }
-    </style>
 </head>
-<body>
-    <div id="app">
-        <div class="loading-wrapper">
-            <div class="logo-group">
-                <span class="sparkle s1">✦</span>
-                <span class="sparkle s2">✦</span>
-                <span class="sparkle s3">✦</span>
-                <span class="sparkle s4">✦</span>
-                <span class="sparkle s5">✦</span>
-                <span class="sparkle s6">✦</span>
+    <body>
+        <div id="app">
+            <div class="loading-wrapper-envogue">
+                <div class="splash-center-content">
+                    <h1 class="envogue-logo-splash">EnVogue</h1>
 
-                <h1 class="loading-logo">EnVogue</h1>
-            </div>
+                    <div class="progress-track">
+                        <div class="progress-bar-fill"></div>
+                    </div>
 
-            <div class="loader-container">
-                <div class="full-line">
-                    <div class="progress-fill"></div>
+                    <div class="spinner-wrapper">
+                        <div class="envogue-spinner"></div>
+                    </div>
+
+                    <p class="styling-text">STYLING YOUR COLLECTION</p>
                 </div>
-                <div class="heartbeat-center"></div>
             </div>
-
-            <div class="loading-text">Loading fashion assist...</div>
         </div>
-    </div>
+        <style>
+            html, body {
+                background-color: #ffffff !important; /* Sau culoarea ta principală #fce7f3 */
+                margin: 0;
+                padding: 0;
+                /* Dezactivează efectul de "elastic" pe axa Y pentru a preveni banda de culoare */
+                overscroll-behavior-y: none;
+            }
+            .loading-wrapper-envogue {
+                position: fixed;
+                inset: 0;
+                background-color: #ffffff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                font-family: 'Inter', sans-serif;
+            }
 
-    <script src="_framework/blazor.webassembly.js"></script>
-    <script src="fileUploadV2.js"></script>
-</body>
+            .splash-center-content {
+                text-align: center;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .envogue-logo-splash {
+                font-family: 'Playfair Display', serif;
+                font-size: 52px;
+                font-weight: 900;
+                font-style: italic;
+                color: #1a1a1a;
+                margin: 0 0 15px 0;
+                letter-spacing: -1px;
+            }
+
+            .progress-track {
+                width: 200px;
+                height: 2px;
+                background: #f0f0f0;
+                margin: 0 auto 25px;
+                position: relative;
+                overflow: hidden;
+                border-radius: 10px;
+            }
+
+            .progress-bar-fill {
+                position: absolute;
+                left: 0;
+                top: 0;
+                height: 100%;
+                width: 100%;
+                background: linear-gradient(to right, #d946ef, #ff7eb9);
+                transform-origin: left;
+                /* PORNEȘTE INSTANT: Animația rulează cât timp se încarcă fișierele */
+                animation: fillIndexFast 3s ease-out forwards;
+            }
+            .envogue-spinner {
+                width: 36px;
+                height: 36px;
+                border: 3px solid #fff1f2;
+                border-top: 3px solid #d946ef;
+                border-radius: 50%;
+                margin: 0 auto;
+                animation: spinAnimIndex 1s linear infinite;
+            }
+
+            .styling-text {
+                font-size: 10px;
+                font-weight: 800;
+                letter-spacing: 4px;
+                color: #7a5c68;
+                text-transform: uppercase;
+                margin-top: 20px;
+                opacity: 0.7;
+            }
+
+            @keyframes spinAnimIndex {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+            @keyframes fillIndexFast {
+                from {
+                    transform: scaleX(0);
+                }
+
+                to {
+                    transform: scaleX(1);
+                }
+            }
+        </style>
+
+        <script src="_framework/blazor.webassembly.js"></script>
+        <script src="fileUploadV2.js"></script>
+    </body>
 </html>

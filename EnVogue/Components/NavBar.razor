@@ -38,7 +38,38 @@
         <span>Favorites</span>
     </a>
 </div>
+<style>
+    /* Eliminăm culoarea albastră de hover pentru toate link-urile din nav-bar */
+    .nav-bar a.nav-item {
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
 
+        /* Stilul de Hover Personalizat */
+        .nav-bar a.nav-item:hover {
+            color: #d946ef; /* Schimbăm în rozul EnVogue în loc de albastru */
+            transform: translateY(-2px); /* Un mic efect de ridicare la hover */
+        }
+
+            /* Asigurăm că și iconițele SVG își schimbă culoarea la hover */
+            .nav-bar a.nav-item:hover svg {
+                stroke: #d946ef;
+            }
+
+    /* Stil special pentru butonul central FAB (cel cu Plus) la hover */
+    .fab-center:hover .fab {
+        transform: scale(1.1) rotate(90deg); /* Se mărește și se rotește discret */
+    }
+
+    /* Menținem culoarea activă dacă pagina este selectată */
+    .nav-item.active {
+        color: #d946ef !important;
+    }
+
+        .nav-item.active svg {
+            stroke: #d946ef !important;
+        }
+</style>
 @code {
     [Parameter]
     public string CurrentPage { get; set; } = "";
