@@ -5,6 +5,7 @@
 @inject WardrobeServices WardrobeService
 @implements IDisposable
 @layout EmptyLayout
+@inject EnVogue.Services.NotificationService Toast
 
 <div class="closet-page-wrapper">
     @if (isFilterOpen || isSortOpen)
@@ -58,7 +59,7 @@
                        @onkeydown="HandleSearchEnter"
                        @onclick="ClosePanels" /> @* ACUM ESTE CORECT *@
 
-                <button class="search-confirm-btn" @onclick="() => ApplyFilters(true)">
+                <button class="search-confirm-btn" @onclick="HandleSearchConfirm">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                         <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
@@ -1126,14 +1127,14 @@
             padding-top: 8px;
     }
 
-        .editorial-grid {
-            /* Permitem carduri mai mici (min 130px) pentru a încăpea 2 pe rând fără scroll excesiv */
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 12px;
-            padding-bottom: 100px; /* Spațiu pentru a nu fi acoperite de Nav-Bar-ul de jos */
-            padding-top: 5px;
-
-        }
+    .editorial-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(210px, 45vw), 1fr));
+        justify-content: start;
+        gap: clamp(10px, 2vw, 20px);
+        width: 100%;
+        padding-top: 10px
+    }
 
         .wardrobe-card-editorial {
             padding: 6px;
@@ -1632,8 +1633,31 @@
     }
     private void HandleApply()
     {
-        ApplyFilters(); // Acum filtrarea se execută DOAR aici
-        ClosePanels();  // Închidem și panoul
+        // Verificăm dacă există elemente pentru a fi filtrate/sortate
+        if (AllItems == null || !AllItems.Any())
+        {
+            Toast.Show("No items available to filter or sort.", "error");
+            ClosePanels();
+            return;
+        }
+
+        ApplyFilters();
+        ClosePanels();
+
+        // Opțional: Notificare de succes pentru feedback vizual
+        Toast.Show("Filters applied successfully.", "success");
+    }
+    private void HandleSearchConfirm()
+    {
+        // Verificăm dacă baza de date/lista AllItems este goală
+        if (AllItems == null || !AllItems.Any())
+        {
+            Toast.Show("Your closet is empty. There is nothing to search yet.", "error");
+            return;
+        }
+
+        // Dacă avem haine, executăm căutarea normală (strictă)
+        ApplyFilters(isStrict: true);
     }
     private string GetImageSource(byte[]? imageBytes)
     {
@@ -1644,6 +1668,19 @@
     }
     private void HandleInstantSearch(ChangeEventArgs e)
     {
+        string currentInput = e.Value?.ToString() ?? "";
+        Filter.SearchTerm = currentInput;
+
+        if (AllItems == null || !AllItems.Any())
+        {
+            if (!string.IsNullOrEmpty(currentInput))
+            {
+                // Notificăm doar dacă utilizatorul chiar a scris ceva
+               Toast.Show("Your closet is empty. Add items to start searching your archive.", "info");
+            }
+            return;
+        }
+
         // Închidem panourile pentru a vedea rezultatele live
         if (isFilterOpen || isSortOpen)
         {
@@ -1651,7 +1688,6 @@
             isSortOpen = false;
         }
 
-        Filter.SearchTerm = e.Value?.ToString() ?? "";
         ApplyFilters(isStrict: false);
     }
 
@@ -1659,7 +1695,13 @@
     {
         if (e.Key == "Enter")
         {
-            ApplyFilters(isStrict: true); // Căutare "strictă" (dacă 'dr' nu există ca brand, dă 0 rezultate)
+            // Verificăm dacă garderoba este goală înainte de a "căuta"
+            if (AllItems == null || !AllItems.Any())
+            {
+                Toast.Show("Your closet is currently empty. Add items to search.", "error");
+                return;
+            }
+            ApplyFilters(isStrict: true);
         }
     }
     private void ClosePanels()
@@ -1670,6 +1712,12 @@
     }
     private void ApplyFilters(bool isStrict = false)
     {
+        // Dacă baza de date e goală, nu mai rulăm interogarea
+        if (AllItems == null || !AllItems.Any())
+        {
+            FilteredItems = new List<ClothingItem>();
+            return;
+        }
         var query = AllItems.AsQueryable();
         var search = Filter.SearchTerm?.Trim().ToLower() ?? "";
         if (!string.IsNullOrEmpty(search))
@@ -1705,6 +1753,11 @@
             "Oldest" => query.OrderBy(i => i.Id).ToList(),
             _ => query.OrderByDescending(i => i.Id).ToList()
         };
+        if (!FilteredItems.Any() && !string.IsNullOrEmpty(search))
+        {
+            // Nu dăm eroare, ci doar o informare discretă
+            Toast.Show("No matching pieces found in your archive.", "info");
+        }
         StateHasChanged();
     }
     public void Dispose() => WardrobeService.OnChange -= HandleOnChange;
