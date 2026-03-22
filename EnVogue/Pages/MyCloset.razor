@@ -30,8 +30,7 @@
         </div>
     </div>
 </div>
-
-            <div class="header-right">
+            <div class="header-right" style="position: relative;">
                 <button class="profile-circle" @onclick='() => NavigationManager.NavigateTo("/profile")'>
                     <svg viewBox="0 0 24 24" class="profile-svg">
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
@@ -1026,6 +1025,102 @@
             transform: translateY(-3px);
         }
     @@media (max-width: 768px) {
+        .toast-container-editorial {
+            top: auto;
+            bottom: 110px; /* Îl ridicăm deasupra NavBar-ului roz */
+            width: 85%;
+        }
+
+        input, select, textarea,
+        .search-bar-editorial input,
+        input:focus {
+            font-size: 16px !important;
+            /* Previne orice transformare de mărime la click */
+            touch-action: manipulation;
+        }
+        .input-block-fit input,
+        .input-block-fit select,
+        .brand-input-luxury,
+        .luxury-input,
+        .luxury-select {
+            font-size: 16px !important;
+        }
+        .toast-item-envogue {
+            padding: 10px 18px;
+            min-width: 180px;
+            gap: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            justify-content: center;
+        }
+
+            .toast-item-envogue p {
+                font-size: 12px; /* Text mai mic pe telefon */
+                text-align: center;
+            }
+        /* Ajustăm animația să vină de jos pe mobile */
+        .toast-item-envogue {
+            animation: toastSlideUpMobile 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+    }
+
+    .search-bar-editorial input {
+        font-size: 16px !important;
+        padding: 14px 20px 14px 45px !important;
+    }
+
+ 
+    /* Coborâm header-ul puțin să nu fie sub ceas */
+    .content-overlay {
+        padding-top: clamp(15px, 5vh, 30px) !important;
+    }
+
+    /* Ajustăm lupă din search să fie aliniată cu fontul de 16px */
+    .search-icon {
+        left: 18px;
+        top: 48%;
+    }
+
+    .search-confirm-btn {
+        top: 48%;
+    }
+
+    
+
+    /* Animație care "răsare" deasupra NavBar-ului */
+    @@keyframes toastEntranceMobile {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    @@keyframes toastSlideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes toastSlideUpMobile {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
     .wardrobe-scroll-area {
         padding: 0 10px 20px;
             padding-top: 8px;
@@ -1258,15 +1353,67 @@
 
     }
     @@media (max-width: 768px) {
-    .profile-circle {
-        width: 38px; /* Identic cu Add Item */
-        height: 38px;
-    }
-    .profile-circle svg {
-        width: 18px; /* Identic cu Add Item */
-        height: 18px;
-    }
 
+        .hero-overlay, .content-overlay, .editorial-header-unified {
+            padding-top: clamp(12px, 3.5vh, 25px) !important;
+        }
+        /* 2. Alinierea elementelor pe aceeași axă orizontală */
+        /* Pe Home: .header-nav | Pe Closet: .editorial-header | Pe Add Item: .header-left/.header-right */
+        .header-nav, .editorial-header, .editorial-header-unified {
+            display: flex !important;
+            align-items: center !important; /* Aceasta garantează că Logo și Profil sunt la același nivel */
+            margin-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        /* 3. Spațiul sub Logo (Distanța până la Search/Conținut) */
+        .editorial-header, .header-nav {
+            margin-bottom: clamp(20px, 4vh, 35px) !important;
+        }
+
+        .brand-title {
+            font-size: 26px !important;
+            line-height: 0.9 !important;
+            letter-spacing: -0.5px;
+        }
+
+        .collection-tag {
+            font-size: 8px !important;
+            letter-spacing: 2px !important;
+            margin-top: 2px !important;
+        }
+        /* 5. Uniformizăm cercurile de profil/back (identic cu Add Item/Home) */
+        .profile-circle {
+            width: 38px !important;
+            height: 38px !important;
+            margin-bottom: 0 !important; /* Elimină spațiul de jos pe mobile pentru aliniere */
+        }
+
+            .profile-circle svg {
+                width: 18px !important;
+                height: 18px !important;
+            }
+        /* 6. Ajustăm zona de search să nu pară prea masivă acum că header-ul e mai mic */
+        .search-bar-editorial input {
+            padding: 14px 25px 14px 50px !important;
+            font-size: 13px !important;
+        }
+        /* 7. Spațierea grupului de navigare (Săgeată Back + Logo) */
+        .brand-nav-group {
+            display: flex;
+            align-items: center !important; /* Forțează centrarea cu butonul Back */
+            gap: 12px !important;
+        }
+        /* 8. Ajustăm Stats Badge (Total Items) să nu se suprapună */
+        .stats-badge-editorial {
+            position: absolute;
+            top: 45px; /* Îl poziționăm FIX sub butonul de profil */
+            right: 0;
+            white-space: nowrap;
+            font-size: 9px !important;
+            padding: 2px 6px !important;
+            /* Îl scoatem din calculul layout-ului principal */
+            margin-top: 0 !important;
+        }
         .editorial-grid {
             /* Permitem carduri mai înguste pentru a încăpea mai multe/a nu domina ecranul */
             grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));

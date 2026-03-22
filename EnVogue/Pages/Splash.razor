@@ -155,28 +155,38 @@ html, body {
     gap: 15px;
 }
 
-.next-circle-btn {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: white;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s;
-    color: #d946ef;
-}
+    .next-circle-btn {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: white;
+        border: none;
+        /* Centrare Flexbox */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
 
-.next-circle-btn:hover {
-    transform: scale(1.1);
-}
+    .arrow-icon {
+        color: #d946ef;
+        font-size: 28px; /* Dimensiune fixă mai mare */
+        font-weight: 900;
+        /* TRUC PENTRU CENTRARE: */
+        /* Săgețile text tind să stea puțin "sus". Împingem cu 1-2px în jos manual */
+        display: block;
+        line-height: 1;
+        margin-top: 2px;
+        /* Grosime extra folosind text-stroke */
+        -webkit-text-stroke: 1.5px #d946ef;
+    }
 
-.arrow-icon {
-    font-size: 1.8rem;
-    font-weight: bold;
-}
+    /* Efect de interacțiune */
+    .next-circle-btn:active {
+        transform: scale(0.92);
+    }
 
 .pagination-dots {
     display: flex;
@@ -200,18 +210,23 @@ html, body {
     /* Imaginea ocupă tot ecranul, focalizată pe model */
 
         .onboarding-bg img {
-            object-position: 60% center; /* pe mobile modelul e mai spre dreapta */
+            object-position: 65% center;
         }
 
     /* Sidebar devine un gradient de jos în sus, nu sidebar lateral */
         .glass-sidebar {
-            width: 50% !important; /* rămâne 50% și pe mobile */
+            width: 100% !important; /* Ocupă toată lățimea pe mobil */
             height: 100% !important;
+            left: 0 !important;
             top: 0 !important;
-            bottom: auto !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-right: none !important;
+            /* Gradientul: transparent sus, devine negru/blurat spre jos */
+            background: linear-gradient( to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.8) 80%, rgba(0,0,0,0.9) 100% ) !important;
+            /* Eliminăm blur-ul de pe tot ecranul ca să vedem modelul clar sus */
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            display: flex;
+            align-items: flex-end; /* Împingem conținutul jos */
         }
     .onboarding-content {
         padding: 0 8% 12%;
@@ -224,11 +239,11 @@ html, body {
     }
 
     /* Buton mai mic și mai compact pe mobile */
-    .next-circle-btn {
-        width: 52px;
-        height: 52px;
-    }
-
+        .next-circle-btn {
+            width: 60px !important;
+            height: 60px !important;
+            order: 2; /* Butonul la dreapta */
+        }
     .arrow-icon {
         font-size: 1.4rem;
     }
@@ -239,5 +254,16 @@ html, body {
         right: 20px;
         font-size: 10px;
     }
+
+        .footer-section {
+            flex-direction: row !important; /* Punem butonul și punctele pe același rând */
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .pagination-dots {
+            order: 1; /* Punctele la stânga */
+        }
 }
 </style>

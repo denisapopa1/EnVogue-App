@@ -293,6 +293,17 @@
         display: inline-block;
         margin-top: 4px;
     }
+
+    @@media (max-width: 768px) {
+        /* Previne auto-zoom pe iOS prin setarea fontului la minim 16px */
+        .input-block-fit input,
+        .input-block-fit select,
+        .brand-input-luxury,
+        .luxury-input,
+        .luxury-select {
+            font-size: 16px !important;
+        }
+    }
 </style>
 
 @code {

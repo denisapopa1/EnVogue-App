@@ -50,6 +50,40 @@
             transform: translate(-50%, 0);
         }
     }
+
+    @@media (max-width: 768px) {
+        .toast-notification {
+            top: auto; /* Îl scoatem de sus să nu se bată cu logo-ul */
+            bottom: 110px; /* Îl punem deasupra NavBar-ului roz */
+            padding: 10px 20px; /* Mult mai compact */
+            min-width: 180px; /* Nu mai ocupă tot ecranul */
+            max-width: 85%; /* Să nu atingă marginile laterale */
+            font-size: 13px; /* Text mai finuț */
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .toast-icon {
+            font-size: 15px;
+            margin-right: 8px;
+        }
+    }
+
+    /* Animație îmbunătățită */
+    .animate-slide-in {
+        animation: slideInDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @@keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translate(-50%, 20px);
+        }
+        /* Vine ușor de jos pe mobile */
+        to {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+    }
 </style>
 
 @code {

@@ -661,11 +661,38 @@
 
 @@media (max-width: 768px) {
 
+        .brand-title-unified {
+            /* Reducem de la 38px la o dimensiune mai discretă */
+            font-size: 28px !important;
+            line-height: 1.1 !important;
+            letter-spacing: -0.5px;
+        }
+
+        .collection-tag-unified {
+            /* Micșorăm și tag-ul de sub logo */
+            font-size: 8px !important;
+            letter-spacing: 2px !important;
+            margin-top: 2px !important;
+        }
+        /* Ajustăm header-ul să nu ocupe prea mult spațiu vertical pe mobil */
+        .header-nav, .editorial-header, .editorial-header-unified {
+            display: flex !important;
+            align-items: center !important; /* Aceasta garantează că Logo și Profil sunt la același nivel */
+            margin-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        /* Reducem spațiul de lângă logo dacă cercul de profil s-a micșorat */
+        .brand-nav-group-home {
+            margin-left: 0; /* Eliminăm margin-ul fix dacă nu e necesar */
+        }
         .profile-circle {
             width: 38px !important; /* Dimensiune micșorată mobile */
             height: 38px !important;
         }
 
+        .editorial-header, .header-nav {
+            margin-bottom: clamp(20px, 4vh, 35px) !important;
+        }
             .profile-circle svg {
                 width: 18px !important;
                 height: 18px !important;
@@ -679,11 +706,9 @@
             font-size: 38px; /* Păstrăm dimensiunea mare pentru look editorial */
         }
 
-    .hero-overlay {
-        padding: 25px 20px;
-        justify-content: flex-end;
-    }
-
+        .hero-overlay, .content-overlay, .editorial-header-unified {
+            padding-top: clamp(12px, 3.5vh, 25px) !important;
+        }
     .hero-body {
         max-width: 90%;
         margin-bottom: 50px;
