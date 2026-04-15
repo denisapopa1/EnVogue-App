@@ -205,13 +205,21 @@
                              @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
 
                             <div class="image-container-padded">
-                                <img src="@GetImageSource(item.ImageData)" alt="wardrobe item" />
+                                @* Folosim ImagePath pentru backend *@
+                                <img src="@GetImageSource(item.ImagePath)" alt="wardrobe item" />
                             </div>
+
                             <div class="item-details-box">
-                                <h3 class="item-brand-label">@(string.IsNullOrWhiteSpace(item.Brand) ? item.Category : item.Brand)</h3>
-                                <span class="item-sub-label">@item.Subcategory</span>
+                                <h3 class="item-brand-label">
+                                    @* Folosim CategoryName în loc de Category *@
+                                    @(!string.IsNullOrWhiteSpace(item.CategoryName) ? item.CategoryName.ToUpper() : "FĂRĂ CATEGORIE")
+                                </h3>
+                                <span class="item-sub-label">
+                                    @* Folosim SubcategoryName în loc de Subcategory *@
+                                    @item.SubcategoryName
+                                </span>
                                 <div class="item-meta-divider"></div>
-                                <span class="meta-season-tag">@item.Season</span>
+                                <span class="meta-season-tag">@(string.IsNullOrWhiteSpace(item.Brand) ? item.Season : item.Brand)</span>
                             </div>
                         </div>
                     }
@@ -639,21 +647,22 @@
     .wardrobe-card-editorial:hover .item-details-box {
         transform: translateY(-2px); /* Textul se ridică foarte puțin */
     }
+
     .item-brand-label {
-        font-size: 16px; /* Mărit semnificativ pentru impact */
+        font-size: 15px;
         font-weight: 900;
         color: #000 !important;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
+        letter-spacing: 2px; /* Spațiere elegantă pentru titlu */
         margin: 0;
     }
 
     .item-sub-label {
-        font-size: 12px; /* Mărit pentru lizibilitate */
-        font-weight: 500;
-        color: #7a5c68 !important;
-        margin-top: 5px;
-        opacity: 0.8;
+        font-size: 11px;
+        font-weight: 600;
+        color: #d946ef !important; /* Facem subcategoria roz ca să iasă în evidență discret */
+        margin-top: 4px;
+        text-transform: capitalize;
     }
 
     /* Linie decorativă subtilă pentru a umple spațiul */
@@ -672,15 +681,14 @@
     }
 
     .meta-season-tag {
-        font-size: 9px;
-        font-weight: 800;
+        font-size: 8px;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 2px;
-        color: #aaa;
-        padding: 4px 10px;
-        border: 1px solid #f0f0f0;
-        border-radius: 20px;
-        background: #fafafa;
+        letter-spacing: 1px;
+        color: #888;
+        padding: 3px 8px;
+        background: #fdf2f8; /* Un fundal roz pal foarte discret */
+        border-radius: 4px;
     }
     /* Efect de hover pentru card */
     .wardrobe-card-editorial:hover {
@@ -1557,12 +1565,15 @@
 
     private async Task RefreshData()
     {
+        await WardrobeService.InitializeAsync();
         AllItems = WardrobeService.GetAllClothes();
+
+        // În loc de FilteredItems = AllItems, aplicăm filtrele curente
+        // pentru a păstra selecția utilizatorului (ex: dacă era pe categoria 'Tops')
+        Console.WriteLine($"Closet: Am găsit {AllItems.Count} haine în DB.");
         ApplyFilters();
         StateHasChanged();
     }
-
-  
     private void SetCategory(string cat) { Filter.SelectedCategory = cat; Filter.Subcategory = ""; UpdateSubcategories(); ApplyFilters(); }
     private void UpdateSubcategories() { AvailableSubcategories = SubcategoryMap.ContainsKey(Filter.SelectedCategory) ? SubcategoryMap[Filter.SelectedCategory] : new(); }
     private void SetSubcategory(string sub) { Filter.Subcategory = sub; ApplyFilters(); }
@@ -1641,6 +1652,7 @@
             return;
         }
 
+
         ApplyFilters();
         ClosePanels();
 
@@ -1659,12 +1671,19 @@
         // Dacă avem haine, executăm căutarea normală (strictă)
         ApplyFilters(isStrict: true);
     }
-    private string GetImageSource(byte[]? imageBytes)
+    private string GetImageSource(string? imagePath)
     {
-        if (imageBytes == null || imageBytes.Length == 0)
-            return "Images/placeholder.png"; // opțional
+        // Dacă nu avem imagine, punem placeholder-ul tău roz
+        if (string.IsNullOrWhiteSpace(imagePath) || imagePath == "du")
+        {
+            return "Images/placeholder.png";
+        }
 
-        return $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
+        // Luăm doar numele fișierului (ex: 74d2a2f0...jpg)
+        var fileName = System.IO.Path.GetFileName(imagePath);
+
+        // Returnăm URL-ul care tocmai ți-a mers în browser!
+        return $"https://localhost:7081/uploads/images/{fileName}";
     }
     private void HandleInstantSearch(ChangeEventArgs e)
     {
@@ -1712,52 +1731,120 @@
     }
     private void ApplyFilters(bool isStrict = false)
     {
-        // Dacă baza de date e goală, nu mai rulăm interogarea
         if (AllItems == null || !AllItems.Any())
         {
             FilteredItems = new List<ClothingItem>();
             return;
         }
+
+        // --- 1. SINCRONIZARE DATE (Fix pentru ID -> Text) ---
+        foreach (var item in AllItems)
+        {
+            if (string.IsNullOrEmpty(item.CategoryName) && item.CategoryId.HasValue)
+            {
+                item.CategoryName = item.CategoryId switch
+                {
+                    1 => "Tops",
+                    2 => "Bottoms",
+                    3 => "Shoes",
+                    4 => "Accessories",
+                    5 => "Dress",
+                    6 => "Outerwear",
+                    _ => "Unknown"
+                };
+            }
+
+            if (string.IsNullOrEmpty(item.SubcategoryName) && item.SubcategoryId.HasValue)
+            {
+                item.SubcategoryName = item.SubcategoryId switch
+                {
+                    1 => "T-shirt",
+                    2 => "Blouse",
+                    3 => "Sweater",
+                    4 => "Hoodie",
+                    5 => "Jeans",
+                    6 => "Trousers",
+                    7 => "Shorts",
+                    8 => "Skirt",
+                    9 => "Sneakers",
+                    10 => "Boots",
+                    11 => "Sandals",
+                    15 => "Heels",
+                    12 => "Hat",
+                    13 => "Belt",
+                    14 => "Scarf",
+                    16 => "Jewelry",
+                    17 => "Mini",
+                    18 => "Maxi",
+                    19 => "Cocktail",
+                    20 => "Evening",
+                    21 => "Jacket",
+                    22 => "Coat",
+                    23 => "Blazer",
+                    24 => "Vest",
+                    _ => "Other"
+                };
+            }
+        }
+
         var query = AllItems.AsQueryable();
+
+        // --- 2. LOGICA DE SEARCH INTELIGENTĂ ---
         var search = Filter.SearchTerm?.Trim().ToLower() ?? "";
         if (!string.IsNullOrEmpty(search))
         {
-            if (isStrict)
-            {
-                // Când apeși Enter: caută doar dacă brandul sau categoria este EXACT cuvântul căutat
-                query = query.Where(i =>
-                    (i.Brand != null && i.Brand.ToLower() == search) ||
-                    (i.Category != null && i.Category.ToLower() == search) ||
-                    (i.Color != null && i.Color.ToLower() == search)
-                );
-            }
-            else
-            {
-                // Pe măsură ce tastezi: arată tot ce conține literele respective
-                query = query.Where(i =>
-                    (i.Brand != null && i.Brand.ToLower().Contains(search)) ||
-                    (i.Category != null && i.Category.ToLower().Contains(search)) ||
-                    (i.Color != null && i.Color.ToLower().Contains(search))
-                );
-            }
-        }
-        if (Filter.SelectedCategory != "All") query = query.Where(i => i.Category.Equals(Filter.SelectedCategory, StringComparison.OrdinalIgnoreCase));
-        if (!string.IsNullOrEmpty(Filter.Subcategory)) query = query.Where(i => i.Subcategory == Filter.Subcategory);
-        if (!string.IsNullOrEmpty(Filter.Color)) query = query.Where(i => i.Color.Contains(Filter.Color, StringComparison.OrdinalIgnoreCase));
-        if (Filter.SelectedSeason != "All") query = query.Where(i => i.Season.Equals(Filter.SelectedSeason, StringComparison.OrdinalIgnoreCase));
-        if (Filter.Style != "All" && !string.IsNullOrEmpty(Filter.Style)) query = query.Where(i => i.Style.Equals(Filter.Style, StringComparison.OrdinalIgnoreCase));
+            // Împărțim căutarea în cuvinte individuale (ex: "t-shirt summer" devine ["t-shirt", "summer"])
+            var keywords = search.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
+            query = query.Where(item => keywords.All(key =>
+                (item.Brand != null && item.Brand.ToLower().Contains(key)) ||
+                (item.CategoryName != null && item.CategoryName.ToLower().Contains(key)) ||
+                (item.SubcategoryName != null && item.SubcategoryName.ToLower().Contains(key)) ||
+                (item.Season != null && item.Season.ToLower().Contains(key)) ||
+                (item.Style != null && item.Style.ToLower().Contains(key)) ||
+                (item.Color != null && item.Color.ToLower().Contains(key))
+            ));
+
+            // OPȚIONAL: Dacă vrei ca rezultatele care ÎNCEP cu acele litere să fie primele:
+            var searchList = query.ToList();
+            FilteredItems = searchList
+                .OrderByDescending(i =>
+                    (i.Brand?.ToLower().StartsWith(search) ?? false) ||
+                    (i.SubcategoryName?.ToLower().StartsWith(search) ?? false))
+                .ThenBy(i => i.Name)
+                .ToList();
+        }
+
+        // --- 3. FILTRELE DIN PANOU (Folosim StringComparison pentru a ignora literele mari/mici) ---
+
+        // Categorie
+        if (Filter.SelectedCategory != "All")
+            query = query.Where(i => i.CategoryName != null && i.CategoryName.Equals(Filter.SelectedCategory, StringComparison.OrdinalIgnoreCase));
+
+        // Subcategorie
+        if (!string.IsNullOrEmpty(Filter.Subcategory))
+            query = query.Where(i => i.SubcategoryName != null && i.SubcategoryName.Equals(Filter.Subcategory, StringComparison.OrdinalIgnoreCase));
+
+        // Culoare
+        if (!string.IsNullOrEmpty(Filter.Color))
+            query = query.Where(i => i.Color != null && i.Color.Contains(Filter.Color, StringComparison.OrdinalIgnoreCase));
+
+        // Sezon
+        if (Filter.SelectedSeason != "All")
+            query = query.Where(i => i.Season != null && i.Season.Equals(Filter.SelectedSeason, StringComparison.OrdinalIgnoreCase));
+
+        // Stil
+        if (Filter.Style != "All" && !string.IsNullOrEmpty(Filter.Style))
+            query = query.Where(i => i.Style != null && i.Style.Equals(Filter.Style, StringComparison.OrdinalIgnoreCase));
+
+        // --- 4. SORTARE ---
         FilteredItems = Filter.SortBy switch
         {
             "Brand" => query.OrderBy(i => string.IsNullOrEmpty(i.Brand) ? "ZZZ" : i.Brand).ToList(),
             "Oldest" => query.OrderBy(i => i.Id).ToList(),
             _ => query.OrderByDescending(i => i.Id).ToList()
         };
-        if (!FilteredItems.Any() && !string.IsNullOrEmpty(search))
-        {
-            // Nu dăm eroare, ci doar o informare discretă
-            Toast.Show("No matching pieces found in your archive.", "info");
-        }
+
         StateHasChanged();
     }
     public void Dispose() => WardrobeService.OnChange -= HandleOnChange;

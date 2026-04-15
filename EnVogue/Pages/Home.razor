@@ -109,10 +109,9 @@
                     @foreach (var item in recentItems)
                     {
                         @* Adăugăm @onclick pentru navigare directă către ID-ul produsului *@
-                        <div class="clothing-item-tile"
-                             @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'
-                             style="cursor: pointer;">
-                            <img src="@GetImageSource(item.ImageData)" alt="item" />
+                        <div class="clothing-item-tile" @onclick='() => NavigationManager.NavigateTo($"/item-details/{item.Id}")'>
+                            @* Trimitem ImagePath în loc de ImageData *@
+                            <img src="@GetImageSource(item.ImagePath)" alt="recent item" />
                         </div>
                     }
                 }
@@ -807,30 +806,55 @@
     private int totalItems;
     private int favoriteCount;
     private int categoriesCount;
-    private string userName = "User"; // Valoare fallback
+    private string userName = "User";
     private List<ClothingItem> recentItems = new List<ClothingItem>();
+    private bool isLoading = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        var all = WardrobeService?.GetAllClothes() ?? new List<ClothingItem>();
-        totalItems = all.Count;
-        favoriteCount = all.Count(i => i.IsFavorite);
-        categoriesCount = all.Select(c => c.Category).Distinct().Count();
-        recentItems = all.OrderByDescending(i => i.Id).Take(5).ToList();
+        isLoading = true;
 
-        // LOGICA PENTRU EXTRAGEREA NUMELUI DIN EMAIL
-        var userEmail = WardrobeService?.GetLoggedInUserEmail(); // Presupunând că ai această metodă în serviciu
-        if (!string.IsNullOrEmpty(userEmail))
+        // 1. Verificăm dacă avem deja user-ul (din init-ul făcut de MainLayout)
+        // Dacă nu, forțăm inițializarea aici
+        var userEmail = WardrobeService.GetLoggedInUserEmail();
+        if (userEmail == "Guest")
         {
-            // Extragem partea dinainte de @
-            userName = userEmail.Split('@')[0];
+            await WardrobeService.InitializeAsync();
+            userEmail = WardrobeService.GetLoggedInUserEmail();
         }
 
+        // 2. Protecție: Dacă și după Initialize este tot Guest, înseamnă că nu avem token valid
+        if (userEmail == "Guest")
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
 
+        // 3. Preluăm datele (GetAllClothes va returna ce s-a descărcat la pasul 1)
+        var all = WardrobeService.GetAllClothes();
+        totalItems = all.Count;
+        favoriteCount = all.Count(i => i.IsFavorite);
+        categoriesCount = all.Select(c => c.CategoryName).Distinct().Count();
+        recentItems = all.OrderByDescending(i => i.Id).Take(5).ToList();
+
+        // 4. Extragem numele (logica ta excelentă de split)
+        var parts = userEmail.Split('@');
+        if (parts.Length > 0 && !string.IsNullOrEmpty(parts[0]))
+        {
+            var rawName = parts[0];
+            userName = char.ToUpper(rawName[0]) + (rawName.Length > 1 ? rawName.Substring(1) : "");
+        }
+
+        isLoading = false;
     }
-    private string GetImageSource(byte[]? imageData)
+    // --- REPARAȚIE IMAGINI: Calea de pe Backend (7081) ---
+    private string GetImageSource(string? imagePath)
     {
-        if (imageData == null || imageData.Length == 0) return "images/placeholder.png";
-        return $"data:image/png;base64,{Convert.ToBase64String(imageData)}";
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return "Images/placeholder.png";
+
+        // Verifică dacă path-ul vine deja cu "http" (uneori API-ul trimite URL complet)
+        // Dacă nu, adaugă adresa serverului tău
+        return imagePath.StartsWith("http") ? imagePath : $"https://localhost:7081/{imagePath}";
     }
 }

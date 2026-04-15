@@ -77,7 +77,8 @@
                                 @foreach (var item in outfit.Items.Take(3))
                                 {
                                     <div class="preview-tile">
-                                        <img src="@GetImageSource(item.ImageData)" alt="item" />
+                                        @* Trimitem ImagePath (string) către noua metodă *@
+                                        <img src="@GetImageSource(item.ImagePath)" alt="item preview" />
                                     </div>
                                 }
                             </div>
@@ -402,39 +403,55 @@
 
     }
 </style>
-
 @code {
     [Inject] NavigationManager NavigationManager { get; set; } = default!;
     [Inject] WardrobeServices WardrobeService { get; set; } = default!;
 
     private List<Outfit> favoriteOutfits = new();
+    private bool isLoading = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
+
+        // 1. Ne asigurăm că datele sunt încărcate din baza de date
+        await WardrobeService.InitializeAsync();
+
         RefreshData();
-        WardrobeService.OnChange += RefreshData;
+
+        // Ne abonăm la evenimentul de schimbare (dacă se modifică datele în altă parte)
+        WardrobeService.OnChange += HandleOnChange;
+
+        isLoading = false;
     }
+
+    private void HandleOnChange() => InvokeAsync(RefreshData);
 
     private void RefreshData()
     {
-        favoriteOutfits = WardrobeService.GetFavoriteOutfits();
-        InvokeAsync(StateHasChanged);
+        // 2. Filtrăm outfit-urile favorite din serviciu
+        favoriteOutfits = WardrobeService.GetAllOutfits().Where(o => o.IsFavorite).ToList();
+        StateHasChanged();
     }
 
-    private void RemoveFromFavorites(string outfitId)
+    private async Task RemoveFromFavorites(string outfitId)
     {
-        WardrobeService.ToggleFavorite(outfitId);
+        // 3. Apelăm toggle-ul din serviciu (care ar trebui să facă un apel PUT la API)
+        await WardrobeService.ToggleFavorite(outfitId);
         RefreshData();
     }
 
-    private string GetImageSource(byte[]? imageBytes)
+    // --- REPARAȚIE IMAGINI: Sursa de pe Backend ---
+    private string GetImageSource(string? imagePath)
     {
-        if (imageBytes == null || imageBytes.Length == 0) return "Images/placeholder.png";
-        return $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return "Images/placeholder.png";
+
+        return $"https://localhost:7081/{imagePath}";
     }
 
     public void Dispose()
     {
-        WardrobeService.OnChange -= RefreshData;
+        WardrobeService.OnChange -= HandleOnChange;
     }
 }

@@ -72,10 +72,10 @@
                 <div class="avatar-section">
                     @* INIȚIALĂ CENTRATĂ PERFECT PE TOATE REZOLUȚIILE *@
                     <div class="large-avatar-circle">
-                        @UserState.Email.Substring(0, 1).ToUpper()
+                        @UserState.Email?.Substring(0, 1).ToUpper()
                     </div>
                     <div class="user-info-text">
-                        <h2 class="user-display-name">@UserState.Email.Split('@')[0]</h2>
+                        <h2 class="user-display-name">@UserState.Email?.Split('@')[0]</h2>
                         <p class="user-display-email">@UserState.Email</p>
                     </div>
                 </div>
@@ -492,20 +492,37 @@
 @code {
     private bool showLogoutConfirm = false;
     private int favoriteCount = 0;
+    private int clothingCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 1. Ne asigurăm că avem cele mai noi date din API
+        await WardrobeService.InitializeAsync();
+
+        // 2. Calculăm statisticile reale
+        clothingCount = WardrobeService.GetAllClothes().Count;
+
+        // Dacă ai o proprietate IsFavorite pe ClothingItem:
+        favoriteCount = WardrobeService.GetAllClothes().Count(i => i.IsFavorite);
+
+        // Sau dacă te refereai la Outfits favorite:
+        // favoriteCount = WardrobeService.GetFavoriteOutfits().Count;
+    }
 
     private void HandleLogoutRequest() => showLogoutConfirm = true;
 
-    protected override void OnInitialized()
+    private async Task ConfirmLogout()
     {
-        // Calculează numărul real de elemente salvate
-        favoriteCount = WardrobeService.GetFavoriteOutfits().Count;
-    }
+        // 1. Executăm logout-ul real (ștergere token)
+        await WardrobeService.LogoutAsync();
 
-    private void ConfirmLogout()
-    {
+        // 2. Actualizăm starea globală a UI-ului
         UserState.Logout();
+
         showLogoutConfirm = false;
-        Toast.Show("Logged out successfully", "success");
+        Toast.Show("See you soon! Archive secured. ✨", "success");
+
+        // 3. Redirecționăm la Login
         Nav.NavigateTo("/login");
     }
 }

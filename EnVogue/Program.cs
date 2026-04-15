@@ -3,13 +3,19 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using EnVogue.Services;
 using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components.Authorization; // Adăugat pentru AuthenticationStateProvider
+using Microsoft.AspNetCore.Components.Authorization;
+using System.Net.Http.Headers;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+// --- MODIFICARE AICI ---
+// Schimbăm BaseAddress de la adresa locală a browserului la adresa fixă a API-ului tău
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri("https://localhost:7081/")
+});
 
 // 1. ÎNREGISTREAZĂ PACHETUL DE LOCAL STORAGE
 builder.Services.AddBlazoredLocalStorage();
@@ -19,13 +25,9 @@ builder.Services.AddScoped<WardrobeServices>();
 builder.Services.AddScoped<UserState>();
 builder.Services.AddScoped<NotificationService>();
 
-// 3. CONFIGURARE AUTENTIFICARE (Rezolvă eroarea "No service for type...")
+// 3. CONFIGURARE AUTENTIFICARE
 builder.Services.AddAuthorizationCore();
-
-// Înregistrăm providerul creat de tine în folderul Services
 builder.Services.AddScoped<AuthenticationStateProvider, SimpleAuthStateProvider>();
-
-// Permite componentelor CascadingAuthenticationState să funcționeze
 builder.Services.AddCascadingAuthenticationState();
 
 await builder.Build().RunAsync();

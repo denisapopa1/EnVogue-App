@@ -323,23 +323,27 @@
     private async Task HandleLogin()
     {
         errorMessage = null;
-
-        if (!formIsValid)
-        {
-            errorMessage = "Please enter your email and password to continue.";
-            return;
-        }
-
-        if (isLoading) return;
+        if (!formIsValid) { errorMessage = "Please enter your email and password."; return; }
 
         isLoading = true;
-        WardrobeService.SetLoggedInUser(loginModel.Email!);
-        UserState.Login(loginModel.Email!);
-
-        isNavigating = true;
         StateHasChanged();
 
-        await Task.Delay(50);
-        NavigationManager.NavigateTo("/home");
+        // Apelăm API-ul prin serviciul nostru
+        var success = await WardrobeService.LoginAsync(loginModel.Email!, loginModel.Password!);
+
+        if (success)
+        {
+            UserState.Login(loginModel.Email!);
+            isNavigating = true;
+            StateHasChanged();
+            await Task.Delay(100); // Mic delay pentru animație
+            NavigationManager.NavigateTo("/home");
+        }
+        else
+        {
+            isLoading = false;
+            errorMessage = "Invalid email or password. Please try again.";
+            StateHasChanged();
+        }
     }
 }

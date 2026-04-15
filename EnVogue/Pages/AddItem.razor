@@ -4,7 +4,8 @@
 @using EnVogue.Models
 @using Microsoft.AspNetCore.Components.Forms
 @layout EmptyLayout
-
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@using EnVogue.Models
 <div class="add-item-page-wrapper">
     @* FUNDAL SATINAT *@
     <div class="luxury-satin-bg">
@@ -80,18 +81,28 @@
                     <div class="form-row-fit">
                         <div class="input-block-fit">
                             <label class="label-bold">CATEGORY</label>
-                            <select @onchange="OnCategoryChanged">
-                                @foreach (var cat in MainCategories) { <option value="@cat">@cat</option> }
+                            @* Adăugăm value="@selectedCategoryId" pentru a păstra sincronizarea *@
+                            <select @onchange="OnCategoryChanged" value="@selectedCategoryId">
+                                @foreach (var cat in CategoriesFromDb)
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
                             </select>
                         </div>
+
                         <div class="input-block-fit">
                             <label class="label-bold">SUBCATEGORY</label>
-                            <select @bind="subcategory">
-                                @foreach (var sub in AvailableSubcategories) { <option value="@sub">@sub</option> }
+                            <select @bind="selectedSubcategoryId">
+                                @if (SubcategoriesFromDb != null)
+                                {
+                                    @foreach (var sub in SubcategoriesFromDb.Where(s => s.CategoryId == selectedCategoryId))
+                                    {
+                                        <option value="@sub.Id">@sub.Name</option>
+                                    }
+                                }
                             </select>
                         </div>
-                    </div>
-
+                        </div>
                     <div class="form-row-fit">
                         <div class="input-block-fit">
                             <label class="label-bold">SEASON</label>
@@ -563,13 +574,23 @@
 </style>
 
 @code {
-    private byte[]? compressedImageBytes;
+ 
+    private IBrowserFile? selectedFile; // Reținem fișierul selectat
     private string? imagePreview;
     private string brand = "";
     private string category = "Tops";
     private string subcategory = "";
     private string season = "Summer";
     private string style = "Casual Style";
+    private List<Category> CategoriesFromDb = new();
+    private List<Subcategory> SubcategoriesFromDb = new();
+    private int selectedCategoryId; // Aici vom stoca ID-ul ales
+    private int selectedSubcategoryId; // ID-ul numeric al subcategoriei
+
+  
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private WardrobeServices WardrobeService { get; set; } = default!;
+    @inject HttpClient Client
 
     private List<string> MainCategories = new() { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
     private List<string> Seasons = new() { "Summer", "Winter", "Spring", "Autumn" };
@@ -581,51 +602,192 @@
         { "Shoes", new() { "Sneakers", "Boots", "Sandals", "Heels" } },
         { "Accessories", new() { "Scarf", "Belt", "Jewelry", "Hat" } }
     };
-    private List<string> AvailableSubcategories = new();
+  
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Client.DefaultRequestHeaders.Authorization = null;
 
-    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
-    [Inject] private WardrobeServices WardrobeService { get; set; } = default!;
+            var token = await LocalStorage.GetItemAsync<string>("authToken");
+            if (!string.IsNullOrEmpty(token))
+            {
+                Client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            }
 
-    protected override void OnInitialized() => UpdateSubcategories();
+            // 2. Încărcăm datele (folosind rutele verificate în Controller)
+            // Dacă tot dă 400, încearcă să schimbi GetFromJsonAsync cu GetAsync pentru debug
+            CategoriesFromDb = await Client.GetFromJsonAsync<List<Category>>("api/clothing/categories") ?? new();
+            SubcategoriesFromDb = await Client.GetFromJsonAsync<List<Subcategory>>("api/clothing/subcategories") ?? new();
+            // 2. Inițializăm selecțiile
+            if (CategoriesFromDb.Any())
+            {
+                var firstCat = CategoriesFromDb.First();
+                selectedCategoryId = firstCat.Id;
+                category = firstCat.Name;
 
+                var firstSub = SubcategoriesFromDb.FirstOrDefault(s => s.CategoryId == selectedCategoryId);
+                if (firstSub != null)
+                {
+                    selectedSubcategoryId = firstSub.Id;
+                    subcategory = firstSub.Name;
+                }
+            }
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"EROARE DETALIATĂ: {ex.Message}");
+            Toast.Show("Eroare la comunicarea cu serverul (400)!", "error");
+        }
+    }
     private void OnCategoryChanged(ChangeEventArgs e)
     {
-        category = e.Value?.ToString() ?? "Tops";
-        UpdateSubcategories();
-    }
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            selectedCategoryId = id;
+            category = CategoriesFromDb.FirstOrDefault(c => c.Id == id)?.Name ?? "";
 
-    private void UpdateSubcategories()
-    {
-        AvailableSubcategories = SubcategoryMap.ContainsKey(category) ? SubcategoryMap[category] : new();
-        subcategory = AvailableSubcategories.FirstOrDefault() ?? "";
+            // Căutăm prima subcategorie care aparține de noua categorie selectată
+            var firstSub = SubcategoriesFromDb.FirstOrDefault(s => s.CategoryId == selectedCategoryId);
+            if (firstSub != null)
+            {
+                selectedSubcategoryId = firstSub.Id;
+                subcategory = firstSub.Name; // Sincronizăm numele pentru SaveItem
+            }
+            StateHasChanged();
+        }
     }
-
+  
     private void HandleCancel() => NavigationManager.NavigateTo("/closet");
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
-        var file = e.File;
-        if (file == null) return;
-        var resizedImage = await file.RequestImageFileAsync(file.ContentType, 800, 800);
-        using var stream = resizedImage.OpenReadStream(resizedImage.Size);
-        using var ms = new MemoryStream();
-        await stream.CopyToAsync(ms);
-        compressedImageBytes = ms.ToArray();
-        imagePreview = $"data:{resizedImage.ContentType};base64,{Convert.ToBase64String(compressedImageBytes)}";
+        selectedFile = e.File;
+        if (selectedFile == null) return;
+
+        // Creăm preview-ul pentru UI
+        var resizedFile = await selectedFile.RequestImageFileAsync(selectedFile.ContentType, 800, 800);
+        var buffer = new byte[resizedFile.Size];
+        await resizedFile.OpenReadStream().ReadAsync(buffer);
+        imagePreview = $"data:{resizedFile.ContentType};base64,{Convert.ToBase64String(buffer)}";
     }
 
     private async Task SaveItem()
     {
-        if (compressedImageBytes == null)
+        // Verificăm dacă utilizatorul a ales o imagine
+        if (selectedFile == null)
         {
             Toast.Show("Trebuie să adaugi o imagine!", "error");
             return;
         }
-        await WardrobeService.AddClothingItem(new ClothingItem
+
+        try
         {
-            Brand = brand, Category = category, Subcategory = subcategory,
-            Season = season, Style = style, ImageData = compressedImageBytes
-        });
-        NavigationManager.NavigateTo("/closet?success=true");
+            // --- PASUL 1: Trimiterea imaginii la API ---
+            var content = new MultipartFormDataContent();
+            var fileStream = selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 5);
+            var fileContent = new StreamContent(fileStream);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType);
+            content.Add(fileContent, "file", selectedFile.Name);
+
+            // --- AICI PUNEM TOKEN-UL ---
+            // Presupunem că folosești Blazored.LocalStorage sau un serviciu similar injectat ca 'LocalStorage'
+            var token = await LocalStorage.GetItemAsync<string>("authToken");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                Client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            }
+            // ---------------------------
+
+            // Trimitem către Controller-ul de imagini din Backend
+            var uploadResponse = await Client.PostAsync("api/images/upload", content);
+
+            if (!uploadResponse.IsSuccessStatusCode)
+            {
+                // Dacă primești tot 401 aici, înseamnă că token-ul a expirat sau nu a fost găsit în LocalStorage
+                Toast.Show("Eroare la încărcarea imaginii pe server (401)! Te rog să te reloghezi.", "error");
+
+                return;
+            }
+
+            // --- PASUL 2: Extragerea numelui REAL (cel lung) generat de server ---
+            var responseContent = await uploadResponse.Content.ReadAsStringAsync();
+            string serverFileName = "";
+
+            // Verificăm dacă răspunsul este JSON sau text simplu
+            if (responseContent.Trim().StartsWith("{"))
+            {
+                var uploadResult = await uploadResponse.Content.ReadFromJsonAsync<ImageUploadResult>();
+                serverFileName = uploadResult?.ImagePath ?? "";
+            }
+            else
+            {
+                serverFileName = responseContent.Trim().Split('\n').Last().Trim('"');
+            }
+
+            if (string.IsNullOrWhiteSpace(serverFileName) || serverFileName.Length < 3)
+            {
+                serverFileName = selectedFile.Name;
+            }
+
+            Console.WriteLine($"DEBUG: Nume salvat pe server: {serverFileName}");
+
+            // --- PASUL 3: Crearea obiectului curat pentru baza de date ---
+            // Modifică doar partea de creare a obiectului din SaveItem:
+            // --- PASUL 3: Crearea obiectului curat pentru baza de date ---
+            // --- PASUL 3: Crearea obiectului curat pentru baza de date ---
+            var userEmail = await LocalStorage.GetItemAsync<string>("userEmail");
+            var currentSub = SubcategoriesFromDb.FirstOrDefault(s => s.Id == selectedSubcategoryId);
+            if (currentSub != null) subcategory = currentSub.Name;
+            // 2. Creăm obiectul cu TOATE datele necesare bazei de date
+            var newItem = new ClothingItem
+            {
+                Name = $"{brand} {subcategory}".Trim(),
+                Brand = brand,
+                CategoryId = selectedCategoryId,
+                SubcategoryId = selectedSubcategoryId,
+                CategoryName = category,        // Important pentru filtrele din Closet
+                SubcategoryName = subcategory,
+                Season = season,
+                Style = style,
+                ImagePath = serverFileName,
+                UserId = userEmail ?? "unknown_user", // <--- DACĂ E GOL, PUNEM UN STRING CA SĂ NU DEA EROARE DB
+                Color = "Black" // Pune o valoare default ca să nu fie NULL în DB dacă e obligatoriu
+            };
+            // 4. Salvăm haina prin serviciu
+            // 1. Trimitem direct prin Client ca să vedem răspunsul serverului
+            var response = await Client.PostAsJsonAsync("api/clothing", newItem);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("SUCCES: Haina a fost salvată în baza de date!");
+                await WardrobeService.InitializeAsync();
+                NavigationManager.NavigateTo("/closet?success=true");
+            }
+            else
+            {
+                var errorDetails = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"EROARE SERVER: {response.StatusCode} - {errorDetails}");
+                Toast.Show($"Eroare la salvare: {response.StatusCode}", "error");
+            }
+
+            // 5. IMPORTANT: Reîmprospătăm datele globale înainte de a pleca din pagină
+            await WardrobeService.InitializeAsync();
+
+            // 6. Navigăm înapoi la garderobă
+            NavigationManager.NavigateTo("/closet?success=true");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"EROARE LA SALVARE: {ex.Message}");
+            Toast.Show("Eroare neașteptată la salvare!", "error");
+        }
     }
+
+    // Model mic pentru răspunsul de la upload
+    public class ImageUploadResult { public string ImagePath { get; set; } = ""; }
 }

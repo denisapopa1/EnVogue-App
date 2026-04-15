@@ -123,7 +123,8 @@
                         @foreach (var item in generatedOutfit.Items)
                         {
                             <div class="result-item-card">
-                                <img src="@GetImageSource(item.ImageData)" alt="item" />
+                                @* Trimitem ImagePath (string) către noua metodă *@
+                                <img src="@GetImageSource(item.ImagePath)" alt="curated item" />
                             </div>
                         }
                     </div>
@@ -521,32 +522,54 @@
 </style>
 
 @code {
-    private bool isManual = true;
+    private bool isManual = false; // Îl setăm implicit pe AI Stylist pentru un look mai tech
     private string occasion = "";
     private string colors = "";
     private bool isGenerating = false;
     private Outfit? generatedOutfit = null;
 
+    protected override async Task OnInitializedAsync()
+    {
+        // 1. Esențial: Ne asigurăm că avem hainele din baza de date înainte de a genera ceva
+        await WardrobeService.InitializeAsync();
+    }
+
     private async Task GenerateOutfit()
     {
+        if (isGenerating) return;
+
         isGenerating = true;
+        StateHasChanged();
+
+        // Simulăm un timp de "gândire" pentru AI (aspect premium)
         await Task.Delay(1500);
+
+        // 2. Generăm outfit-ul folosind logica din serviciu (care acum are datele din API)
         generatedOutfit = WardrobeService.GenerateOutfitWithRules(occasion, colors);
+
         isGenerating = false;
+        StateHasChanged();
     }
 
-    private string GetImageSource(byte[]? imageBytes)
+    // --- REPARAȚIE IMAGINI: Sursa de pe Backend (7081) ---
+    private string GetImageSource(string? imagePath)
     {
-        if (imageBytes == null || imageBytes.Length == 0) return "Images/placeholder.png";
-        return $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return "Images/placeholder.png";
+
+        return $"https://localhost:7081/{imagePath}";
     }
 
-    private void SaveToFavorites()
+    private async Task SaveToFavorites()
     {
         if (generatedOutfit != null)
         {
             generatedOutfit.IsFavorite = true;
-            WardrobeService.AddOutfit(generatedOutfit);
+
+            // 3. Salvăm outfit-ul în baza de date via API
+            await WardrobeService.AddOutfit(generatedOutfit);
+
+            // Redirecționăm către Favorites pentru a vedea rezultatul salvat
             NavigationManager.NavigateTo("/favorites");
         }
     }

@@ -4,6 +4,7 @@
 @inject NavigationManager NavigationManager
 @inject UserState UserState
 @inject WardrobeServices WardrobeService
+@inject EnVogue.Services.NotificationService Toast
 @inject IJSRuntime JS
 
 <div class="login-wrapper" @onclick="BlurEverything">
@@ -356,30 +357,28 @@
 
     private async Task HandleRegister()
     {
-        errorMessage = null; 
-
-        if (!formIsValid)
-        {
-            errorMessage = "Please fill in all fields to create your account.";
-            return;
-        }
-
+        errorMessage = null;
         if (registerModel.Password != registerModel.ConfirmPassword)
         {
-            errorMessage = "Passwords do not match.";
-            return;
+            errorMessage = "Passwords do not match."; return;
         }
 
-        if (isLoading) return;
-
         isLoading = true;
-        WardrobeService.SetLoggedInUser(registerModel.Email!);
-        UserState.Login(registerModel.Email!);
-
-        isNavigating = true;
         StateHasChanged();
-        
-        await Task.Delay(50);
-        NavigationManager.NavigateTo("/home");
+
+        var success = await WardrobeService.RegisterAsync(registerModel.Email!, registerModel.Password!);
+
+        if (success)
+        {
+            // După înregistrare, îl logăm automat sau îl trimitem la login
+            Toast.Show("Account created! Please log in.", "success");
+            await Task.Delay(1500);
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            isLoading = false;
+            errorMessage = "Could not create account. Email might already be in use.";
+        }
     }
 }

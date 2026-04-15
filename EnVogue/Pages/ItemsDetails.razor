@@ -1,174 +1,336 @@
-﻿@page "/item-details/{ItemId}"
+﻿@page "/item-details/{ItemId:int}"
+
 @using EnVogue.Models
+
 @using EnVogue.Services
+
 @using EnVogue.Shared
+
+
 @inject WardrobeServices WardrobeService
+
 @inject NavigationManager Nav
+
 @inject NotificationService Toast
+@inject HttpClient Client
+
 @layout EmptyLayout
+@using System.Net.Http
+@using System.Net.Http.Json
+
 
 <div class="item-details-page-wrapper">
+
     @* FUNDAL EDITORIAL BLURAT *@
+
     <div class="editorial-background-container">
+
         <img src="Images/img_for_items_details.png" alt="Satin Background" />
+
         <div class="overlay-gradient"></div>
+
     </div>
 
+
+
     @* HEADER UNIFICAT IDENTIC CU ADD ITEM *@
+
     <header class="editorial-header-unified">
+
         <div class="header-left">
+
             <div class="brand-nav-group">
+
                 <button class="profile-circle back-btn" @onclick='() => Nav.NavigateTo("/closet")'>
+
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+
                         <line x1="19" y1="12" x2="5" y2="12"></line>
+
                         <polyline points="12 19 5 12 12 5"></polyline>
+
                     </svg>
+
                 </button>
+
                 <div class="brand-text-block">
+
                     <h1 class="brand-title-unified no-border">EnVogue</h1>
+
                     <span class="collection-tag-unified closet-color">ITEM ARCHIVE</span>
+
                 </div>
+
             </div>
+
         </div>
+
         <div class="header-right">
+
             <button class="profile-circle" @onclick='() => Nav.NavigateTo("/profile")'>
+
                 <svg viewBox="0 0 24 24" class="profile-svg"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+
             </button>
+
         </div>
+
     </header>
 
+
+
     @if (item != null)
+
     {
+
         <div class="details-content-container">
+
             <div class="editorial-grid">
 
+
+
                 @* GRUP NOU: BUTOANE + POZĂ (CONTROLAT DOAR PE MOBILE PRIN CSS) *@
+
                 <div class="mobile-media-group">
 
+
+
                     @* IMAGINEA ITEMULUI *@
+
                     <div class="image-showcase animate-fade-in">
+
                         <div class="image-wrapper">
-                            <img src="@GetImageSource(item.ImageData)" alt="@item.Brand" />
+
+                            <img src="@GetImageSource(item.ImagePath)" alt="@item.Brand" />
+
                         </div>
+
                         <div class="action-header-inline">
+
                             @if (isEditing)
+
                             {
+
                                 <button class="small-action-btn success" @onclick="SaveChanges"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+
                                 <button class="small-action-btn cancel" @onclick="CancelEdit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+
                             }
+
                             else
+
                             {
+
                                 <button class="small-action-btn edit" @onclick="() => isEditing = true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+
                                 <button class="small-action-btn delete" @onclick="HandleDelete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+
                             }
+
                         </div>
+
                     </div>
+
                 </div>
 
+
+
                 @* BOXUL CU INFORMAȚII *@
+
                 <div class="info-showcase animate-slide-right">
+
                     @* BUTOANE ACȚIUNE POZIȚIONATE DEASUPRA POZEI PE MOBIL *@
-             
+
+
+
                     <div class="luxury-info-card">
+
                         <div class="brand-edit-block">
+
                             <label>Brand</label>
+
                             @if (isEditing)
+
                             {
+
                                 <input class="brand-input-luxury" placeholder="Zara, Nike..." @bind="item.Brand" />
+
                             }
+
                             else
+
                             {
+
                                 <h2 class="brand-title">@(string.IsNullOrWhiteSpace(item.Brand) ? "Essential Piece" : item.Brand)</h2>
+
                             }
+
                         </div>
 
+
+
                         <div class="details-grid-fancy">
+
                             <div class="detail-item-fancy">
+
                                 <label>Category</label>
+
                                 @if (isEditing)
-                                {
-                                    <select class="luxury-select" @onchange="OnCategoryChanged">
+
+                                        {
+                                    <select class="luxury-select" value="@item.CategoryName" @onchange="OnCategoryChanged">
                                         @foreach (var cat in MainCategories)
                                         {
-                                            <option value="@cat" selected="@(cat == item.Category)">@cat</option>
+                                            <option value="@cat">@cat</option>
                                         }
                                     </select>
+
                                 }
+
                                 else
+
                                 {
 
-                                    <span>@item.Category</span>
+
+
+                                    <span>@item.CategoryName</span>
+
                                 }
+
                             </div>
 
+
+
                             <div class="detail-item-fancy">
+
                                 <label>Type</label>
+
                                 @if (isEditing)
+
                                 {
-                                    <select class="luxury-select" @bind="item.Subcategory">
+
+                                    <select class="luxury-select" @bind="item.SubcategoryName">
                                         @foreach (var sub in AvailableSubcategories)
                                         {
                                             <option value="@sub">@sub</option>
                                         }
                                     </select>
                                 }
+
                                 else
+
                                 {
 
-                                    <span>@item.Subcategory</span>
+
+
+                                    <span>@item.SubcategoryName</span>
+
                                 }
+
                             </div>
 
+
+
                             <div class="detail-item-fancy">
+
                                 <label>Aesthetic</label>
+
                                 @if (isEditing)
+
                                 {
+
                                     <select class="luxury-select" @bind="item.Style">
+
                                         @foreach (var st in Styles)
+
                                         {
+
                                             <option value="@st">@st</option>
+
                                         }
+
                                     </select>
+
                                 }
+
                                 else
+
                                 {
+
+
 
                                     <span>@item.Style</span>
+
                                 }
+
                             </div>
+
+
 
                             <div class="detail-item-fancy">
+
                                 <label>Color</label>
+
                                 @if (isEditing)
+
                                 {
+
                                     <input class="luxury-input" placeholder="Black, Beige..." @bind="item.Color" />
+
                                 }
+
                                 else
+
                                 {
+
+
 
                                     <span>@(string.IsNullOrEmpty(item.Color) ? "-" : item.Color)</span>
+
                                 }
+
                             </div>
+
                         </div>
+
+
 
                         <div class="curation-notes-section">
+
                             <label>Curation Notes</label>
-                            <p>This piece is a vital part of your @(item.Style) collection for @item.Season. Its @item.Subcategory silhouette offers timeless versatility for your digital wardrobe.</p>
+
+                            <p>This piece is a vital part of your @(item.Style) collection for @item.Season. Its @item.SubcategoryName silhouette offers timeless versatility for your digital wardrobe.</p>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
     }
+
 </div>
 
+
+
 <ConfirmDialog IsVisible="showDeleteConfirm" Title="Delete Item?" Message="Are you sure?" ConfirmText="Delete" CancelText="Keep" ConfirmButtonClass="btn-delete-modal" OnConfirm="ConfirmDelete" OnCancel="() => showDeleteConfirm = false" />
+
 <ConfirmDialog IsVisible="showDiscardConfirm" Title="Discard Changes" Message="Revert to original?" ConfirmText="Discard" OnConfirm="ConfirmDiscard" OnCancel="() => showDiscardConfirm = false" />
+
+
 
 <NavBar CurrentPage="home" />
 
+
+
 <style>
+
     /* LAYOUT & SCALING */
+
     .item-details-page-wrapper {
         position: fixed;
         inset: 0;
@@ -178,11 +340,15 @@
         background: #fff;
     }
 
+
+
     .editorial-background-container {
         position: absolute;
         inset: 0;
         z-index: 1;
     }
+
+
 
         .editorial-background-container img {
             width: 100%;
@@ -192,7 +358,10 @@
             opacity: 0.65;
         }
 
+
+
     /* HEADER UNIFICAT */
+
     .editorial-header-unified {
         position: fixed;
         top: 0;
@@ -205,11 +374,15 @@
         z-index: 1000;
     }
 
+
+
     .brand-nav-group {
         display: flex;
         align-items: flex-start;
         gap: 15px;
     }
+
+
 
     .brand-title-unified {
         font-family: 'Playfair Display', serif;
@@ -218,17 +391,22 @@
         line-height: 0.8;
         color: black;
         /* ELIMINARE CHENAR */
+
         border: none !important;
         outline: none !important;
         box-shadow: none !important;
         user-select: none; /* Previne selectarea accidentală a textului */
     }
 
+
+
     .back-btn svg {
         width: 22px;
         height: 22px;
         stroke: #d946ef;
     }
+
+
 
     .collection-tag-unified {
         font-size: 10px;
@@ -239,6 +417,8 @@
         text-transform: uppercase;
         color: #7a5c68;
     }
+
+
 
     .profile-circle {
         width: 48px;
@@ -253,10 +433,14 @@
         border: none;
     }
 
+
+
     .profile-svg {
         fill: #d946ef;
         width: 22px;
     }
+
+
 
     .brand-edit-block label {
         font-size: 10px;
@@ -267,6 +451,8 @@
         display: block;
         margin-bottom: 6px;
     }
+
+
 
     .brand-input-luxury {
         width: 100%;
@@ -282,9 +468,13 @@
         transition: all .25s ease;
     }
 
+
+
         .brand-input-luxury:focus {
             border-color: #d946ef;
         }
+
+
 
     .luxury-select {
         width: 100%;
@@ -297,11 +487,15 @@
         transition: all .2s ease;
     }
 
+
+
         .luxury-select:focus {
             outline: none;
             border-color: #d946ef;
             box-shadow: 0 0 0 3px rgba(217,70,239,0.15);
         }
+
+
 
     .luxury-input {
         width: 100%;
@@ -312,12 +506,16 @@
         background: white;
     }
 
+
+
         .luxury-input:focus {
             outline: none;
             border-color: #d946ef;
             box-shadow: 0 0 0 3px rgba(217,70,239,0.15);
         }
+
     /* GRID ADAPTAT PENTRU POZĂ MAI MICĂ */
+
     .details-content-container {
         position: relative;
         z-index: 10;
@@ -331,6 +529,8 @@
         width: 100%;
     }
 
+
+
     .editorial-grid {
         display: grid;
         grid-template-columns: 0.9fr 1.1fr;
@@ -339,6 +539,8 @@
         width: 100%;
         max-height: 80vh;
     }
+
+
 
     .image-wrapper {
         aspect-ratio: 3/4;
@@ -351,21 +553,26 @@
         margin: 0 auto;
     }
 
+
+
         .image-wrapper img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
+
+
     /* ACTION BUTTONS DEASUPRA BOXULUI */
+
     .action-header-inline {
         display: flex;
         justify-content: flex-end;
         gap: 10px;
         margin-bottom: 12px;
-      
-
     }
+
+
 
     .small-action-btn {
         width: 42px;
@@ -380,21 +587,29 @@
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
 
+
+
         .small-action-btn.edit:hover {
             transform: translateY(-3px);
             background: #fdf2f8;
             box-shadow: 0 8px 18px rgba(217,70,239,0.25);
         }
 
+
+
     .edit {
         background: white;
         color: #2d1b24;
     }
 
+
+
     .delete {
         background: #2d1b24;
         color: white;
     }
+
+
 
     .small-action-btn.delete:hover {
         transform: translateY(-3px);
@@ -402,31 +617,43 @@
         box-shadow: 0 8px 18px rgba(0,0,0,0.25);
     }
 
+
+
     .save {
         background: #d946ef;
         color: white;
     }
+
+
 
     .small-action-btn.success:hover {
         transform: translateY(-3px);
         background: #c026d3;
     }
 
+
+
     .small-action-btn.cancel:hover {
         transform: translateY(-3px);
         background: #f5f5f5;
     }
+
     .cancel {
         background: #fff;
         border: 1px solid #eee;
         color: #7a5c68;
     }
 
+
+
     .small-action-btn svg {
         width: 18px;
     }
 
+
+
     /* INFO CARD */
+
     .luxury-info-card {
         background: rgba(255,255,255,0.92);
         backdrop-filter: blur(16px);
@@ -437,10 +664,13 @@
         min-height: 420px; /* 👈 stabilizează layout-ul */
     }
 
+
+
         .luxury-info-card:hover {
             transform: translateY(-6px);
             box-shadow: 0 30px 60px rgba(0,0,0,0.12);
         }
+
     .category-tag {
         font-size: 10px;
         font-weight: 900;
@@ -450,6 +680,8 @@
         display: block;
         margin-bottom: 10px;
     }
+
+
 
     .brand-title {
         font-family: 'Inter', sans-serif;
@@ -461,6 +693,8 @@
         line-height: 1;
     }
 
+
+
     .details-grid-fancy {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -469,6 +703,8 @@
         border-top: 1px solid #fce7f3;
         padding-top: 25px;
     }
+
+
 
     .detail-item-fancy label {
         font-size: 9px;
@@ -480,16 +716,22 @@
         margin-bottom: 4px;
     }
 
+
+
     .detail-item-fancy span {
         font-weight: 700;
         font-size: 16px;
         color: #2d1b24;
     }
 
+
+
     .curation-notes-section {
         border-top: 1px solid #fce7f3;
         padding-top: 20px;
     }
+
+
 
         .curation-notes-section label {
             font-size: 9px;
@@ -500,13 +742,17 @@
             margin-bottom: 8px;
         }
 
+
+
         .curation-notes-section p {
             font-size: 14px;
             line-height: 1.5;
             color: #7a5c68;
             margin: 0;
         }
+
     @@media (max-width: 768px) {
+
         .input-block-fit input,
         .input-block-fit select,
         .brand-input-luxury,
@@ -515,64 +761,81 @@
             font-size: 16px !important;
         }
         /* 1. Ancorarea superioară fixă (identică cu Home/Closet) */
+
         .hero-overlay, .content-overlay, .editorial-header-unified {
             padding-top: clamp(12px, 3.5vh, 25px) !important;
         }
         /* 2. Alinierea elementelor pe aceeași axă orizontală */
         /* Pe Home: .header-nav | Pe Closet: .editorial-header | Pe Add Item: .header-left/.header-right */
+
         .header-nav, .editorial-header, .editorial-header-unified {
             display: flex !important;
             align-items: center !important; /* Aceasta garantează că Logo și Profil sunt la același nivel */
+
             margin-top: 0 !important;
             padding-bottom: 0 !important;
         }
         /* 3. Spațiul sub Logo (Distanța până la Search/Conținut) */
+
         .editorial-header, .header-nav {
             margin-bottom: clamp(20px, 4vh, 35px) !important;
         }
-    /* 2. Resetăm grupul de brand */
-    .brand-nav-group {
-        display: flex;
-        align-items: center !important;
-        gap: 12px !important;
-    }
+        /* 2. Resetăm grupul de brand */
 
-    .brand-title-unified {
-        font-size: 22px !important;
-        line-height: 1 !important;
-        margin: 0 !important;
-        letter-spacing: -0.5px;
-    }
+        .brand-nav-group {
+            display: flex;
+            align-items: center !important;
+            gap: 12px !important;
+        }
 
-    .collection-tag-unified {
-        font-size: 8px !important;
-        letter-spacing: 2px !important;
-        margin-top: 2px !important;
-    }
+
+
+        .brand-title-unified {
+            font-size: 22px !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            letter-spacing: -0.5px;
+        }
+
+
+
+        .collection-tag-unified {
+            font-size: 8px !important;
+            letter-spacing: 2px !important;
+            margin-top: 2px !important;
+        }
+
+
 
         .luxury-info-card {
             min-height: 360px; /* ajustat pentru mobil */
         }
+
         .profile-circle {
             width: 38px !important;
             height: 38px !important;
             margin-bottom: 0 !important; /* Elimină spațiul de jos pe mobile pentru aliniere */
         }
 
+
+
             .profile-circle svg {
                 width: 18px !important;
                 height: 18px !important;
             }
+        /* 4. REGLAJ CONȚINUT: Eliminăm centrarea care "strică" alinierea logo-ului */
 
-    /* 4. REGLAJ CONȚINUT: Eliminăm centrarea care "strică" alinierea logo-ului */
         .details-content-container {
             padding: 110px 18px 90px !important;
             height: 100vh !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: center !important; /* Centrare verticală în spațiul rămas */
+
             transform: none !important;
         }
+
+
 
         .editorial-grid {
             display: flex !important;
@@ -581,75 +844,98 @@
             max-height: none !important;
             width: 100% !important;
             max-width: 340px; /* Limită pt telefoane înguste */
+
             margin: 0 auto 15px !important;
         }
+
         .image-wrapper {
-        max-height:26vh !important; /* Reducem drastic înălțimea pozei */
-        width: 85% !important;
-        aspect-ratio: 1/1 !important; /* O facem pătrată pt economie de spațiu */
-        border-width: 4px !important;
-        border-radius: 20px !important;
-        margin-bottom: 4px !important;
-    }
+            max-height: 26vh !important; /* Reducem drastic înălțimea pozei */
+
+            width: 85% !important;
+            aspect-ratio: 1/1 !important; /* O facem pătrată pt economie de spațiu */
+
+            border-width: 4px !important;
+            border-radius: 20px !important;
+            margin-bottom: 4px !important;
+        }
+
+
 
         .luxury-select,
         .luxury-input {
             padding: 6px 10px; /* ↓ mai mic */
+
             font-size: 13px;
         }
+
+
 
         .brand-input-luxury {
             font-size: 18px;
         }
- 
-    .small-action-btn {
-        width: 34px !important;
-        height: 34px !important;
-        border-radius: 10px !important;
-    }
+
+
+
+        .small-action-btn {
+            width: 34px !important;
+            height: 34px !important;
+            border-radius: 10px !important;
+        }
+
+
 
             .small-action-btn svg {
                 width: 16px !important; /* Icoanele din butoane mai mici */
             }
+        /* 6. CARDUL CU INFORMAȚII - Compactare maximă */
 
-    /* 6. CARDUL CU INFORMAȚII - Compactare maximă */
         .luxury-info-card {
             padding: 20px 18px !important;
             border-radius: 25px !important;
             margin-top: 0 !important; /* Eliminăm orice margine care ar cauza suprapunere */
+
             box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
             flex: 1; /* Ocupă spațiul rămas */
         }
-    .brand-title {
-        font-size: 20px !important;
-        margin-bottom: 5px !important;
-    }
 
-    .details-grid-fancy {
-        margin: 10px 0 !important;
-        padding-top: 10px !important;
-        gap: 10px !important;
-    }
+        .brand-title {
+            font-size: 20px !important;
+            margin-bottom: 5px !important;
+        }
 
-    .detail-item-fancy span {
-        font-size: 14px !important;
-    }
 
-    /* 7. Notele de curare - Mai mici */
+
+        .details-grid-fancy {
+            margin: 10px 0 !important;
+            padding-top: 10px !important;
+            gap: 10px !important;
+        }
+
+
+
+        .detail-item-fancy span {
+            font-size: 14px !important;
+        }
+        /* 7. Notele de curare - Mai mici */
+
         .curation-notes-section p {
             font-size: 12px !important;
             line-height: 1.4 !important;
             display: -webkit-box;
             -webkit-line-clamp: 3; /* Limitează textul la 3 rânduri pe mobile pentru a salva spațiu */
+
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-    .curation-notes-section label, 
-    .detail-item-fancy label,
-    .brand-edit-block label {
-        font-size: 8px !important;
-        margin-bottom: 2px !important;
-    }
+
+        .curation-notes-section label,
+        .detail-item-fancy label,
+        .brand-edit-block label {
+            font-size: 8px !important;
+            margin-bottom: 2px !important;
+        }
+
+
 
         .mobile-media-group {
             position: relative !important;
@@ -657,36 +943,55 @@
             margin-bottom: 0px !important; /* Lipim grupul de cardul de jos */
         }
 
+
+
         .image-showcase {
             position: relative;
         }
 
+
+
         .action-header-inline {
             position: absolute;
             top: -40px; /* 👈 CHEIA: negativ = urcă deasupra pozei */
+
             right: 10px;
             display: flex;
             gap: 8px;
             z-index: 50;
             padding-right: 5px;
         }
+
         .small-action-btn {
             width: 28px;
             height: 28px;
             border-radius: 10px;
         }
 
+
+
         .luxury-info-card {
             min-height: 200px; /* ajustat pentru mobil */
         }
-}
-/* Fix pentru ecrane foarte mici (iPhone SE) */
-@@media (max-height: 700px) {
-    .image-wrapper { max-height: 25vh !important; }
-    .details-content-container { padding-top: 80px !important; }
-}
-    
+    }
+
+    /* Fix pentru ecrane foarte mici (iPhone SE) */
+
+    @@media (max-height: 700px) {
+
+        .image-wrapper {
+            max-height: 25vh !important;
+        }
+
+        .details-content-container {
+            padding-top: 80px !important;
+        }
+    }
+
+
+
     @@media (max-width: 600px) {
+
         .details-content-container {
             height: calc(100vh - 120px);
             display: flex;
@@ -697,6 +1002,8 @@
             transform: translateY(3vh);
         }
 
+
+
         .editorial-grid {
             display: flex;
             flex-direction: column;
@@ -705,12 +1012,16 @@
             gap: 0;
         }
 
+
+
         .action-header-inline {
             order: 1;
             width: 100%;
             margin-bottom: 8px;
             justify-content: flex-end;
         }
+
+
 
         .small-action-btn {
             width: 32px !important;
@@ -719,10 +1030,14 @@
             outline: none !important;
         }
 
+
+
         .image-showcase {
             order: 2;
             width: 100%;
         }
+
+
 
         .image-wrapper {
             width: 100% !important;
@@ -733,10 +1048,14 @@
             margin-bottom: 10px !important;
         }
 
+
+
         .info-showcase {
             order: 3;
             width: 100%;
         }
+
+
 
         .luxury-info-card {
             padding: 20px !important;
@@ -745,127 +1064,159 @@
             margin: 0 !important;
         }
 
+
+
         .brand-input-luxury {
             font-size: 16px !important;
             padding: 2px 0 !important;
         }
 
+
+
         .brand-title {
             font-size: 18px !important;
         }
+
+
 
         .details-grid-fancy {
             gap: 10px !important;
             margin: 15px 0 !important;
         }
 
+
+
         .brand-edit-block {
             margin-bottom: 10px !important;
         }
     }
+
     /* MOBILE */
+
     /* REGLAJE FINALE PENTRU MOBIL: COMPACTARE ȘI EVITARE SUPRAPUNERE */
+
     /* REGLAJE FINALE PENTRU MOBIL: IMAGINE SINCRO CU BOXUL */
 
-        @@keyframes fadeIn {
-            from
 
-    {
-        opacity: 0;
-        transform: translateY(30px);
+
+    @@keyframes fadeIn {
+
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 
-    }
 
     @@keyframes slideRight {
-        from
 
-    {
-        opacity: 0;
-        transform: translateX(40px);
+        from {
+            opacity: 0;
+            transform: translateX(40px);
+        }
+
+
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
 
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-
-    }
     /* DESKTOP FIX */
+
     /* DESKTOP – MUTĂ BUTOANELE PE COLOANA DIN DREAPTA */
+
     @@media (min-width: 769px) {
-        .editorial-grid
 
-    {
-        position: relative;
+        .editorial-grid {
+            position: relative;
+        }
+
+
+
+        .action-header-inline {
+            position: absolute;
+            top: 20px;
+            /* 👇 CHEIA: le mutăm peste coloana 2 */
+
+            left: calc(50% + 700px);
+            /* fine tuning */
+
+            display: flex;
+            gap: 10px;
+            z-index: 50;
+        }
     }
 
-    .action-header-inline {
-        position: absolute;
-        top: 20px;
-        /* 👇 CHEIA: le mutăm peste coloana 2 */
-        left: calc(50% + 700px);
-        /* fine tuning */
-        display: flex;
-        gap: 10px;
-        z-index: 50;
-    }
-
-    }
-    
 </style>
 
+
 @code {
-    [Parameter] public string ItemId { get; set; } = "";
+    [Parameter] public int ItemId { get; set; }
     private ClothingItem? item;
     private bool isEditing = false;
     private bool showDeleteConfirm = false;
     private bool showDiscardConfirm = false;
 
 
+ 
+
     private List<string> Seasons = new() { "Spring", "Summer", "Autumn", "Winter", "All Seasons" };
     private List<string> Styles = new() { "Casual Style", "Elegant Style", "Formal Wear", "Sporty Look" };
-    private Dictionary<string, List<string>> SubcategoryMap = new()
-{
-    { "Tops", new() { "T-shirt", "Shirt", "Blouse", "Hoodie", "Sweater" } },
-    { "Bottoms", new() { "Jeans", "Trousers", "Skirt", "Shorts" } },
-    { "Dresses", new() { "Cocktail", "Maxi", "Mini", "Evening" } },
-    { "Outerwear", new() { "Jacket", "Coat", "Blazer", "Vest" } },
-    { "Shoes", new() { "Sneakers", "Boots", "Sandals", "Heels" } },
-    { "Accessories", new() { "Scarf", "Belt", "Jewelry", "Hat" } }
-};
-    private List<string> MainCategories = new()
-{
-    "Tops", "Bottoms", "Dresses", "Outerwear", "Shoes", "Accessories"
-};
 
+
+    private List<string> MainCategories = new() { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
     private List<string> AvailableSubcategories = new();
-    protected override void OnInitialized() => LoadItemData();
+    // Modifică începutul blocului @code
+    private List<EnVogue.Models.Category> CategoriesFromDb = new();
+    private List<EnVogue.Models.Subcategory> SubcategoriesFromDb = new(); // ADAUGĂ ASTA
 
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Încărcăm ambele liste
+            CategoriesFromDb = await Client.GetFromJsonAsync<List<EnVogue.Models.Category>>("api/categories") ?? new();
+            SubcategoriesFromDb = await Client.GetFromJsonAsync<List<EnVogue.Models.Subcategory>>("api/subcategories") ?? new();
+        }
+        catch { /* Logica de eroare */ }
+
+        await WardrobeService.InitializeAsync();
+        LoadItemData();
+    }
     private void LoadItemData()
     {
         var original = WardrobeService.GetAllClothes().FirstOrDefault(i => i.Id == ItemId);
 
         if (original != null)
         {
+            // Creăm o instanță curată pentru această pagină
             item = new ClothingItem
             {
                 Id = original.Id,
-                Category = original.Category,
-                Subcategory = original.Subcategory,
-                Color = original.Color,
-                ImageData = original.ImageData,
+                Brand = original.Brand,
+                CategoryName = original.CategoryName,
+                SubcategoryName = original.SubcategoryName,
                 Season = original.Season,
                 Style = original.Style,
-                Brand = original.Brand
+                Color = original.Color,
+                ImagePath = original.ImagePath
             };
 
+            // Validare de siguranță pentru categoriile venite din DB
+            if (string.IsNullOrEmpty(item.CategoryName)) item.CategoryName = "Tops";
+
             UpdateSubcategories();
+            StateHasChanged();
         }
     }
 
@@ -873,29 +1224,36 @@
     {
         if (item == null) return;
 
-        AvailableSubcategories = SubcategoryMap.ContainsKey(item.Category)
-            ? SubcategoryMap[item.Category]
-            : new List<string>();
+        // Filtrăm subcategoriile din lista DB care aparțin categoriei curente
+        var available = SubcategoriesFromDb.Where(s => s.CategoryId == item.CategoryId).ToList();
 
-        if (!AvailableSubcategories.Contains(item.Subcategory))
-            item.Subcategory = AvailableSubcategories.FirstOrDefault() ?? "";
+        // Dacă subcategoria actuală a hainei nu se află în lista noii categorii, o resetăm pe prima
+        if (!available.Any(s => s.Id == item.SubcategoryId))
+        {
+            item.SubcategoryId = available.FirstOrDefault()?.Id ?? 0;
+        }
     }
+
     private void OnCategoryChanged(ChangeEventArgs e)
     {
-        if (item == null) return;
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            item.CategoryId = id;
 
-        item.Category = e.Value?.ToString() ?? "Tops";
-        UpdateSubcategories();
+            // Luăm numele pentru UI (opțional, depinde dacă îl afișezi)
+            item.CategoryName = CategoriesFromDb.FirstOrDefault(c => c.Id == id)?.Name;
+
+            UpdateSubcategories();
+            StateHasChanged();
+        }
     }
 
-    private string GetImageSource(byte[]? imageBytes)
+    private string GetImageSource(string? imagePath)
     {
-        if (imageBytes == null || imageBytes.Length == 0) return "Images/placeholder.png";
-        return $"data:image/jpeg;base64,{Convert.ToBase64String(imageBytes)}";
+        if (string.IsNullOrWhiteSpace(imagePath)) return "Images/placeholder.png";
+        var fileName = System.IO.Path.GetFileName(imagePath);
+        return $"https://localhost:7081/uploads/images/{fileName}";
     }
-
-    private List<string> GetSubcategories(string category) => SubcategoryMap.ContainsKey(category) ? SubcategoryMap[category] : new();
-    // 1. Adaugă 'async Task' în loc de 'void'
     private async Task SaveChanges()
     {
         if (item == null) return;
@@ -904,27 +1262,36 @@
 
         if (original != null)
         {
+            // ADAUGĂ original.CategoryId != item.CategoryId aici:
             bool hasChanges = original.Brand != item.Brand ||
-                              original.Category != item.Category ||
-                              original.Subcategory != item.Subcategory ||
+                              original.CategoryId != item.CategoryId || // <-- CRITIC
+                              original.SubcategoryId != item.SubcategoryId ||
+                              original.CategoryName != item.CategoryName ||
+                              original.SubcategoryName != item.SubcategoryName ||
                               original.Style != item.Style ||
                               original.Color != item.Color;
 
             if (hasChanges)
             {
-                // 2. Pune 'await' în fața apelului către serviciu
+                // Trimitem obiectul la API
                 await WardrobeService.UpdateClothingItem(item);
 
-                // 3. Pune 'await' și la Toast dacă și el este asincron (recomandat)
-                // Dacă Show returnează void:
+                // REÎNCĂRCARE DATE: Fără asta, Closet va afișa datele vechi din memorie
+                await WardrobeService.InitializeAsync();
+
                 Toast.Show("Updated!", "success");
             }
         }
 
         isEditing = false;
+        StateHasChanged();
     }
     private void CancelEdit() { isEditing = false; LoadItemData(); }
     private void HandleDelete() => showDeleteConfirm = true;
-    private void ConfirmDelete() { WardrobeService.RemoveClothingItem(ItemId); Nav.NavigateTo("/closet"); }
+    private async Task ConfirmDelete()
+    {
+        await WardrobeService.RemoveClothingItem(ItemId);
+        Nav.NavigateTo("/closet");
+    }
     private void ConfirmDiscard() { showDiscardConfirm = false; isEditing = false; LoadItemData(); }
 }
