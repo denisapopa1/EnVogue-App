@@ -18,12 +18,7 @@
         <div class="header-left">
             <div class="brand-nav-group">
                 @* Butonul Back micșorat pe mobile *@
-                <button class="profile-circle back-btn" @onclick="HandleCancel">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#d946ef" stroke-width="2.5">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                </button>
+                <BackCircleButton OnClick="HandleCancel" UseBrowserBack="false" />
                 <div class="brand-text-block">
                     <h1 class="brand-title-unified white-text no-border">EnVogue</h1>
                     <span class="collection-tag-unified white-text">DESIGNER ARCHIVE</span>
@@ -32,12 +27,17 @@
         </div>
 
         <div class="header-right">
-            @* Buton profil micșorat pe mobile *@
-            <button class="profile-circle" @onclick='() => NavigationManager.NavigateTo("/profile")'>
-                <svg viewBox="0 0 24 24" class="profile-svg">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-            </button>
+            <div class="header-actions">
+                <div class="profile-action">
+                    <ProfileAvatarButton AriaLabel="Profile" />
+                </div>
+
+                <button class="profile-circle fav-circle" @onclick='() => NavigationManager.NavigateTo("/favorites")' aria-label="Favorites">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -330,8 +330,10 @@
             font-size: 16px !important;
             height: 45px; /* Îl facem puțin mai înalt pentru a fi ușor de atins */
         }
+
+        padding-top: clamp(20px, 5vh, 40px) !important;
         .hero-overlay, .content-overlay, .editorial-header-unified {
-            padding-top: clamp(12px, 3.5vh, 25px) !important;
+            padding-top: clamp(20px, 5vh, 40px) !important;
         }
         /* 2. Alinierea elementelor pe aceeași axă orizontală */
         /* Pe Home: .header-nav | Pe Closet: .editorial-header | Pe Add Item: .header-left/.header-right */
@@ -545,6 +547,42 @@
         animation: zoomIn 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
     }
 
+        .header-right {
+            display: flex !important;
+            align-items: flex-start !important;
+            margin-top: 0 !important;
+        }
+
+        .header-actions {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-end !important;
+            gap: 8px !important;
+        }
+
+        .profile-action {
+            position: relative !important;
+            top: 24px !important;
+        }
+
+        .fav-circle {
+            position: relative !important;
+            top: 23px !important;
+        }
+
+        .profile-circle {
+            width: 38px !important;
+            height: 38px !important;
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+            .profile-circle svg {
+                width: 18px !important;
+                height: 18px !important;
+            }
     @@keyframes zoomIn {
         from
 
@@ -765,21 +803,17 @@
             if (response.IsSuccessStatusCode)
             {
                 Console.WriteLine("SUCCES: Haina a fost salvată în baza de date!");
-                await WardrobeService.InitializeAsync();
+                await WardrobeService.InitializeAsync(forceReload: true);
                 NavigationManager.NavigateTo("/closet?success=true");
+                return;
             }
             else
             {
                 var errorDetails = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"EROARE SERVER: {response.StatusCode} - {errorDetails}");
                 Toast.Show($"Eroare la salvare: {response.StatusCode}", "error");
+                return;
             }
-
-            // 5. IMPORTANT: Reîmprospătăm datele globale înainte de a pleca din pagină
-            await WardrobeService.InitializeAsync();
-
-            // 6. Navigăm înapoi la garderobă
-            NavigationManager.NavigateTo("/closet?success=true");
         }
         catch (Exception ex)
         {

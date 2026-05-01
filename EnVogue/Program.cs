@@ -24,6 +24,8 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<WardrobeServices>();
 builder.Services.AddScoped<UserState>();
 builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<ProfilePhotoService>();
+builder.Services.AddScoped<AccountProfileService>();
 
 // 3. CONFIGURARE AUTENTIFICARE
 builder.Services.AddAuthorizationCore();

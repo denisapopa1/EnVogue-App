@@ -41,17 +41,7 @@
 
             <div class="brand-nav-group">
 
-                <button class="profile-circle back-btn" @onclick='() => Nav.NavigateTo("/closet")'>
-
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-
-                        <polyline points="12 19 5 12 12 5"></polyline>
-
-                    </svg>
-
-                </button>
+                <BackCircleButton FallbackRoute="/closet" />
 
                 <div class="brand-text-block">
 
@@ -67,11 +57,17 @@
 
         <div class="header-right">
 
-            <button class="profile-circle" @onclick='() => Nav.NavigateTo("/profile")'>
+            <div class="header-actions">
 
-                <svg viewBox="0 0 24 24" class="profile-svg"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>
+            <button class="profile-circle fav-circle" @onclick='() => Nav.NavigateTo("/favorites")' aria-label="Favorites">
+
+                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
 
             </button>
+
+            <ProfileAvatarButton />
+
+            </div>
 
         </div>
 
@@ -178,10 +174,10 @@
                                 @if (isEditing)
 
                                         {
-                                    <select class="luxury-select" value="@item.CategoryName" @onchange="OnCategoryChanged">
-                                        @foreach (var cat in MainCategories)
+                                    <select class="luxury-select" value="@item.CategoryId" @onchange="OnCategoryChanged">
+                                        @foreach (var cat in CategoriesFromDb)
                                         {
-                                            <option value="@cat">@cat</option>
+                                            <option value="@cat.Id">@cat.Name</option>
                                         }
                                     </select>
 
@@ -209,10 +205,10 @@
 
                                 {
 
-                                    <select class="luxury-select" @bind="item.SubcategoryName">
-                                        @foreach (var sub in AvailableSubcategories)
+                                    <select class="luxury-select" value="@item.SubcategoryId" @onchange="OnSubcategoryChanged">
+                                        @foreach (var sub in FilteredSubcategories)
                                         {
-                                            <option value="@sub">@sub</option>
+                                            <option value="@sub.Id">@sub.Name</option>
                                         }
                                     </select>
                                 }
@@ -1174,19 +1170,30 @@
     private List<string> Styles = new() { "Casual Style", "Elegant Style", "Formal Wear", "Sporty Look" };
 
 
-    private List<string> MainCategories = new() { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
-    private List<string> AvailableSubcategories = new();
     // Modifică începutul blocului @code
     private List<EnVogue.Models.Category> CategoriesFromDb = new();
     private List<EnVogue.Models.Subcategory> SubcategoriesFromDb = new(); // ADAUGĂ ASTA
+    private readonly Dictionary<string, List<string>> SubcategoryFallbackMap = new()
+    {
+        { "Tops", new() { "T-shirt", "Blouse", "Hoodie", "Sweater" } },
+        { "Bottoms", new() { "Jeans", "Trousers", "Skirt", "Shorts" } },
+        { "Dress", new() { "Cocktail", "Maxi", "Mini", "Evening" } },
+        { "Outerwear", new() { "Jacket", "Coat", "Blazer", "Cardigan" } },
+        { "Shoes", new() { "Sneakers", "Boots", "Sandals", "Heels" } },
+        { "Accessories", new() { "Scarf", "Belt", "Jewelry", "Hat" } }
+    };
+    private List<EnVogue.Models.Subcategory> FilteredSubcategories =>
+        item?.CategoryId is int categoryId
+            ? SubcategoriesFromDb.Where(s => s.CategoryId == categoryId).ToList()
+            : new();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             // Încărcăm ambele liste
-            CategoriesFromDb = await Client.GetFromJsonAsync<List<EnVogue.Models.Category>>("api/categories") ?? new();
-            SubcategoriesFromDb = await Client.GetFromJsonAsync<List<EnVogue.Models.Subcategory>>("api/subcategories") ?? new();
+            CategoriesFromDb = await LoadCategoriesAsync();
+            SubcategoriesFromDb = await LoadSubcategoriesAsync();
         }
         catch { /* Logica de eroare */ }
 
@@ -1203,8 +1210,11 @@
             item = new ClothingItem
             {
                 Id = original.Id,
+                Name = original.Name,
                 Brand = original.Brand,
+                CategoryId = original.CategoryId,
                 CategoryName = original.CategoryName,
+                SubcategoryId = original.SubcategoryId,
                 SubcategoryName = original.SubcategoryName,
                 Season = original.Season,
                 Style = original.Style,
@@ -1215,6 +1225,17 @@
             // Validare de siguranță pentru categoriile venite din DB
             if (string.IsNullOrEmpty(item.CategoryName)) item.CategoryName = "Tops";
 
+            if (!item.CategoryId.HasValue && !string.IsNullOrWhiteSpace(item.CategoryName))
+            {
+                item.CategoryId = CategoriesFromDb.FirstOrDefault(c => c.Name == item.CategoryName)?.Id;
+            }
+
+            if (!item.SubcategoryId.HasValue && item.CategoryId.HasValue && !string.IsNullOrWhiteSpace(item.SubcategoryName))
+            {
+                item.SubcategoryId = SubcategoriesFromDb
+                    .FirstOrDefault(s => s.CategoryId == item.CategoryId.Value && s.Name == item.SubcategoryName)?.Id;
+            }
+
             UpdateSubcategories();
             StateHasChanged();
         }
@@ -1224,13 +1245,25 @@
     {
         if (item == null) return;
 
-        // Filtrăm subcategoriile din lista DB care aparțin categoriei curente
-        var available = SubcategoriesFromDb.Where(s => s.CategoryId == item.CategoryId).ToList();
-
-        // Dacă subcategoria actuală a hainei nu se află în lista noii categorii, o resetăm pe prima
-        if (!available.Any(s => s.Id == item.SubcategoryId))
+        if (!item.CategoryId.HasValue && !string.IsNullOrWhiteSpace(item.CategoryName))
         {
-            item.SubcategoryId = available.FirstOrDefault()?.Id ?? 0;
+            item.CategoryId = CategoriesFromDb.FirstOrDefault(c => c.Name == item.CategoryName)?.Id;
+        }
+
+        if (item.CategoryId.HasValue)
+        {
+            item.CategoryName = CategoriesFromDb.FirstOrDefault(c => c.Id == item.CategoryId.Value)?.Name ?? item.CategoryName;
+        }
+
+        // Dacă subcategoria actuală a hainei nu se află în lista categoriei curente, o resetăm pe prima
+        if (!FilteredSubcategories.Any(s => s.Id == item.SubcategoryId))
+        {
+            item.SubcategoryId = FilteredSubcategories.FirstOrDefault()?.Id;
+        }
+
+        if (item.SubcategoryId.HasValue)
+        {
+            item.SubcategoryName = FilteredSubcategories.FirstOrDefault(s => s.Id == item.SubcategoryId.Value)?.Name ?? item.SubcategoryName;
         }
     }
 
@@ -1244,6 +1277,97 @@
             item.CategoryName = CategoriesFromDb.FirstOrDefault(c => c.Id == id)?.Name;
 
             UpdateSubcategories();
+            StateHasChanged();
+        }
+    }
+
+    private async Task<List<EnVogue.Models.Category>> LoadCategoriesAsync()
+    {
+        var categories = await TryGetJsonAsync<List<EnVogue.Models.Category>>("api/clothing/categories")
+            ?? await TryGetJsonAsync<List<EnVogue.Models.Category>>("api/categories");
+
+        if (categories != null && categories.Any())
+        {
+            return categories;
+        }
+
+        return new List<EnVogue.Models.Category>
+        {
+            new() { Id = 1, Name = "Tops" },
+            new() { Id = 2, Name = "Bottoms" },
+            new() { Id = 3, Name = "Dress" },
+            new() { Id = 4, Name = "Outerwear" },
+            new() { Id = 5, Name = "Shoes" },
+            new() { Id = 6, Name = "Accessories" }
+        };
+    }
+
+    private async Task<List<EnVogue.Models.Subcategory>> LoadSubcategoriesAsync()
+    {
+        var subcategories = await TryGetJsonAsync<List<EnVogue.Models.Subcategory>>("api/clothing/subcategories")
+            ?? await TryGetJsonAsync<List<EnVogue.Models.Subcategory>>("api/subcategories");
+
+        if (subcategories != null && subcategories.Any())
+        {
+            return subcategories;
+        }
+
+        var fallbackCategories = CategoriesFromDb.Any()
+            ? CategoriesFromDb
+            : new List<EnVogue.Models.Category>
+            {
+                new() { Id = 1, Name = "Tops" },
+                new() { Id = 2, Name = "Bottoms" },
+                new() { Id = 3, Name = "Dress" },
+                new() { Id = 4, Name = "Outerwear" },
+                new() { Id = 5, Name = "Shoes" },
+                new() { Id = 6, Name = "Accessories" }
+            };
+
+        var fallbackSubcategories = new List<EnVogue.Models.Subcategory>();
+        var nextId = 1;
+
+        foreach (var category in fallbackCategories)
+        {
+            if (!SubcategoryFallbackMap.TryGetValue(category.Name, out var names))
+            {
+                continue;
+            }
+
+            foreach (var name in names)
+            {
+                fallbackSubcategories.Add(new EnVogue.Models.Subcategory
+                {
+                    Id = nextId++,
+                    Name = name,
+                    CategoryId = category.Id
+                });
+            }
+        }
+
+        return fallbackSubcategories;
+    }
+
+    private async Task<T?> TryGetJsonAsync<T>(string uri)
+    {
+        try
+        {
+            return await Client.GetFromJsonAsync<T>(uri);
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    private void OnSubcategoryChanged(ChangeEventArgs e)
+    {
+        if (item == null) return;
+
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            item.SubcategoryId = id;
+            item.SubcategoryName = FilteredSubcategories.FirstOrDefault(s => s.Id == id)?.Name ?? item.SubcategoryName;
             StateHasChanged();
         }
     }

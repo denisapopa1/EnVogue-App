@@ -131,5 +131,37 @@
 
         <script src="_framework/blazor.webassembly.js"></script>
         <script src="fileUploadV2.js"></script>
+        <script>
+            window.envogueProfile = {
+                clickById: function (id) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.click();
+                    }
+                }
+            };
+
+            window.enVogueHome = {
+                scrollCarousel: function (element, amount) {
+                    if (!element) return;
+
+                    element.scrollBy({
+                        left: amount,
+                        behavior: 'smooth'
+                    });
+                }
+            };
+
+            window.enVogueNav = {
+                goBack: function () {
+                    if (window.history.length > 1) {
+                        window.history.back();
+                        return true;
+                    }
+
+                    return false;
+                }
+            };
+        </script>
     </body>
 </html>

@@ -23,14 +23,24 @@ namespace EnVogue.Models
 
     public class Outfit
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public int Id { get; set; } // Backend-ul folosește int
         public string Name { get; set; } = "";
+        public DateTime CreatedDate { get; set; }
+        public bool IsFavorite { get; set; }
+        public string? Occasion { get; set; }
+        public string? CreationSource { get; set; }
+        public List<ClothingItem> ClothingItems { get; set; } = new();
 
-        // Dacă ClothingItem este definit chiar deasupra, aici va funcționa!
-        public List<ClothingItem> Items { get; set; } = new();
+        [JsonIgnore]
+        public List<ClothingItem> Items
+        {
+            get => ClothingItems;
+            set => ClothingItems = value ?? new();
+        }
 
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
-        public bool IsFavorite { get; set; } = false;
-        public string Occasion { get; set; } = "";
-    } // <-- Aici se închide Outfit
+        [JsonIgnore]
+        public bool IsAiGenerated =>
+            string.Equals(CreationSource, "AI", StringComparison.OrdinalIgnoreCase);
+    }
+
 } // <-- Aici se închide Namespace-ul (Dacă lipsește asta, dă erori peste tot)

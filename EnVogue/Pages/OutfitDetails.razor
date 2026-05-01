@@ -1,0 +1,1081 @@
+@page "/outfit-details/{OutfitId:int}"
+@using EnVogue.Models
+@using EnVogue.Services
+@using EnVogue.Shared
+@implements IDisposable
+@inject WardrobeServices WardrobeService
+@inject NavigationManager Nav
+@inject NotificationService Toast
+@layout EmptyLayout
+
+<div class="outfit-details-page-wrapper">
+    <div class="editorial-background-container">
+        <img src="Images/outfits-background.png" alt="Outfit background" />
+        <div class="overlay-gradient"></div>
+    </div>
+
+    <header class="editorial-header-unified">
+        <div class="header-left">
+            <div class="brand-nav-group">
+                <BackCircleButton FallbackRoute="/my-outfits" />
+                <div class="brand-text-block">
+                    <h1 class="brand-title-unified no-border">EnVogue</h1>
+                    <span class="collection-tag-unified closet-color">OUTFIT ARCHIVE</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="header-actions">
+                <ProfileAvatarButton AriaLabel="Profile" />
+                <button class="profile-circle fav-circle" @onclick='() => Nav.NavigateTo("/favorites")' aria-label="Favorites">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    @if (outfit != null)
+    {
+        <div class="details-content-container">
+            <div class="outfit-details-grid">
+                <div class="outfit-hero-card animate-fade-in">
+                    <div class="outfit-collage-shell">
+                        <div class="@GetPreviewGridClass(outfit.Items.Count)">
+                            @foreach (var item in GetSortedItems(outfit.Items))
+                            {
+                                <div class="preview-piece">
+                                    <img src="@GetImageSource(item.ImagePath)" alt="@item.SubcategoryName" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-showcase animate-slide-right">
+                    <div class="info-actions-row">
+                        <button class="profile-circle action-circle favorite-toggle-btn @(outfit?.IsFavorite == true ? "active" : "")"
+                                @onclick="ToggleFavorite"
+                                aria-label="Toggle favorite">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </button>
+
+                        @if (isEditing)
+                        {
+                            <button class="profile-circle action-circle save-circle" @onclick="SaveChanges" aria-label="Save">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </button>
+                            <button class="profile-circle action-circle cancel-circle" @onclick="CancelEdit" aria-label="Cancel">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="profile-circle action-circle edit-circle" @onclick="BeginEdit" aria-label="Edit">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </button>
+                        }
+
+                        <button class="profile-circle action-circle delete-circle" @onclick="HandleDelete" aria-label="Delete">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="luxury-info-card">
+                        <div class="brand-edit-block">
+                            <label>Outfit Name</label>
+                            @if (isEditing)
+                            {
+                                <input class="brand-input-luxury" @bind="outfit.Name" placeholder="Smart Ensemble" />
+                            }
+                            else
+                            {
+                                <h2 class="brand-title">@(string.IsNullOrWhiteSpace(outfit.Name) ? "Styled Look" : outfit.Name)</h2>
+                            }
+                        </div>
+
+                        <div class="details-grid-fancy">
+                            <div class="detail-item-fancy">
+                                <label>Style</label>
+                                @if (isEditing)
+                                {
+                                    <select class="luxury-select" @bind="outfit.Occasion">
+                                        @foreach (var style in Styles)
+                                        {
+                                            <option value="@style">@style</option>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+                                    <span>@(string.IsNullOrWhiteSpace(outfit.Occasion) ? "Manual Selection" : outfit.Occasion)</span>
+                                }
+                            </div>
+
+                            <div class="detail-item-fancy">
+                                <label>Season</label>
+                                <span>@GetSeasonSummary()</span>
+                            </div>
+
+                            <div class="detail-item-fancy">
+                                <label>Items</label>
+                                <span>@outfit.Items.Count pieces</span>
+                            </div>
+
+                            <div class="detail-item-fancy">
+                                <label>Created</label>
+                                <span>@outfit.CreatedDate.ToString("MMM d, yyyy")</span>
+                            </div>
+                        </div>
+
+                        <div class="curation-notes-section">
+                            <label>Outfit Notes</label>
+                            <p>This look brings together @outfit.Items.Count pieces in a @GetStyleLabel() composition. Each selected item remains available below so you can inspect the full styling mix.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="items-section animate-fade-in">
+                <div class="section-header-row">
+                    <h3>Selected Items</h3>
+                    <span>@outfit.Items.Count pieces</span>
+                </div>
+
+                <div class="selected-items-list">
+                    @foreach (var item in GetSortedItems(outfit.Items))
+                    {
+                        <button class="selected-item-row" @onclick='() => OpenItemDetails(item.Id)'>
+                            <div class="item-thumb-circle">
+                                <img src="@GetImageSource(item.ImagePath)" alt="@item.SubcategoryName" />
+                            </div>
+                            <div class="item-main-copy">
+                                <strong>@(string.IsNullOrWhiteSpace(item.Brand) ? "Sample Brand" : item.Brand)</strong>
+                                <span>@(string.IsNullOrWhiteSpace(item.SubcategoryName) ? "Styled Piece" : item.SubcategoryName)</span>
+                                <small>@BuildItemSubtitle(item)</small>
+                            </div>
+                            <div class="item-category-copy">
+                                <span>@(string.IsNullOrWhiteSpace(item.CategoryName) ? "Piece" : item.CategoryName)</span>
+                            </div>
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="details-content-container">
+            <div class="missing-outfit-card animate-fade-in">
+                <h3>Outfit not found</h3>
+                <p>This look is no longer available in your archive.</p>
+                <button class="create-now-btn" @onclick='() => Nav.NavigateTo("/my-outfits")'>BACK TO LOOKS</button>
+            </div>
+        </div>
+    }
+</div>
+
+<ConfirmDialog IsVisible="showDeleteConfirm"
+               Title="Delete Outfit?"
+               Message="Are you sure you want to remove this outfit from your archive?"
+               ConfirmText="Delete"
+               CancelText="Keep"
+               ConfirmButtonClass="btn-danger-modal"
+               OnConfirm="ConfirmDelete"
+               OnCancel="() => showDeleteConfirm = false" />
+
+<ConfirmDialog IsVisible="showDiscardConfirm"
+               Title="Discard Changes"
+               Message="Revert outfit details to the saved version?"
+               ConfirmText="Discard"
+               OnConfirm="ConfirmDiscard"
+               OnCancel="() => showDiscardConfirm = false" />
+
+<NavBar CurrentPage="outfits" />
+
+<style>
+    .outfit-details-page-wrapper {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .editorial-background-container {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+
+    .editorial-background-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: blur(10px);
+        opacity: 0.78;
+    }
+
+    .overlay-gradient {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.32);
+    }
+
+    .editorial-header-unified {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: clamp(25px, 4vh, 60px) 20px 0;
+        z-index: 1000;
+    }
+
+    .brand-nav-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .brand-text-block {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .brand-title-unified {
+        font-family: 'Playfair Display', serif;
+        font-size: 38px;
+        font-weight: 900;
+        line-height: 0.8;
+        margin: 0;
+        color: #111;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    .collection-tag-unified {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        display: block;
+        margin-top: 5px;
+        text-transform: uppercase;
+        color: #7a5c68;
+    }
+
+    .profile-circle {
+        width: 48px;
+        height: 48px;
+        background: white !important;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .profile-circle:hover {
+        transform: scale(1.08);
+    }
+
+    .profile-circle svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .header-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }
+
+    .fav-circle {
+        color: #d946ef;
+    }
+
+    .profile-svg {
+        fill: #d946ef;
+    }
+
+    .action-circle svg {
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.2;
+    }
+
+    .favorite-toggle-btn {
+        color: #d946ef;
+    }
+
+    .favorite-toggle-btn.active {
+        background: #d946ef !important;
+        color: white;
+    }
+
+    .edit-circle {
+        color: #5b46f7;
+    }
+
+    .save-circle {
+        color: #16a34a;
+    }
+
+    .cancel-circle {
+        color: #7a5c68;
+    }
+
+    .delete-circle {
+        color: #ef4444;
+    }
+
+    .details-content-container {
+        position: relative;
+        z-index: 5;
+        height: 100vh;
+        overflow-y: auto;
+        padding: clamp(110px, 15vh, 134px) 18px calc(100px + env(safe-area-inset-bottom));
+        box-sizing: border-box;
+        scrollbar-width: none;
+        width: min(100%, 1320px);
+        margin: 0 auto;
+    }
+
+    .details-content-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .outfit-details-grid {
+        display: grid;
+        grid-template-columns: minmax(270px, 0.72fr) minmax(420px, 1.28fr);
+        gap: 14px;
+        align-items: center;
+    }
+
+    .outfit-hero-card,
+    .luxury-info-card,
+    .items-section,
+    .missing-outfit-card {
+        background: rgba(255, 255, 255, 0.78);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.55);
+        box-shadow: 0 18px 40px rgba(45, 27, 36, 0.08);
+        border-radius: 30px;
+    }
+
+    .outfit-hero-card {
+        padding: 14px;
+        height: 540px;
+        box-sizing: border-box;
+    }
+
+    .outfit-collage-shell {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.92);
+        padding: 14px;
+        box-sizing: border-box;
+    }
+
+    .look-preview {
+        width: 100%;
+        min-height: 100%;
+    }
+
+    .preview-grid {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .preview-grid.many-items {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+
+    .preview-grid.one-item {
+        place-items: center;
+    }
+
+    .preview-grid.one-item .preview-piece {
+        width: 70%;
+        height: 78%;
+    }
+
+    .preview-grid.two-items {
+        grid-template-rows: 1fr 1fr;
+    }
+
+    .preview-grid.three-items .preview-piece:nth-child(3) {
+        grid-column: 1 / -1;
+        padding: 6px 32px;
+    }
+
+    .preview-piece {
+        border-radius: 16px;
+        background: rgba(249, 250, 251, 0.95);
+        display: grid;
+        place-items: center;
+        padding: 8px;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .preview-piece img {
+        width: 72%;
+        height: 72%;
+        object-fit: contain;
+        object-position: center;
+    }
+
+    .luxury-info-card {
+        padding: 16px;
+    }
+
+    .info-showcase {
+        display: grid;
+        gap: 12px;
+        align-self: center;
+    }
+
+    .info-actions-row {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-right: 4px;
+    }
+
+    .brand-edit-block label,
+    .detail-item-fancy label,
+    .curation-notes-section label {
+        display: block;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        color: #7a5c68;
+        margin-bottom: 10px;
+    }
+
+    .brand-title {
+        margin: 0;
+        font-size: 24px;
+        line-height: 1.02;
+        font-weight: 900;
+        color: #17121a;
+    }
+
+    .brand-input-luxury,
+    .luxury-select {
+        width: 100%;
+        min-height: 46px;
+        border: 1px solid rgba(217,70,239,0.18);
+        background: rgba(255,255,255,0.92);
+        border-radius: 14px;
+        padding: 0 16px;
+        box-sizing: border-box;
+        font-size: 14px;
+        color: #17121a;
+        outline: none;
+    }
+
+    .details-grid-fancy {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .detail-item-fancy {
+        padding: 12px;
+        border-radius: 16px;
+        background: rgba(249, 250, 251, 0.88);
+    }
+
+    .detail-item-fancy span {
+        display: block;
+        font-size: 14px;
+        font-weight: 800;
+        color: #17121a;
+    }
+
+    .curation-notes-section {
+        margin-top: 14px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: rgba(249, 250, 251, 0.88);
+    }
+
+    .curation-notes-section p {
+        margin: 0;
+        color: #7a5c68;
+        line-height: 1.45;
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+    .items-section {
+        margin-top: 18px;
+        padding: 16px;
+    }
+
+    .section-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .section-header-row h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 900;
+        color: #17121a;
+    }
+
+    .section-header-row span {
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: #7a5c68;
+    }
+
+    .selected-items-list {
+        display: grid;
+        gap: 8px;
+    }
+
+    .selected-item-row {
+        width: 100%;
+        border: none;
+        background: rgba(255,255,255,0.84);
+        border-radius: 16px;
+        padding: 10px 12px;
+        display: grid;
+        grid-template-columns: 50px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        cursor: pointer;
+        text-align: left;
+        box-sizing: border-box;
+    }
+
+    .item-thumb-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        background: rgba(249, 250, 251, 0.95);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+    }
+
+    .item-thumb-circle img {
+        width: 82%;
+        height: 82%;
+        object-fit: contain;
+    }
+
+    .item-main-copy {
+        display: grid;
+        gap: 5px;
+    }
+
+    .item-main-copy strong {
+        font-size: 14px;
+        color: #17121a;
+    }
+
+    .item-main-copy span {
+        font-size: 12px;
+        color: #7a5c68;
+        font-weight: 700;
+    }
+
+    .item-main-copy small {
+        font-size: 10px;
+        color: #9a7a89;
+        font-weight: 700;
+    }
+
+    .item-category-copy {
+        justify-self: end;
+        color: #a855f7;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .missing-outfit-card {
+        max-width: 720px;
+        margin: 20px auto 0;
+        padding: 40px;
+        text-align: center;
+    }
+
+    .missing-outfit-card h3 {
+        margin: 0 0 8px;
+        font-size: 28px;
+    }
+
+    .missing-outfit-card p {
+        margin: 0;
+        color: #7a5c68;
+    }
+
+    .create-now-btn {
+        margin-top: 18px;
+        min-height: 46px;
+        padding: 0 22px;
+        border: none;
+        border-radius: 16px;
+        background: #2d1b24;
+        color: white;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 1.4px;
+        cursor: pointer;
+    }
+
+    .no-border {
+        border: none !important;
+        outline: none !important;
+    }
+
+    .closet-color {
+        color: #7a5c68;
+    }
+
+    .animate-fade-in {
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    .animate-slide-right {
+        animation: slideRight 0.55s ease-out;
+    }
+
+    @@media (max-width: 1100px) {
+        .outfit-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-showcase {
+            align-self: stretch;
+        }
+
+        .info-actions-row {
+            justify-content: flex-start;
+            padding-right: 0;
+        }
+
+        .outfit-collage-shell {
+            height: 100%;
+        }
+
+        .outfit-hero-card {
+            height: 460px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .editorial-header-unified {
+            align-items: center;
+            padding: clamp(12px, 3.5vh, 25px) 20px 0 !important;
+        }
+
+        .brand-nav-group {
+            align-items: center !important;
+            gap: 10px !important;
+        }
+
+        .brand-title-unified {
+            font-size: 26px !important;
+            line-height: 1 !important;
+        }
+
+        .collection-tag-unified {
+            font-size: 8px !important;
+            letter-spacing: 2px !important;
+            margin-top: 2px !important;
+        }
+
+        .profile-circle {
+            width: 38px !important;
+            height: 38px !important;
+        }
+
+        .profile-circle svg {
+            width: 18px !important;
+            height: 18px !important;
+        }
+
+        .header-actions {
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .details-content-container {
+            padding: 110px 18px 104px;
+        }
+
+        .info-actions-row {
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .outfit-hero-card,
+        .luxury-info-card,
+        .items-section {
+            border-radius: 24px;
+        }
+
+        .outfit-hero-card,
+        .luxury-info-card,
+        .items-section {
+            padding: 18px;
+        }
+
+        .outfit-collage-shell {
+            height: 100%;
+            padding: 18px;
+        }
+
+        .preview-grid {
+            height: 100%;
+            gap: 10px;
+        }
+
+        .outfit-hero-card {
+            height: 380px;
+        }
+
+        .preview-grid.three-items .preview-piece:nth-child(3) {
+            padding: 8px 28px;
+        }
+
+        .brand-title {
+            font-size: 28px;
+        }
+
+        .details-grid-fancy {
+            grid-template-columns: 1fr;
+        }
+
+        .selected-item-row {
+            grid-template-columns: 64px 1fr;
+        }
+
+        .item-category-copy {
+            grid-column: 2;
+            justify-self: start;
+        }
+
+        .item-main-copy strong {
+            font-size: 18px;
+        }
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes slideRight {
+        from {
+            opacity: 0;
+            transform: translateX(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public int OutfitId { get; set; }
+
+    private Outfit? outfit;
+    private Outfit? originalOutfitSnapshot;
+    private bool isEditing;
+    private bool showDeleteConfirm;
+    private bool showDiscardConfirm;
+
+    private List<string> Styles = new() { "Casual Style", "Elegant Style", "Formal Wear", "Sporty Look" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await WardrobeService.InitializeAsync();
+        LoadOutfitData();
+        WardrobeService.OnChange += HandleOnChange;
+    }
+
+    private void HandleOnChange() => InvokeAsync(LoadOutfitData);
+
+    private void LoadOutfitData()
+    {
+        var original = WardrobeService.GetOutfitById(OutfitId);
+        if (original == null)
+        {
+            outfit = null;
+            originalOutfitSnapshot = null;
+            StateHasChanged();
+            return;
+        }
+
+        outfit = CloneOutfit(original);
+        originalOutfitSnapshot = CloneOutfit(original);
+        StateHasChanged();
+    }
+
+    private static Outfit CloneOutfit(Outfit source)
+    {
+        return new Outfit
+        {
+            Id = source.Id,
+            Name = source.Name,
+            Occasion = source.Occasion,
+            CreatedDate = source.CreatedDate,
+            IsFavorite = source.IsFavorite,
+            Items = source.Items.Select(item => new ClothingItem
+            {
+                Id = item.Id,
+                Name = item.Name,
+                Brand = item.Brand,
+                CategoryId = item.CategoryId,
+                CategoryName = item.CategoryName,
+                SubcategoryId = item.SubcategoryId,
+                SubcategoryName = item.SubcategoryName,
+                Season = item.Season,
+                Style = item.Style,
+                Color = item.Color,
+                ImagePath = item.ImagePath,
+                IsFavorite = item.IsFavorite,
+                UserId = item.UserId
+            }).ToList()
+        };
+    }
+
+    private void BeginEdit()
+    {
+        isEditing = true;
+    }
+
+    private async Task SaveChanges()
+    {
+        if (outfit == null)
+        {
+            return;
+        }
+
+        var updatedSuccessfully = await WardrobeService.UpdateOutfit(outfit);
+        if (!updatedSuccessfully)
+        {
+            Toast.Show("Outfitul nu a putut fi actualizat.", "error");
+            return;
+        }
+
+        originalOutfitSnapshot = CloneOutfit(outfit);
+        isEditing = false;
+        Toast.Show("Outfit updated!", "success");
+        StateHasChanged();
+    }
+
+    private void CancelEdit()
+    {
+        if (HasChanges())
+        {
+            showDiscardConfirm = true;
+            return;
+        }
+
+        ConfirmDiscard();
+    }
+
+    private bool HasChanges()
+    {
+        if (outfit == null || originalOutfitSnapshot == null)
+        {
+            return false;
+        }
+
+        return outfit.Name != originalOutfitSnapshot.Name ||
+               outfit.Occasion != originalOutfitSnapshot.Occasion;
+    }
+
+    private async Task ToggleFavorite()
+    {
+        if (outfit == null)
+        {
+            return;
+        }
+
+        var wasFavorite = outfit.IsFavorite;
+        var updatedSuccessfully = await WardrobeService.ToggleFavorite(outfit.Id);
+        if (!updatedSuccessfully)
+        {
+            Toast.Show("Favorite status could not be saved.", "error");
+            return;
+        }
+
+        Toast.Show(wasFavorite ? "Outfit removed from favorites." : "Outfit added to favorites.",
+            wasFavorite ? "info" : "success");
+        await WardrobeService.InitializeAsync(forceReload: true);
+        LoadOutfitData();
+    }
+
+    private void HandleDelete()
+    {
+        showDeleteConfirm = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (outfit == null)
+        {
+            return;
+        }
+
+        var deleted = await WardrobeService.RemoveOutfit(outfit.Id);
+        if (deleted)
+        {
+            Toast.Show("Outfit deleted.", "success");
+            Nav.NavigateTo("/my-outfits");
+            return;
+        }
+
+        Toast.Show("Outfit could not be deleted.", "error");
+    }
+
+    private void ConfirmDiscard()
+    {
+        showDiscardConfirm = false;
+        isEditing = false;
+        if (originalOutfitSnapshot != null)
+        {
+            outfit = CloneOutfit(originalOutfitSnapshot);
+        }
+        StateHasChanged();
+    }
+
+    private void OpenItemDetails(int itemId)
+    {
+        Nav.NavigateTo($"/item-details/{itemId}");
+    }
+
+    private List<ClothingItem> GetSortedItems(List<ClothingItem> items)
+    {
+        var order = new List<string> { "Outerwear", "Tops", "Dress", "Bottoms", "Shoes", "Accessories" };
+        return items.OrderBy(i =>
+        {
+            var idx = order.IndexOf(i.CategoryName ?? "");
+            return idx == -1 ? 99 : idx;
+        }).ToList();
+    }
+
+    private string GetPreviewGridClass(int itemCount)
+    {
+        if (itemCount <= 1) return "preview-grid one-item";
+        if (itemCount == 2) return "preview-grid two-items";
+        if (itemCount == 3) return "preview-grid three-items";
+        if (itemCount == 4) return "preview-grid four-items";
+        return "preview-grid many-items";
+    }
+
+    private string GetSeasonSummary()
+    {
+        if (outfit == null || !outfit.Items.Any())
+        {
+            return "All Seasons";
+        }
+
+        var seasons = outfit.Items
+            .Select(i => i.Season)
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (!seasons.Any())
+        {
+            return "All Seasons";
+        }
+
+        return seasons.Count == 1 ? seasons[0]! : "Mixed Season";
+    }
+
+    private string GetStyleLabel()
+    {
+        if (outfit == null || string.IsNullOrWhiteSpace(outfit.Occasion))
+        {
+            return "curated";
+        }
+
+        return outfit.Occasion!;
+    }
+
+    private string BuildItemSubtitle(ClothingItem item)
+    {
+        var bits = new List<string>();
+        if (!string.IsNullOrWhiteSpace(item.Style)) bits.Add(item.Style!);
+        if (!string.IsNullOrWhiteSpace(item.Color)) bits.Add(item.Color!);
+        if (!string.IsNullOrWhiteSpace(item.Season)) bits.Add(item.Season!);
+        return bits.Any() ? string.Join(" • ", bits) : "Tap to view item details";
+    }
+
+    private string GetImageSource(string? imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath) || imagePath == "du")
+            return "Images/placeholder.png";
+
+        if (imagePath.StartsWith("Images/", StringComparison.OrdinalIgnoreCase) ||
+            imagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            return imagePath;
+        }
+
+        var fileName = System.IO.Path.GetFileName(imagePath);
+        return $"https://localhost:7081/uploads/images/{fileName}";
+    }
+
+    public void Dispose()
+    {
+        WardrobeService.OnChange -= HandleOnChange;
+    }
+}

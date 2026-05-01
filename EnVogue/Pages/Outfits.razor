@@ -1,0 +1,1680 @@
+@page "/my-outfits"
+@using EnVogue.Models
+@using EnVogue.Services
+@implements IDisposable
+@using Microsoft.AspNetCore.Components.Web
+@inject NavigationManager Nav
+@inject WardrobeServices WardrobeService
+@inject NotificationService Toast
+@layout EmptyLayout
+
+<div class="outfits-page-container">
+    <div class="outfits-bg">
+        <img src="Images/outfits_background.png" alt="Outfits background" />
+        <div class="outfits-bg-overlay"></div>
+    </div>
+
+    <header class="editorial-header-unified">
+        <div class="header-left">
+            <div class="brand-nav-group">
+                <BackCircleButton FallbackRoute="/home" />
+                <div class="brand-text-block">
+                    <h1 class="brand-title-unified no-border">EnVogue</h1>
+                    <span class="collection-tag-unified closet-color">MY LOOKBOOK</span>
+                </div>
+            </div>
+        </div>
+<div class="header-right">
+    <div class="header-actions">
+        <div class="profile-action">
+            <ProfileAvatarButton AriaLabel="Profile" />
+        </div>
+
+        <button class="profile-circle fav-circle" @onclick='() => Nav.NavigateTo("/favorites")' aria-label="Favorites">
+            <svg viewBox="0 0 24 24">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+        </button>
+    </div>
+</div>
+    </header>
+
+    <main class="outfits-content">
+        <section class="outfits-title-row">
+            <div>
+                <h2>My Outfits</h2>
+                <p>@FilteredOutfits.Count saved looks</p>
+            </div>
+        </section>
+
+        <section class="outfit-tools">
+            <div class="search-shell">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input placeholder="Search outfits by name, occasion, items..."
+                       value="@SearchTerm"
+                       @oninput="HandleSearch"
+                       @onkeydown="HandleSearchEnter" />
+                <button class="search-confirm-btn" @onclick="HandleSearchConfirm" aria-label="Confirm search">
+                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <button class="filters-toggle" @onclick="ToggleSortPanel">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"></path>
+                </svg>
+                <span>Filters & Sort</span>
+                <span>@(isSortOpen ? "▲" : "▼")</span>
+            </button>
+
+            @if (isSortOpen)
+            {
+                <div class="sort-panel animate-fade-in">
+                    <button class="sort-pill @(SortBy == "Newest" ? "active" : "")" @onclick='() => SetSort("Newest")'>Newest</button>
+                    <button class="sort-pill @(SortBy == "Oldest" ? "active" : "")" @onclick='() => SetSort("Oldest")'>Oldest</button>
+                    <button class="sort-pill @(ShowOnlyFavorites ? "active" : "")" @onclick="ToggleFavoriteFilter">Favorites</button>
+
+                    <div class="filter-group-block sort-panel-style-block">
+                        <span class="filter-group-label">Style</span>
+                        <div class="filter-chip-row">
+                            @foreach (var style in StyleOptions)
+                            {
+                                <button class="sort-pill style-pill @(SelectedStyle == style ? "active" : "")"
+                                        @onclick='() => SetStyle(style)'>
+                                    @style
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <button class="clear-link-inline" @onclick="ClearPanelFilters">Clear</button>
+                </div>
+            }
+        </section>
+
+        <section class="outfits-scroll-area">
+            @if (isLoading)
+            {
+                <div class="outfits-cards-track">
+                    <div class="outfits-grid">
+                        @for (int i = 0; i < 4; i++)
+                        {
+                            <div class="look-card skeleton-card"></div>
+                        }
+                    </div>
+                </div>
+            }
+            else if (!FilteredOutfits.Any() && HasActiveSearch)
+            {
+                <div class="search-empty-state animate-fade-in">
+                    <div class="search-empty-icon">🔎</div>
+                    <h3>No matches found for "@SearchTerm.Trim()"</h3>
+                    <button class="clear-search-link" @onclick="ClearSearch">CLEAR SEARCH</button>
+                </div>
+            }
+            else if (!FilteredOutfits.Any())
+            {
+                <div class="empty-state-card animate-fade-in">
+                    <div class="empty-heart">♡</div>
+                    <h3>No Looks Yet</h3>
+                    <p>Create an outfit from your closet selection and it will appear here.</p>
+                    <button class="create-now-btn" @onclick='() => Nav.NavigateTo("/create-outfit")'>CREATE OUTFIT</button>
+                </div>
+            }
+            else
+            {
+                <div class="outfits-cards-track">
+                    <div class="outfits-grid">
+                        <button class="look-card create-look-card animate-slide-up" @onclick='() => Nav.NavigateTo("/create-outfit")' aria-label="Create new outfit">
+                            <div class="create-look-inner">
+                                <span class="create-look-plus">+</span>
+                            </div>
+                        </button>
+
+                        @foreach (var outfit in FilteredOutfits)
+                        {
+                            var sortedItems = GetSortedItems(outfit.Items);
+                          <article class="look-card outfit-look-card glass-effect animate-slide-up outfit-clickable-card" 
+                              @onclick='() => OpenOutfitDetails(outfit.Id)'>
+                                <div class="@GetPreviewShellClass(sortedItems.Count)">
+                                    <div class="@GetPreviewGridClass(sortedItems.Count)">
+                                        @foreach (var item in sortedItems)
+                                        {
+                                            <div class="preview-piece">
+                                                <img src="@GetImageSource(item.ImagePath)" alt="@item.SubcategoryName" />
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div class="look-actions">
+                                        <button class="look-action-btn @(outfit.IsFavorite ? "active" : "")"
+                                                @onclick="() => ToggleFavorite(outfit)"
+                                                @onclick:stopPropagation="true"
+                                                aria-label="Add to favorites">
+                                            <svg viewBox="0 0 24 24">
+                                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="look-info">
+                                    <div>
+                                        <h3>@outfit.Name</h3>
+                                        <p>@(string.IsNullOrWhiteSpace(outfit.Occasion) ? "Manual Selection" : outfit.Occasion)</p>
+                                    </div>
+                                    <div class="look-meta">
+                                        <span>@outfit.Items.Count items</span>
+                                        <span>@outfit.CreatedDate.ToString("MMM d")</span>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                </div>
+            }
+        </section>
+    </main>
+</div>
+
+<NavBar CurrentPage="outfits" />
+
+<style>
+    .outfits-page-container {
+        position: relative; /* Schimbat din fixed în relative */
+        min-height: 100vh;
+        overflow-y: auto; /* Permite scroll */
+        background: #fff;
+        width: 100%;
+    }
+
+    .outfits-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+        .outfits-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.52;
+            filter: blur(1px) saturate(105%);
+        }
+
+    .outfits-bg-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.28);
+    }
+
+    .editorial-header-unified {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: clamp(25px, 4vh, 60px) 20px 0;
+        box-sizing: border-box;
+    }
+
+    .brand-nav-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .brand-text-block {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .brand-title-unified {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 38px;
+        font-weight: 900;
+        line-height: 0.8;
+        margin: 0;
+        color: #111;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        text-decoration: none !important;
+    }
+
+        .brand-title-unified:focus,
+        .brand-title-unified:focus-visible,
+        .brand-title-unified:active {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+    .collection-tag-unified {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        display: block;
+        margin-top: 5px;
+        text-transform: uppercase;
+        color: #7a5c68;
+    }
+
+    .profile-circle {
+        width: 48px;
+        height: 48px;
+        background: white !important;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        cursor: pointer;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+        .profile-circle:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 20px rgba(217, 70, 239, 0.18);
+        }
+
+        .profile-circle svg {
+            width: 22px;
+            height: 22px;
+        }
+
+    .profile-svg {
+        fill: #d946ef;
+    }
+
+    .outfits-content {
+        position: relative;
+        z-index: 5;
+        --outfit-grid-gap: 18px;
+        --outfit-card-min-height: 304px;
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: clamp(118px, 16vh, 150px) 0 calc(100px + env(safe-area-inset-bottom));
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .outfits-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin: 0 clamp(28px, 2.4vw, 46px) 18px;
+    }
+
+        .outfits-title-row h2 {
+            margin: 0;
+            font-size: 36px;
+            line-height: 1;
+            font-weight: 900;
+            color: #17121a;
+        }
+
+        .outfits-title-row p {
+            margin: 7px 0 0;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #7a5c68;
+        }
+
+    .outfit-tools {
+        flex: 0 0 auto;
+        display: grid;
+        gap: 12px;
+        margin: 0 20px 14px;
+        width: auto;
+        min-width: 0;
+    }
+
+    .search-shell,
+    .filters-toggle,
+    .sort-panel {
+        background: rgba(255, 255, 255, 0.84);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,255,255,0.58);
+        box-shadow: 0 8px 22px rgba(105, 55, 84, 0.08);
+        border-radius: 18px;
+    }
+
+    .search-shell {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+        .search-shell svg {
+            position: absolute;
+            left: 20px;
+            width: 22px;
+            height: 22px;
+            color: #7a5c68;
+            opacity: 0.75;
+        }
+
+        .search-shell input {
+            width: 100%;
+            min-height: 58px;
+            border: none;
+            background: transparent;
+            outline: none;
+            padding: 0 62px 0 58px;
+            font-size: 15px;
+            color: #17121a;
+        }
+
+    .search-confirm-btn {
+        position: absolute;
+        right: 10px;
+        top: 46%;
+        transform: translateY(-50%);
+        background: #d946ef;
+        color: white;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 10px rgba(217, 70, 239, 0.3);
+    }
+
+        .search-confirm-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+            background: #c026d3;
+        }
+
+    .search-confirm-btn svg {
+        width:16px;
+        height: 16px;
+        display: block;
+        stroke: #ffffff;
+        margin: -10px;
+    }
+
+    .search-empty-state {
+        grid-column: 1 / -1;
+        min-height: 45vh;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px 16px;
+        animation: fadeIn 0.5s ease;
+    }
+
+        .search-empty-state h3 {
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: #000000 !important;
+            opacity: 1 !important;
+            -webkit-text-fill-color: #000000;
+        }
+
+    .search-empty-icon {
+        font-size: 44px;
+        margin-bottom: 15px;
+        color: #d946ef;
+        opacity: 1 !important;
+        line-height: 1;
+    }
+
+    .clear-search-link {
+        background: none;
+        border: none;
+        color: #d946ef !important;
+        font-weight: 900;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        margin-top: 10px;
+        opacity: 1 !important;
+        border-bottom: 2px solid #d946ef;
+        padding-bottom: 2px;
+    }
+
+    .filters-toggle {
+        min-height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 22px;
+        color: #342532;
+        font-size: 14px;
+        font-weight: 900;
+        cursor: pointer;
+    }
+
+        .filters-toggle svg {
+            width: 19px;
+            height: 19px;
+            color: #d946ef;
+        }
+
+        .filters-toggle span:nth-child(2) {
+            flex: 1;
+            text-align: left;
+        }
+
+    .filters-active-dot,
+    .sort-panel-title-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #a855f7;
+        flex: 0 0 auto;
+    }
+
+    .sort-panel {
+        display: grid;
+        gap: 12px;
+        padding: 16px;
+        grid-template-columns: repeat(4, max-content);
+        align-items: center;
+        justify-content: start;
+        position: relative;
+    }
+
+    .sort-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .sort-panel-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sort-panel-title {
+        font-size: 15px;
+        font-weight: 900;
+        color: #7a3cf0;
+    }
+
+    .clear-filters-btn {
+        border: none;
+        background: transparent;
+        color: #7a5c68;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .filter-group-block {
+        display: grid;
+        gap: 10px;
+        grid-column: 1 / -1;
+    }
+
+    .filter-group-label {
+        font-size: 13px;
+        font-weight: 900;
+        color: #342532;
+    }
+
+    .filter-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .sort-pill {
+        min-width: 0;
+        min-height: 34px;
+        border: 1px solid rgba(122, 92, 104, 0.18);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.78);
+        color: #7a5c68;
+        font-size: 11px;
+        font-weight: 900;
+        cursor: pointer;
+        padding: 0 14px;
+    }
+
+        .sort-pill.active {
+            background: #d946ef;
+            color: white;
+            border-color: transparent;
+        }
+
+    .style-pill {
+        min-width: 0;
+    }
+
+    .compact-pill {
+        white-space: nowrap;
+    }
+
+    .clear-link-inline {
+        position: absolute;
+        right: 18px;
+        bottom: 12px;
+        border: none;
+        background: transparent;
+        padding: 0;
+        color: #7a5c68;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .outfits-scroll-area {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: none;
+        padding: 10px 0 100px !important;
+        width: 100%;
+        box-sizing: border-box;
+        display: block;
+    }
+
+        .outfits-scroll-area::-webkit-scrollbar {
+            display: none;
+        }
+
+   .outfits-cards-track {
+    width: 100% !important;
+    max-width: 1680px !important;
+    margin: 0 auto !important;
+    padding: 0 18px !important;
+    box-sizing: border-box !important;
+}
+
+    .outfits-grid {
+        display: grid !important;
+        /* Reducem la 4 coloane pe desktop pentru a le face mult mai late */
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        gap: 18px !important;
+        align-items: stretch !important;
+        /* Resetăm padding-ul stânga care le impingea și le înghesuia */
+        padding: 0 !important;
+        margin: 8px 0 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .look-card {
+        position: relative;
+        width: 100%;
+        background: white;
+        border: 1px solid rgba(255,255,255,0.62);
+        border-radius: 20px;
+        padding: 14px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+        min-height: 304px;
+        box-sizing: border-box;
+        max-width: none !important;
+    }
+
+    .create-look-card {
+        min-height: 100%;
+        border: 2px dashed rgba(217, 70, 239, 0.32);
+        background: rgba(255, 255, 255, 0.64);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        color: #d946ef;
+        transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .create-look-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(217, 70, 239, 0.62);
+        background: rgba(255, 255, 255, 0.82);
+    }
+
+    .create-look-inner {
+        width: 100%;
+        height: 100%;
+        aspect-ratio: 1 / 1; /* Să fie egal cu restul preview-urilor */
+        display: grid;
+        place-items: center;
+        background: rgba(253, 242, 248, 0.42);
+        border-radius: 15px;
+    }
+
+    .create-look-plus {
+        font-size: 34px;
+        line-height: 1;
+        font-weight: 400;
+    }
+
+    .look-preview {
+        position: relative;
+        width: 100%;
+        height: 178px !important;
+        border-radius: 15px;
+        background: rgba(249, 250, 251, 0.88);
+        overflow: hidden;
+        padding: 10px;
+    }
+
+    .preview-grid {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .preview-grid.many-items {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+
+    .preview-grid.one-item {
+        display: grid;
+        place-items: center;
+    }
+
+    .preview-grid.one-item .preview-piece {
+        width: 74%;
+        height: 82%;
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .preview-grid.two-items {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: 1fr;
+    }
+
+    .preview-grid.three-items {
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+
+    .preview-grid.three-items .preview-piece:nth-child(3) {
+        grid-column: 1 / -1;
+        padding: 5px 30px;
+    }
+
+    .preview-grid.three-items .preview-piece:nth-child(3) img {
+        width: 82%;
+        height: 82%;
+    }
+
+    .preview-piece {
+        min-width: 0;
+        min-height: 0;
+        border-radius: 17px;
+        background: rgba(255, 255, 255, 0.72);
+        display: grid;
+        place-items: center;
+        
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .preview-piece:only-child {
+        grid-column: 1 / -1;
+        grid-row: 1 / -1;
+    }
+
+    .preview-piece:nth-child(3):last-child {
+        grid-column: 1 / -1;
+    }
+
+    .preview-piece img {
+        width: 86%;
+        height: 86%;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        object-position: center;
+        filter: drop-shadow(0 10px 12px rgba(45, 27, 36, 0.11));
+    }
+
+    .preview-grid.four-items .preview-piece img,
+    .preview-grid.many-items .preview-piece img {
+        width: 80%;
+        height: 80%;
+    }
+
+    .look-actions {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: grid;
+        gap: 10px;
+        z-index: 30;
+    }
+
+    .look-action-btn {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        border: none;
+        background: #2d1b24;
+        color: white;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(45,27,36,0.22);
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+        .look-action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .look-action-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+
+        .look-action-btn.active {
+            background: #d946ef;
+        }
+
+        .look-action-btn.active svg {
+            fill: white;
+        }
+
+    .look-info {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        gap: 12px;
+        padding: 16px 2px 0;
+        text-align: left;
+    }
+
+        .look-info h3 {
+            margin: 0;
+            color: #17121a;
+            font-size: 15px;
+            font-weight: 900;
+            /* Limităm titlul la un singur rând pentru a nu strica grid-ul */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .look-info p {
+            margin: 7px 0 0;
+            color: #a855f7;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+    .look-meta {
+        display: grid;
+        justify-items: end;
+        gap: 6px;
+        color: #7a5c68;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    @@media (min-width: 1500px) {
+        .outfits-grid {
+            grid-template-columns: repeat(6, 1fr);
+        }
+
+        .look-card {
+            max-width: none;
+        }
+    }
+
+    .empty-state-card {
+        width: min(100%, 760px);
+        min-height: 320px;
+        border-radius: 28px;
+        border: 2px dashed rgba(217, 70, 239, 0.35);
+        background: rgba(255,255,255,0.62);
+        backdrop-filter: blur(14px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 28px;
+        margin: 18px auto 0;
+    }
+
+        .empty-state-card h3 {
+            margin: 6px 0;
+            font-size: 22px;
+            font-weight: 900;
+            color: #17121a;
+        }
+
+        .empty-state-card p {
+            max-width: 360px;
+            color: #7a5c68;
+            font-weight: 700;
+        }
+
+    .empty-heart {
+        font-size: 54px;
+        line-height: 1;
+        color: #d946ef;
+    }
+
+    .create-now-btn {
+        margin-top: 16px;
+        min-height: 46px;
+        padding: 0 22px;
+        border: none;
+        border-radius: 16px;
+        background: #2d1b24;
+        color: white;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 1.4px;
+        cursor: pointer;
+    }
+
+    .skeleton-card {
+        min-height: 304px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.42), rgba(255,255,255,0.82), rgba(255,255,255,0.42));
+        background-size: 200% 100%;
+        animation: skeletonWave 1.4s infinite;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.35s ease-out both;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.35s ease-out both;
+    }
+
+    @@media (max-width: 768px) {
+        .editorial-header-unified {
+            align-items: center;
+            padding: clamp(12px, 3.5vh, 25px) 20px 0 !important;
+        }
+
+        .brand-nav-group {
+            align-items: center !important;
+            gap: 10px !important;
+        }
+
+        .brand-title-unified {
+            font-size: 26px !important;
+            line-height: 1 !important;
+            letter-spacing: -0.5px;
+        }
+
+        .collection-tag-unified {
+            font-size: 8px !important;
+            letter-spacing: 2px !important;
+            margin-top: 2px !important;
+        }
+
+        .profile-circle {
+            width: 38px !important;
+            height: 38px !important;
+        }
+
+            .profile-circle svg {
+                width: 18px !important;
+                height: 18px !important;
+            }
+
+        .outfits-content {
+            padding: 104px 0 calc(96px + env(safe-area-inset-bottom));
+        }
+
+        .outfits-title-row,
+        .outfit-tools {
+            margin-left: 40px !important;
+            margin-right: 40px !important;
+        }
+
+        .outfits-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            /* Reducem padding-ul lateral de la 185px la 30px */
+            display: block !important;
+            padding: 14px 0 100px !important;
+            scrollbar-width: none;
+        }
+
+         .outfits-cards-track {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+        .outfits-title-row h2 {
+            font-size: 30px;
+        }
+
+        .outfits-grid {
+            display: grid !important;
+            /* Folosim auto-fill cu o dimensiune minimă de 240px.
+           Asta va face cardurile mai late automat în funcție de ecran */
+           grid-template-columns: 1fr !important;
+            gap: 24px !important;
+            align-items: stretch !important;
+            /* Am pus 40px stânga-dreapta pentru a le alinia cu search-ul */
+            padding: 0 20px !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
+        .look-card {
+            min-height: auto !important; /* Cardul se va întinde cât are nevoie */
+        width: 100% !important;
+            padding: 18px;
+            border-radius: 26px;
+        }
+
+        .create-look-inner {
+            min-height: 190px;
+        }
+
+        .look-preview {
+            height: 280px !important; /* Am mărit de la 178px la 250px pentru cardurile late */
+            width: 100%;
+        }
+
+        .preview-grid {
+            gap: 8px;
+        }
+
+        .preview-piece {
+            border-radius: 14px;
+        }
+
+        .look-info h3 {
+            font-size: 18px;
+        }
+
+        .look-info p {
+            font-size: 13px;
+        }
+
+        .look-meta {
+            font-size: 10px;
+        }
+    }
+
+    /* Final grid cleanup */
+    .outfits-scroll-area {
+        display: block !important;
+        padding: 10px 0 100px !important;
+    }
+
+    .outfits-cards-track {
+        width: 100% !important;
+        max-width: 1680px !important;
+        margin: 0 auto !important;
+        padding: 0 18px !important;
+        box-sizing: border-box !important;
+    }
+
+    .outfits-grid {
+        display: grid !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        gap: 18px !important;
+        align-items: stretch !important;
+        margin-top: 8px !important;
+        padding: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .look-card,
+    .create-look-card {
+        min-height: 304px !important;
+        height: auto !important;
+    }
+
+    .look-card {
+        padding: 14px !important;
+        border-radius: 20px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .create-look-inner {
+        min-height: 100% !important;
+        aspect-ratio: auto !important;
+    }
+
+    .look-preview {
+        position: relative !important;
+        width: 100% !important;
+        height: 178px !important;
+        border-radius: 15px !important;
+        background: rgba(249, 250, 251, 0.88) !important;
+        overflow: hidden !important;
+        padding: 10px !important;
+        box-sizing: border-box !important;
+    }
+
+    .preview-grid {
+        width: 100% !important;
+        height: 100% !important;
+        gap: 12px !important;
+    }
+
+    .look-info {
+        padding: 16px 2px 0 !important;
+    }
+
+    .look-info h3 {
+        font-size: 15px !important;
+    }
+
+    .look-info p {
+        font-size: 12px !important;
+    }
+
+    .look-meta {
+        font-size: 11px !important;
+    }
+
+    @@media (max-width: 1560px) {
+        .outfits-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        }
+    }
+
+    @@media (max-width: 1180px) {
+        .outfits-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+    }
+
+  
+    @@media (max-width: 520px) {
+        .outfits-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
+    /* Final mobile safeguard: keep outfit cards fully visible on narrow screens */
+    @@media (max-width: 768px) {
+    .outfits-page-container .editorial-header-unified {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        height: 80px !important;
+        padding: 20px 20px 0 !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .outfits-page-container .header-left {
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .outfits-page-container .brand-nav-group {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    .outfits-page-container .brand-title-unified {
+        font-size: 26px !important;
+        line-height: 1 !important;
+        letter-spacing: -0.5px !important;
+        margin: 0 !important;
+    }
+
+    .outfits-page-container .collection-tag-unified {
+        font-size: 8px !important;
+        letter-spacing: 2px !important;
+        margin-top: 2px !important;
+    }
+
+    .outfits-page-container .header-right {
+        display: flex !important;
+        align-items: flex-start !important;
+        margin-top: 0 !important;
+    }
+
+    .outfits-page-container .header-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-end !important;
+        gap: 8px !important;
+    }
+
+    .outfits-page-container .profile-action {
+        position: relative !important;
+        top: 24px !important;
+    }
+
+    .outfits-page-container .fav-circle {
+        position: relative !important;
+        top: 23px !important;
+    }
+
+    .outfits-page-container .profile-circle {
+        width: 38px !important;
+        height: 38px !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .outfits-page-container .profile-circle svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+}
+    @@media (max-width: 520px) {
+        .outfits-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes skeletonWave {
+        from {
+            background-position: 200% 0;
+        }
+
+        to {
+            background-position: -200% 0;
+        }
+    }
+
+    /* Match the saved-look cards from Favorites */
+    .look-card.outfit-look-card.glass-effect {
+        background: rgba(255, 255, 255, 0.75) !important;
+        backdrop-filter: blur(10px);
+        border-radius: 25px !important;
+        border: 1px solid rgba(255,255,255,0.4) !important;
+        box-shadow: none !important;
+    }
+
+    .look-card.outfit-look-card {
+        position: relative;
+        width: 100%;
+        min-height: 304px !important;
+        padding: 14px !important;
+        border-radius: 20px !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .look-card.outfit-look-card .look-preview {
+        position: relative !important;
+        width: 100% !important;
+        height: 178px !important;
+        border-radius: 15px !important;
+        background: rgba(249, 250, 251, 0.88) !important;
+        overflow: hidden !important;
+        padding: 10px !important;
+        box-sizing: border-box !important;
+    }
+
+    .look-card.outfit-look-card .look-actions {
+        top: 12px !important;
+        right: 12px !important;
+        display: block !important;
+    }
+
+    .look-card.outfit-look-card .look-action-btn {
+        width: 46px !important;
+        height: 46px !important;
+        border-radius: 50% !important;
+        border: none !important;
+        background: #2d1b24 !important;
+        color: white !important;
+        display: grid !important;
+        place-items: center !important;
+        box-shadow: 0 8px 18px rgba(45,27,36,0.22) !important;
+    }
+
+    .look-card.outfit-look-card .look-action-btn.active {
+        background: #d946ef !important;
+    }
+
+    .look-card.outfit-look-card .look-action-btn svg {
+        width: 20px !important;
+        height: 20px !important;
+        fill: white !important;
+        stroke: white !important;
+        stroke-width: 2 !important;
+    }
+
+    .look-card.outfit-look-card .look-info {
+        display: grid !important;
+        grid-template-columns: 1fr auto !important;
+        align-items: end !important;
+        gap: 14px !important;
+        padding: 16px 2px 0 !important;
+        text-align: left !important;
+    }
+
+    .look-card.outfit-look-card .look-info h3 {
+        margin: 0 !important;
+        color: #17121a !important;
+        font-size: 15px !important;
+        font-weight: 900 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .look-card.outfit-look-card .look-info p {
+        margin: 7px 0 0 !important;
+        color: #a855f7 !important;
+        font-size: 12px !important;
+        font-weight: 800 !important;
+    }
+
+    .look-card.outfit-look-card .look-meta {
+        display: grid !important;
+        justify-items: end !important;
+        gap: 6px !important;
+        color: #7a5c68 !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+        white-space: nowrap !important;
+    }
+
+    @@media (max-width: 768px) {
+        .outfits-scroll-area {
+            padding: 14px 0 110px !important;
+        }
+
+        .outfits-cards-track {
+            padding: 0 !important;
+        }
+
+        .outfits-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 16px !important;
+            margin-top: 8px !important;
+            width: 100% !important;
+        }
+
+        .look-card.outfit-look-card {
+            min-height: 288px !important;
+            padding: 16px !important;
+        }
+    }
+
+    @@media (max-width: 520px) {
+        .outfits-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
+    /* Final hard alignment with Favorites */
+    .outfits-page-container .outfits-content {
+        padding-left: 25px !important;
+        padding-right: 25px !important;
+    }
+
+    .outfits-page-container .outfits-title-row,
+    .outfits-page-container .outfit-tools {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    .outfits-page-container .outfits-cards-track {
+        width: 100% !important;
+        max-width: 1680px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        padding: 0 18px 0 230px !important;
+        box-sizing: border-box !important;
+    }
+
+    .outfits-page-container .outfits-grid {
+        width: 100% !important;
+        margin: 8px 0 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    @@media (max-width: 768px) {
+        .outfits-page-container .outfits-content {
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+        }
+
+        .outfits-page-container .outfits-cards-track {
+            padding: 0 0 0 32px !important;
+        }
+    }
+</style>
+
+@code {
+    private List<Outfit> SavedOutfits = new();
+    private List<Outfit> FilteredOutfits = new();
+    private string SearchTerm = "";
+    private string SortBy = "Newest";
+    private string SelectedStyle = "All";
+    private bool ShowOnlyFavorites;
+    private bool isSortOpen;
+    private bool isLoading = true;
+    private readonly List<string> StyleOptions = new() { "All", "Casual Style", "Elegant Style", "Formal Wear", "Sporty Look" };
+
+    private bool HasActivePanelFilters => SelectedStyle != "All" || ShowOnlyFavorites || SortBy != "Newest";
+    private bool HasActiveSearch => !string.IsNullOrWhiteSpace(SearchTerm);
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        await WardrobeService.InitializeAsync();
+        RefreshData();
+        WardrobeService.OnChange += HandleOnChange;
+        isLoading = false;
+    }
+
+    private void HandleOnChange() => InvokeAsync(RefreshData);
+
+    private void RefreshData()
+    {
+        SavedOutfits = WardrobeService
+            .GetAllOutfits()
+            .Where(ShouldAppearOnLooks)
+            .ToList();
+        ApplyFilters();
+        StateHasChanged();
+    }
+
+    private void HandleSearch(ChangeEventArgs e)
+    {
+        SearchTerm = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void HandleSearchConfirm()
+    {
+        ApplyFilters(isStrict: true);
+    }
+
+    private void HandleSearchEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            HandleSearchConfirm();
+        }
+    }
+
+    private void ToggleSortPanel()
+    {
+        isSortOpen = !isSortOpen;
+    }
+
+    private void SetSort(string sort)
+    {
+        SortBy = sort;
+        ShowOnlyFavorites = false;
+        ApplyFilters();
+    }
+
+    private void SetStyle(string style)
+    {
+        SelectedStyle = style;
+        ApplyFilters();
+    }
+
+    private void ToggleFavoriteFilter()
+    {
+        ShowOnlyFavorites = !ShowOnlyFavorites;
+        if (ShowOnlyFavorites)
+        {
+            SortBy = "";
+        }
+        else
+        {
+            SortBy = "Newest";
+        }
+        ApplyFilters();
+    }
+
+    private void ClearPanelFilters()
+    {
+        SelectedStyle = "All";
+        SortBy = "Newest";
+        ShowOnlyFavorites = false;
+        ApplyFilters();
+    }
+
+    private void ClearSearch()
+    {
+        SearchTerm = "";
+        ApplyFilters();
+    }
+
+    private void ApplyFilters(bool isStrict = false)
+    {
+        IEnumerable<Outfit> query = SavedOutfits;
+
+        if (ShowOnlyFavorites)
+        {
+            query = query.Where(o => o.IsFavorite);
+        }
+
+        if (SelectedStyle != "All")
+        {
+            query = query.Where(o => string.Equals(o.Occasion, SelectedStyle, StringComparison.OrdinalIgnoreCase));
+        }
+
+        var search = SearchTerm.Trim().ToLowerInvariant();
+        if (!string.IsNullOrEmpty(search))
+        {
+            if (isStrict)
+            {
+                query = query.Where(o => OutfitMatchesStrict(o, search));
+            }
+            else
+            {
+                var keywords = search.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                query = query.Where(o => OutfitMatchesKeywords(o, keywords));
+            }
+        }
+
+        FilteredOutfits = SortBy switch
+        {
+            "Oldest" => query.OrderBy(o => o.CreatedDate).ToList(),
+            "Name" => query.OrderBy(o => o.Name).ToList(),
+            "" => query.ToList(),
+            _ => query.OrderByDescending(o => o.CreatedDate).ToList()
+        };
+    }
+
+    private async Task ToggleFavorite(Outfit outfit)
+    {
+        var wasFavorite = outfit.IsFavorite;
+        var updatedSuccessfully = await WardrobeService.ToggleFavorite(outfit.Id);
+        RefreshData();
+
+        if (!updatedSuccessfully)
+        {
+            Toast.Show("Favorite status could not be saved.", "error");
+            return;
+        }
+
+        if (!wasFavorite)
+        {
+            Toast.Show("Outfit added to favorites.", "success");
+        }
+        else
+        {
+            Toast.Show("Outfit removed from favorites.", "info");
+        }
+    }
+
+    private void OpenOutfitDetails(int outfitId)
+    {
+        Nav.NavigateTo($"/outfit-details/{outfitId}");
+    }
+
+    private List<ClothingItem> GetSortedItems(List<ClothingItem> items)
+    {
+        var order = new List<string> { "Outerwear", "Tops", "Dress", "Bottoms", "Shoes", "Accessories" };
+        return items.OrderBy(i =>
+        {
+            var idx = order.IndexOf(i.CategoryName ?? "");
+            return idx == -1 ? 99 : idx;
+        }).ToList();
+    }
+
+    private static bool OutfitMatchesKeywords(Outfit outfit, string[] keywords)
+    {
+        return keywords.All(keyword =>
+            (outfit.Name?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            (outfit.Occasion?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
+            outfit.Items.Any(item =>
+                (item.Brand?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (item.Name?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (item.CategoryName?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (item.SubcategoryName?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (item.Style?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (item.Season?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (item.Color?.Contains(keyword, StringComparison.OrdinalIgnoreCase) ?? false)
+            )
+        );
+    }
+
+    private static bool OutfitMatchesStrict(Outfit outfit, string search)
+    {
+        return string.Equals(outfit.Name, search, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(outfit.Occasion, search, StringComparison.OrdinalIgnoreCase) ||
+               outfit.Items.Any(item =>
+                   string.Equals(item.Brand, search, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(item.Name, search, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(item.CategoryName, search, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(item.SubcategoryName, search, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(item.Style, search, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(item.Season, search, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(item.Color, search, StringComparison.OrdinalIgnoreCase)
+               );
+    }
+
+    private static bool ShouldAppearOnLooks(Outfit outfit)
+    {
+        // Looks should surface both manually created outfits and AI-generated outfits.
+        // Existing outfits that don't have a source marker yet remain visible as well.
+        return outfit.Items.Any() &&
+               (string.IsNullOrWhiteSpace(outfit.CreationSource) ||
+                string.Equals(outfit.CreationSource, "Manual", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(outfit.CreationSource, "AI", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private string GetPreviewGridClass(int itemCount)
+    {
+        if (itemCount <= 1)
+        {
+            return "preview-grid one-item";
+        }
+
+        if (itemCount == 2)
+        {
+            return "preview-grid two-items";
+        }
+
+        if (itemCount == 3)
+        {
+            return "preview-grid three-items";
+        }
+
+        if (itemCount == 4)
+        {
+            return "preview-grid four-items";
+        }
+
+        return "preview-grid many-items";
+    }
+
+    private string GetPreviewShellClass(int itemCount)
+    {
+        return "look-preview";
+    }
+
+    private string GetImageSource(string? imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath) || imagePath == "du")
+        {
+            return "Images/placeholder.png";
+        }
+
+        if (imagePath.StartsWith("Images/", StringComparison.OrdinalIgnoreCase) ||
+            imagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            return imagePath;
+        }
+
+        var fileName = System.IO.Path.GetFileName(imagePath);
+        return $"https://localhost:7081/uploads/images/{fileName}";
+    }
+
+    public void Dispose()
+    {
+        WardrobeService.OnChange -= HandleOnChange;
+    }
+}
+

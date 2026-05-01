@@ -1,0 +1,59 @@
+@inject NavigationManager Nav
+@inject ProfilePhotoService ProfilePhotoService
+@implements IDisposable
+
+<button class="profile-circle profile-avatar-button @AdditionalClasses"
+        @onclick="HandleClick"
+        aria-label="@AriaLabel"
+        type="button">
+    @if (ProfilePhotoService.HasPhoto)
+    {
+        <img src="@ProfilePhotoService.PhotoDataUrl" alt="Profile photo" class="profile-avatar-photo" />
+    }
+    else
+    {
+        <svg viewBox="0 0 24 24" class="profile-svg">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+        </svg>
+    }
+</button>
+
+<style>
+    .profile-avatar-button {
+        overflow: hidden;
+        padding: 0 !important;
+    }
+
+    .profile-avatar-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+        border-radius: 50%;
+    }
+</style>
+
+@code {
+    [Parameter] public string NavigateTo { get; set; } = "/profile";
+    [Parameter] public string AdditionalClasses { get; set; } = "";
+    [Parameter] public string AriaLabel { get; set; } = "Profile";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ProfilePhotoService.OnChange += HandleProfilePhotoChanged;
+        await ProfilePhotoService.EnsureLoadedAsync();
+    }
+
+    private void HandleProfilePhotoChanged() => InvokeAsync(StateHasChanged);
+
+    private void HandleClick()
+    {
+        Nav.NavigateTo(NavigateTo);
+    }
+
+    public void Dispose()
+    {
+        ProfilePhotoService.OnChange -= HandleProfilePhotoChanged;
+    }
+}

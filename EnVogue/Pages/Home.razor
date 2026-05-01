@@ -38,11 +38,19 @@
                     <span class="collection-tag-unified closet-color">DIGITAL WARDROBE</span>
 
                 </div>
-                <button class="profile-circle" @onclick='() => NavigationManager.NavigateTo("/profile")'>
-                    <svg viewBox="0 0 24 24" class="profile-svg">
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                    </svg>
-                </button>
+                <div class="header-actions">
+                    <div class="profile-action">
+                        <ProfileAvatarButton />
+                    </div>
+
+                    <button class="profile-circle fav-circle"
+                            @onclick='() => NavigationManager.NavigateTo("/favorites")'
+                            aria-label="Favorites">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
             <div class="hero-body">
                 @* Tagline setat pe negru conform cerinței *@
@@ -89,19 +97,59 @@
                 <h2 class="serif-section-title">Your Outfits</h2>
                 <span class="section-subtitle-tag">CURATED LOOKS</span>
             </div>
-            <div class="empty-state-card">
-                <div class="grid-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+            @if (recentOutfits.Any())
+            {
+                <div class="home-outfits-container">
+                    @foreach (var outfit in recentOutfits)
+                    {
+                        var previewItems = GetOutfitPreviewItems(outfit).ToList();
+
+                        <div class="home-outfit-card" @onclick='() => NavigationManager.NavigateTo($"/outfit-details/{outfit.Id}")'>
+                            <div class="home-outfit-preview">
+                                @foreach (var item in previewItems)
+                                {
+                                    <div class="home-outfit-preview-cell @(item is null ? "is-empty" : "")">
+                                        @if (item is not null)
+                                        {
+                                            <img src="@GetImageSource(item.ImagePath)" alt="@item.Name" />
+                                        }
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="home-outfit-card-body">
+                                <div class="home-outfit-card-title">@GetOutfitDisplayName(outfit)</div>
+                                <div class="home-outfit-card-style">@GetOutfitStyleLabel(outfit)</div>
+                                <div class="home-outfit-card-meta">
+                                    <span>@GetOutfitItemCountLabel(outfit)</span>
+                                    <span>@GetOutfitDateLabel(outfit)</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
-                <p class="empty-msg">No outfits created yet. Start your styling journey.</p>
-                <button class="action-pill-btn" @onclick='() => NavigationManager.NavigateTo("/create-outfit")'>CREATE FIRST OUTFIT</button>
-            </div>
+            }
+            else
+            {
+                <div class="empty-state-card">
+                    <div class="grid-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+                    </div>
+                    <p class="empty-msg">No outfits created yet. Start your styling journey.</p>
+                    <button class="action-pill-btn" @onclick='() => NavigationManager.NavigateTo("/create-outfit")'>CREATE FIRST OUTFIT</button>
+                </div>
+            }
         </div>
 
         <div class="section-group">
             <div class="section-header-row">
-                <h2 class="serif-section-title">New In</h2>
-                <span class="archive-link" @onclick='() => NavigationManager.NavigateTo("/closet")'>ARCHIVE</span>
+                <div class="section-header-left section-header-left-no-margin">
+                    <h2 class="serif-section-title">New In</h2>
+                    <span class="section-subtitle-tag">LATEST PIECES</span>
+                </div>
+                <div class="section-header-actions">
+                    <span class="archive-link" @onclick='() => NavigationManager.NavigateTo("/closet")'>ARCHIVE</span>
+                </div>
             </div>
             <div class="horizontal-items-container">
                 @if (recentItems.Any())
@@ -503,18 +551,32 @@
         padding-left: 10px;
     }
 
+    .section-header-left-no-margin {
+        margin-bottom: 0;
+        padding-left: 0;
+    }
+
     .section-header-row {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
         margin-bottom: 15px;
+        gap: 18px;
+    }
+
+    .section-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
     }
 
     .serif-section-title {
         font-family: 'Playfair Display', serif;
         font-size: 34px;
         font-weight: 900;
-        color: #2d1b24;
+        color: #140f12 !important;
+        opacity: 1 !important;
+        -webkit-text-fill-color: #140f12;
         line-height: 1;
     }
 
@@ -601,6 +663,120 @@
         overflow-x: auto;
         padding-bottom: 15px;
         min-height: 180px;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+    }
+
+        .horizontal-items-container::-webkit-scrollbar {
+            display: none;
+        }
+
+    .home-outfits-container {
+        display: flex;
+        gap: 18px;
+        overflow-x: auto;
+        padding: 4px 0 16px;
+        min-height: 310px;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+    }
+
+        .home-outfits-container::-webkit-scrollbar {
+            display: none;
+        }
+
+    .home-outfit-card {
+        min-width: 245px;
+        width: 245px;
+        height: 440px;
+        background: white;
+        border-radius: 30px;
+        padding: 16px;
+        box-shadow: 0 14px 32px rgba(109, 88, 98, 0.08);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        cursor: pointer;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        scroll-snap-align: start;
+    }
+
+        .home-outfit-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 36px rgba(109, 88, 98, 0.14);
+        }
+
+    .home-outfit-preview {
+        background: #fffafd;
+        border-radius: 22px;
+        padding: 12px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(2, 1fr);
+        gap: 10px;
+        min-height: 260px;
+        height: 260px;
+        align-items: stretch;
+    }
+
+    .home-outfit-preview-cell {
+        min-height: 0;
+        border-radius: 18px;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(244, 224, 235, 0.65);
+    }
+
+        .home-outfit-preview-cell.is-empty {
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        .home-outfit-preview-cell img {
+            width: 84%;
+            height: 84%;
+            object-fit: contain;
+        }
+
+    .home-outfit-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        min-height: 124px;
+        justify-content: flex-start;
+    }
+
+    .home-outfit-card-title {
+        font-size: 22px;
+        font-weight: 900;
+        color: #20181c;
+        line-height: 1.1;
+        height: 48px;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        word-break: break-word;
+    }
+
+    .home-outfit-card-style {
+        font-size: 14px;
+        font-weight: 800;
+        color: #9d4edd;
+    }
+
+    .home-outfit-card-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        color: #7a5c68;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
     }
 
     .clothing-item-tile {
@@ -614,6 +790,7 @@
         overflow: hidden;
         transition: all 0.5s ease;
         opacity: 0.9;
+        scroll-snap-align: start;
 
     }
 
@@ -782,8 +959,57 @@
             height: 155px;
         }
 
+        .home-outfits-container {
+            gap: 14px;
+            min-height: 270px;
+        }
+
+        .home-outfit-card {
+            min-width: 190px;
+            width: 190px;
+            height: 360px;
+            padding: 12px;
+            border-radius: 24px;
+            gap: 10px;
+        }
+
+        .home-outfit-preview {
+            min-height: 190px;
+            height: 190px;
+            padding: 10px;
+            gap: 8px;
+            border-radius: 18px;
+        }
+
+        .home-outfit-preview-cell {
+            border-radius: 14px;
+        }
+
+        .home-outfit-card-title {
+            font-size: 18px;
+            height: 40px;
+        }
+
+        .home-outfit-card-style {
+            font-size: 12px;
+        }
+
+        .home-outfit-card-meta {
+            font-size: 10px;
+        }
+
         .section-group {
             gap: 0;
+        }
+
+        .section-header-row {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .section-header-actions {
+            width: 100%;
+            justify-content: flex-end;
         }
 }
     @@media (max-width: 768px) {
@@ -800,6 +1026,78 @@
     }
 
 }
+
+    @@media (max-width: 768px) {
+        .hero-overlay {
+            padding: 20px 20px 80px !important;
+        }
+
+        .header-nav {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            height: 80px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        .brand-text-block {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+        }
+
+        .brand-title-unified {
+            font-size: 26px !important;
+            line-height: 1 !important;
+            letter-spacing: -0.5px !important;
+            margin: 0 !important;
+        }
+
+        .collection-tag-unified {
+            font-size: 8px !important;
+            letter-spacing: 2px !important;
+            margin-top: 2px !important;
+        }
+
+        .header-actions {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: flex-end !important;
+            gap: 8px !important;
+
+        }
+
+        .hero-section .header-actions {
+            position: relative !important;
+            right: -20px !important;
+            top: -14px !important;
+        }
+        .profile-action {
+            position: relative !important;
+            top: 24px !important;
+        }
+
+        .fav-circle {
+            position: relative !important;
+            top: 23px !important;
+        }
+
+        .profile-circle {
+            width: 38px !important;
+            height: 38px !important;
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+            .profile-circle svg {
+                width: 18px !important;
+                height: 18px !important;
+            }
+    }
 </style>
 
 @code {
@@ -808,14 +1106,13 @@
     private int categoriesCount;
     private string userName = "User";
     private List<ClothingItem> recentItems = new List<ClothingItem>();
+    private List<Outfit> recentOutfits = new List<Outfit>();
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
 
-        // 1. Verificăm dacă avem deja user-ul (din init-ul făcut de MainLayout)
-        // Dacă nu, forțăm inițializarea aici
         var userEmail = WardrobeService.GetLoggedInUserEmail();
         if (userEmail == "Guest")
         {
@@ -823,21 +1120,50 @@
             userEmail = WardrobeService.GetLoggedInUserEmail();
         }
 
-        // 2. Protecție: Dacă și după Initialize este tot Guest, înseamnă că nu avem token valid
         if (userEmail == "Guest")
         {
             NavigationManager.NavigateTo("/login");
             return;
         }
 
-        // 3. Preluăm datele (GetAllClothes va returna ce s-a descărcat la pasul 1)
+        await WardrobeService.InitializeAsync();
+
+        // Luăm toate hainele
         var all = WardrobeService.GetAllClothes();
+        var allOutfits = WardrobeService.GetAllOutfits();
+
+        // --- REPARARE DATE (Pentru afișare corectă în "New In") ---
+        foreach (var item in all)
+        {
+            if (string.IsNullOrEmpty(item.CategoryName) && item.CategoryId.HasValue)
+            {
+                item.CategoryName = item.CategoryId switch
+                {
+                    1 => "Tops",
+                    2 => "Bottoms",
+                    3 => "Shoes",
+                    4 => "Accessories",
+                    5 => "Dress",
+                    6 => "Outerwear",
+                    _ => "Unknown"
+                };
+            }
+        }
+
         totalItems = all.Count;
         favoriteCount = all.Count(i => i.IsFavorite);
         categoriesCount = all.Select(c => c.CategoryName).Distinct().Count();
-        recentItems = all.OrderByDescending(i => i.Id).Take(5).ToList();
 
-        // 4. Extragem numele (logica ta excelentă de split)
+        // Luăm mai multe elemente pentru carusel
+        recentItems = all.OrderByDescending(i => i.Id).Take(12).ToList();
+        recentOutfits = allOutfits
+            .Where(ShouldAppearOnHomeOutfits)
+            .OrderByDescending(o => o.CreatedDate == default ? DateTime.MinValue : o.CreatedDate)
+            .ThenByDescending(o => o.Id)
+            .Take(12)
+            .ToList();
+
+        // Logica pentru nume utilizator
         var parts = userEmail.Split('@');
         if (parts.Length > 0 && !string.IsNullOrEmpty(parts[0]))
         {
@@ -850,11 +1176,54 @@
     // --- REPARAȚIE IMAGINI: Calea de pe Backend (7081) ---
     private string GetImageSource(string? imagePath)
     {
-        if (string.IsNullOrWhiteSpace(imagePath))
+        if (string.IsNullOrWhiteSpace(imagePath) || imagePath == "du")
             return "Images/placeholder.png";
 
-        // Verifică dacă path-ul vine deja cu "http" (uneori API-ul trimite URL complet)
-        // Dacă nu, adaugă adresa serverului tău
-        return imagePath.StartsWith("http") ? imagePath : $"https://localhost:7081/{imagePath}";
+        // Dacă path-ul are deja http, îl lăsăm așa
+        if (imagePath.StartsWith("http")) return imagePath;
+
+        // Extragem doar numele fișierului pentru a fi siguri
+        var fileName = System.IO.Path.GetFileName(imagePath);
+
+        // CONSTRUCȚIA CORECTĂ A URL-ULUI (trebuie să includă folderul de pe server)
+        return $"https://localhost:7081/uploads/images/{fileName}";
+    }
+
+    private static IEnumerable<ClothingItem?> GetOutfitPreviewItems(Outfit outfit)
+    {
+        var items = (outfit.ClothingItems ?? new List<ClothingItem>())
+            .Take(4)
+            .Cast<ClothingItem?>()
+            .ToList();
+
+        while (items.Count < 4)
+        {
+            items.Add(null);
+        }
+
+        return items;
+    }
+
+    private static string GetOutfitDisplayName(Outfit outfit)
+        => string.IsNullOrWhiteSpace(outfit.Name) ? "Untitled outfit" : outfit.Name;
+
+    private static string GetOutfitStyleLabel(Outfit outfit)
+        => string.IsNullOrWhiteSpace(outfit.Occasion) ? "Manual Selection" : outfit.Occasion!;
+
+    private static string GetOutfitItemCountLabel(Outfit outfit)
+    {
+        var count = outfit.ClothingItems?.Count ?? 0;
+        return count == 1 ? "1 item" : $"{count} items";
+    }
+
+    private static string GetOutfitDateLabel(Outfit outfit)
+        => outfit.CreatedDate == default ? "Recent" : outfit.CreatedDate.ToString("MMM dd");
+
+    private static bool ShouldAppearOnHomeOutfits(Outfit outfit)
+    {
+        return outfit.Items.Any() &&
+               (string.IsNullOrWhiteSpace(outfit.CreationSource) ||
+                string.Equals(outfit.CreationSource, "Manual", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(outfit.CreationSource, "AI", StringComparison.OrdinalIgnoreCase));
     }
 }

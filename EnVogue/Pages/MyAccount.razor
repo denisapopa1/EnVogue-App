@@ -1,0 +1,847 @@
+@page "/my-account"
+@using EnVogue.Models
+@using EnVogue.Services
+@inject UserState UserState
+@inject NavigationManager Nav
+@inject NotificationService Toast
+@inject ProfilePhotoService ProfilePhotoService
+@inject AccountProfileService AccountProfileService
+@inject IJSRuntime JS
+@layout EmptyLayout
+
+<div class="my-account-page-wrapper">
+    <header class="editorial-header-unified">
+        <div class="header-left">
+            <div class="brand-nav-group">
+                <BackCircleButton FallbackRoute="/profile" />
+                <div class="brand-text-block">
+                    <h1 class="brand-title-unified no-border">EnVogue</h1>
+                    <span class="collection-tag-unified closet-color">MY ACCOUNT</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="account-content-shell">
+        @if (!UserState.IsLoggedIn)
+        {
+            <div class="account-locked-card">
+                <h2>Member access only</h2>
+                <p>Please log in to manage your account details.</p>
+                <button class="primary-account-btn" @onclick='() => Nav.NavigateTo("/login")'>Go to Login</button>
+            </div>
+        }
+        else if (editableProfile == null)
+        {
+            <div class="account-locked-card">
+                <h2>Loading your account...</h2>
+            </div>
+        }
+        else
+        {
+            <div class="account-page-grid">
+                <section class="account-hero-card">
+                    <button class="account-avatar-button" @onclick="HandleAvatarClick" type="button">
+                        @if (ProfilePhotoService.HasPhoto)
+                        {
+                            <img src="@ProfilePhotoService.PhotoDataUrl" alt="Profile photo" class="account-avatar-image" />
+                        }
+                        else
+                        {
+                            <span>@GetAvatarLetter()</span>
+                        }
+                    </button>
+
+                    <div class="account-identity-copy">
+                        <h2>@editableProfile.DisplayName</h2>
+                        <p>@editableProfile.Email</p>
+                    </div>
+
+                    @if (HeroTags.Count > 0)
+                    {
+                        <div class="account-identity-tags">
+                            @foreach (var tag in HeroTags)
+                            {
+                                <span>@tag</span>
+                            }
+                        </div>
+                    }
+                </section>
+
+                <section class="account-form-card">
+                    <div class="account-card-header">
+                        <div>
+                            <h3>Account Details</h3>
+                            <p>Edit the way your profile appears across EnVogue.</p>
+                        </div>
+                    </div>
+
+                    <div class="account-form-grid">
+                        <label class="account-field account-field-full">
+                            <span>Display Name</span>
+                            <input @bind="editableProfile.DisplayName" maxlength="50" />
+                        </label>
+
+                        <label class="account-field account-field-full">
+                            <span>Email</span>
+                            <input value="@editableProfile.Email" disabled />
+                        </label>
+
+                        <label class="account-field">
+                            <span>Phone</span>
+                            <input @bind="editableProfile.Phone" maxlength="30" placeholder="+40..." />
+                        </label>
+
+                        <label class="account-field">
+                            <span>City</span>
+                            <input @bind="editableProfile.City" maxlength="50" placeholder="Bucharest" />
+                        </label>
+
+                        <label class="account-field">
+                            <span>Birthday</span>
+                            <input @bind="editableProfile.Birthday" maxlength="20" placeholder="26 Apr 2000" />
+                        </label>
+
+                        <label class="account-field">
+                            <span>Favorite Style</span>
+                            <select @bind="editableProfile.FavoriteStyle">
+                                <option value="">Select a style</option>
+                                <option value="Casual Style">Casual Style</option>
+                                <option value="Elegant Style">Elegant Style</option>
+                                <option value="Formal Wear">Formal Wear</option>
+                                <option value="Sporty Look">Sporty Look</option>
+                            </select>
+                        </label>
+
+                        <label class="account-field">
+                            <span>Instagram</span>
+                            <input @bind="editableProfile.InstagramHandle" maxlength="50" placeholder="@@username" />
+                        </label>
+
+                        <label class="account-field account-field-full">
+                            <span>Favorite Brands</span>
+                            <input @bind="editableProfile.FavoriteBrands" maxlength="120" placeholder="Zara, Mango, COS..." />
+                        </label>
+
+                        <label class="account-field account-field-full">
+                            <span>Preferred Colors</span>
+                            <input @bind="editableProfile.PreferredColors" maxlength="120" placeholder="Black, cream, blush pink..." />
+                        </label>
+
+                        <label class="account-field account-field-full">
+                            <span>About You</span>
+                            <textarea @bind="editableProfile.Bio" rows="5" maxlength="280" placeholder="Tell us a little about your style, your mood, your favorite kinds of looks..."></textarea>
+                        </label>
+
+                        <label class="account-field account-field-full">
+                            <span>Styling Notes</span>
+                            <textarea @bind="editableProfile.StylingNotes" rows="4" maxlength="280" placeholder="Anything you want to remember about your styling preferences..."></textarea>
+                        </label>
+                    </div>
+
+                    <div class="account-actions">
+                        <button class="secondary-account-btn" @onclick="ResetChanges" type="button">Reset</button>
+                        <button class="primary-account-btn" @onclick="SaveAccountDetails" type="button">Save Details</button>
+                    </div>
+                </section>
+            </div>
+        }
+    </div>
+</div>
+
+<InputFile id="account-photo-input"
+           OnChange="HandleProfilePhotoSelected"
+           accept="image/*"
+           style="display:none" />
+
+@if (showPhotoActionSheet)
+{
+    <div class="profile-photo-modal-backdrop" @onclick="ClosePhotoActionSheet">
+        <div class="profile-photo-modal-card" @onclick:stopPropagation="true">
+            <h3>Profile Photo</h3>
+            <p>What would you like to do with your profile photo?</p>
+            <div class="profile-photo-modal-actions">
+                <button class="profile-photo-secondary-btn" @onclick="OpenPhotoViewer">View photo</button>
+                <button class="profile-photo-primary-btn" @onclick="TriggerPhotoPickerFromModal">Change photo</button>
+                <button class="profile-photo-danger-btn" @onclick="RemoveProfilePhoto">Delete photo</button>
+            </div>
+            <button class="profile-photo-link-btn" @onclick="ClosePhotoActionSheet">Cancel</button>
+        </div>
+    </div>
+}
+
+@if (showPhotoViewer && ProfilePhotoService.HasPhoto)
+{
+    <div class="profile-photo-modal-backdrop" @onclick="ClosePhotoViewer">
+        <div class="profile-photo-viewer-card" @onclick:stopPropagation="true">
+            <img src="@ProfilePhotoService.PhotoDataUrl" alt="Profile photo preview" class="profile-photo-viewer-image" />
+            <button class="profile-photo-link-btn" @onclick="ClosePhotoViewer">Close</button>
+        </div>
+    </div>
+}
+
+<NavBar CurrentPage="profile" />
+
+<style>
+    .my-account-page-wrapper {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(rgba(253,242,248,0.58), rgba(253,242,248,0.58)), url('Images/minimalist_luxury_interior_texture_for_profile.png');
+        background-size: cover;
+        background-position: center;
+        overflow-y: auto;
+    }
+
+    .editorial-header-unified {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: clamp(25px, 4vh, 60px) 20px 0;
+        z-index: 1000;
+    }
+
+    .brand-nav-group {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .brand-text-block {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .brand-title-unified {
+        font-family: 'Playfair Display', serif;
+        font-size: 38px;
+        font-weight: 900;
+        line-height: 0.8;
+        margin: 0;
+        color: black;
+    }
+
+    .no-border {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    .collection-tag-unified {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        display: block;
+        margin-top: 5px;
+        text-transform: uppercase;
+        opacity: 0.8;
+    }
+
+    .closet-color {
+        color: #7a5c68;
+    }
+
+    .profile-circle {
+        display: flex;
+        width: 48px;
+        height: 48px;
+        background: white !important;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        cursor: pointer;
+        transition: transform 0.3s;
+        border: none;
+    }
+
+    .profile-circle svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .account-content-shell {
+        width: min(100%, 1080px);
+        margin: 0 auto;
+        height: calc(100vh - 96px);
+        padding: 130px 20px 36px;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .account-page-grid {
+        display: grid;
+        grid-template-columns: minmax(280px, 330px) minmax(0, 1fr);
+        gap: 28px;
+        align-items: start;
+        height: 100%;
+    }
+
+    .account-hero-card,
+    .account-form-card,
+    .account-locked-card {
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(18px);
+        border-radius: 34px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.07);
+    }
+
+    .account-hero-card {
+        padding: 28px 22px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 16px;
+        position: sticky;
+        top: 130px;
+        max-height: calc(100vh - 210px);
+    }
+
+    .account-avatar-button {
+        width: 124px;
+        height: 124px;
+        border-radius: 50%;
+        border: none;
+        background: white;
+        box-shadow: 0 15px 35px rgba(217, 70, 239, 0.18);
+        color: #d946ef;
+        font-size: 48px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .account-avatar-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+    }
+
+    .account-identity-copy h2 {
+        margin: 0 0 6px;
+        font-size: 30px;
+        font-weight: 900;
+        color: #1a1517;
+    }
+
+    .account-identity-copy p {
+        margin: 0;
+        color: #7a5c68;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .account-identity-tags {
+        width: 100%;
+        display: grid;
+        gap: 10px;
+    }
+
+    .account-identity-tags span {
+        min-height: 38px;
+        border-radius: 16px;
+        background: #faf7fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: #7a5c68;
+        padding: 0 14px;
+    }
+
+    .account-form-card {
+        padding: 22px;
+        max-height: calc(100vh - 210px);
+        overflow-y: auto;
+        padding-bottom: 28px;
+        scrollbar-gutter: stable;
+    }
+
+    .account-card-header {
+        margin-bottom: 18px;
+    }
+
+    .account-card-header h3 {
+        margin: 0 0 6px;
+        font-size: 24px;
+        font-weight: 900;
+        color: #1a1517;
+    }
+
+    .account-card-header p {
+        margin: 0;
+        color: #7a5c68;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .account-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .account-field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .account-field-full {
+        grid-column: 1 / -1;
+    }
+
+    .account-field span {
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        color: #7a5c68;
+    }
+
+    .account-field input,
+    .account-field textarea,
+    .account-field select {
+        width: 100%;
+        border: 1px solid #f0e5ec;
+        background: #fff;
+        border-radius: 18px;
+        min-height: 46px;
+        padding: 12px 14px;
+        font-size: 13px;
+        color: #1a1517;
+        outline: none;
+        box-sizing: border-box;
+    }
+
+    .account-field textarea {
+        min-height: 96px;
+        resize: vertical;
+    }
+
+    .account-field input:disabled {
+        color: #8f7a85;
+        background: #fbf8fa;
+    }
+
+    .account-actions {
+        margin-top: 18px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        position: sticky;
+        bottom: 0;
+        padding-top: 14px;
+        background: linear-gradient(to top, rgba(255,255,255,0.98), rgba(255,255,255,0.86), rgba(255,255,255,0));
+    }
+
+    .primary-account-btn,
+    .secondary-account-btn {
+        min-height: 46px;
+        border-radius: 18px;
+        padding: 0 22px;
+        border: none;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .primary-account-btn {
+        background: #1a1517;
+        color: white;
+    }
+
+    .secondary-account-btn {
+        background: white;
+        color: #1a1517;
+        border: 1px solid #f0e5ec;
+    }
+
+    .account-locked-card {
+        width: min(100%, 460px);
+        margin: 120px auto 0;
+        padding: 32px 28px;
+        text-align: center;
+    }
+
+    .account-locked-card h2 {
+        margin: 0 0 10px;
+        font-size: 28px;
+        font-weight: 900;
+        color: #1a1517;
+    }
+
+    .account-locked-card p {
+        margin: 0 0 18px;
+        color: #7a5c68;
+    }
+
+    .profile-photo-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(25, 18, 24, 0.32);
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 12000;
+        padding: 20px;
+    }
+
+    .profile-photo-modal-card,
+    .profile-photo-viewer-card {
+        width: min(100%, 360px);
+        background: rgba(255, 255, 255, 0.96);
+        border-radius: 28px;
+        padding: 24px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+        text-align: center;
+    }
+
+    .profile-photo-modal-card h3 {
+        margin: 0 0 8px;
+        font-size: 24px;
+        font-weight: 900;
+        color: #1a1517;
+    }
+
+    .profile-photo-modal-card p {
+        margin: 0 0 20px;
+        color: #7a5c68;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .profile-photo-modal-actions {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .profile-photo-primary-btn,
+    .profile-photo-secondary-btn,
+    .profile-photo-danger-btn {
+        min-height: 46px;
+        border-radius: 18px;
+        border: none;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .profile-photo-primary-btn {
+        background: #d946ef;
+        color: white;
+    }
+
+    .profile-photo-secondary-btn {
+        background: #f6f0f4;
+        color: #2d1b24;
+    }
+
+    .profile-photo-danger-btn {
+        background: #fff1f2;
+        color: #ef4444;
+    }
+
+    .profile-photo-link-btn {
+        border: none;
+        background: transparent;
+        color: #7a5c68;
+        text-decoration: underline;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .profile-photo-viewer-card {
+        width: min(100%, 420px);
+    }
+
+    .profile-photo-viewer-image {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 24px;
+        display: block;
+        margin-bottom: 16px;
+    }
+
+    @@media (max-width: 900px) {
+        .account-content-shell {
+            height: auto;
+            overflow: visible;
+            padding-bottom: 136px;
+        }
+
+        .account-page-grid {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
+
+        .account-hero-card {
+            position: static;
+            max-height: none;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .my-account-page-wrapper .editorial-header-unified {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            height: 80px !important;
+            padding: 20px 20px 0 !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        .my-account-page-wrapper .header-left {
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .my-account-page-wrapper .brand-nav-group {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+
+        .my-account-page-wrapper .brand-title-unified {
+            font-size: 24px !important;
+            line-height: 1 !important;
+            letter-spacing: -0.5px !important;
+            margin: 0 !important;
+        }
+
+        .my-account-page-wrapper .collection-tag-unified {
+            font-size: 8px !important;
+            letter-spacing: 2px !important;
+            margin-top: 0 !important;
+        }
+
+        .my-account-page-wrapper .profile-circle {
+            width: 38px !important;
+            height: 38px !important;
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+            .my-account-page-wrapper .profile-circle svg {
+                width: 18px !important;
+                height: 18px !important;
+            }
+    }
+</style>
+
+@code {
+    private AccountProfileDetails? editableProfile;
+    private bool showPhotoActionSheet;
+    private bool showPhotoViewer;
+    private List<string> HeroTags
+    {
+        get
+        {
+            if (editableProfile == null)
+            {
+                return new List<string>();
+            }
+
+            var tags = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(editableProfile.FavoriteStyle))
+            {
+                tags.Add(editableProfile.FavoriteStyle.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(editableProfile.City))
+            {
+                tags.Add(editableProfile.City.Trim());
+            }
+            else
+            {
+                tags.Add("Your wardrobe world");
+            }
+
+            if (!string.IsNullOrWhiteSpace(editableProfile.PreferredColors))
+            {
+                tags.Add(editableProfile.PreferredColors.Trim());
+            }
+
+            return tags.Take(3).ToList();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!UserState.IsLoggedIn)
+        {
+            return;
+        }
+
+        await ProfilePhotoService.EnsureLoadedAsync();
+        editableProfile = await AccountProfileService.GetEditableProfileAsync();
+    }
+
+    private string GetAvatarLetter()
+    {
+        if (!string.IsNullOrWhiteSpace(editableProfile?.DisplayName))
+        {
+            return editableProfile.DisplayName.Substring(0, 1).ToUpperInvariant();
+        }
+
+        if (!string.IsNullOrWhiteSpace(UserState.Email))
+        {
+            return UserState.Email.Substring(0, 1).ToUpperInvariant();
+        }
+
+        return "M";
+    }
+
+    private async Task SaveAccountDetails()
+    {
+        if (editableProfile == null)
+        {
+            return;
+        }
+
+        var saved = await AccountProfileService.SaveAsync(editableProfile);
+        if (!saved)
+        {
+            Toast.Show("Account details could not be saved.", "error");
+            return;
+        }
+
+        editableProfile = await AccountProfileService.GetEditableProfileAsync();
+        Toast.Show("Account details saved successfully.", "success");
+        StateHasChanged();
+    }
+
+    private Task ResetChanges()
+    {
+        editableProfile = new AccountProfileDetails
+        {
+            Email = UserState.Email ?? string.Empty,
+            DisplayName = GetDefaultDisplayName(),
+            Bio = string.Empty,
+            Phone = string.Empty,
+            City = string.Empty,
+            Birthday = string.Empty,
+            FavoriteStyle = string.Empty,
+            FavoriteBrands = string.Empty,
+            PreferredColors = string.Empty,
+            InstagramHandle = string.Empty,
+            StylingNotes = string.Empty
+        };
+
+        Toast.Show("Form reset.", "success");
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private string GetDefaultDisplayName()
+    {
+        if (string.IsNullOrWhiteSpace(UserState.Email))
+        {
+            return "Member";
+        }
+
+        var namePart = UserState.Email.Split('@')[0].Trim();
+        return string.IsNullOrWhiteSpace(namePart) ? "Member" : namePart;
+    }
+
+    private async Task HandleAvatarClick()
+    {
+        await ProfilePhotoService.EnsureLoadedAsync();
+
+        if (!ProfilePhotoService.HasPhoto)
+        {
+            await JS.InvokeVoidAsync("envogueProfile.clickById", "account-photo-input");
+            return;
+        }
+
+        showPhotoActionSheet = true;
+    }
+
+    private async Task HandleProfilePhotoSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file == null)
+        {
+            return;
+        }
+
+        if (!file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        {
+            Toast.Show("Please choose an image file.", "error");
+            return;
+        }
+
+        try
+        {
+            var hadPhotoBefore = ProfilePhotoService.HasPhoto;
+            var saved = await ProfilePhotoService.SavePhotoAsync(file);
+            if (!saved)
+            {
+                Toast.Show("Profile photo could not be saved.", "error");
+                return;
+            }
+
+            showPhotoActionSheet = false;
+            Toast.Show(hadPhotoBefore ? "Profile photo updated successfully." : "Profile photo added successfully.", "success");
+            StateHasChanged();
+        }
+        catch (IOException)
+        {
+            Toast.Show("The selected image is too large.", "error");
+        }
+        catch
+        {
+            Toast.Show("Profile photo could not be saved.", "error");
+        }
+    }
+
+    private void OpenPhotoViewer()
+    {
+        showPhotoActionSheet = false;
+        showPhotoViewer = true;
+    }
+
+    private async Task TriggerPhotoPickerFromModal()
+    {
+        showPhotoActionSheet = false;
+        await JS.InvokeVoidAsync("envogueProfile.clickById", "account-photo-input");
+    }
+
+    private async Task RemoveProfilePhoto()
+    {
+        var removed = await ProfilePhotoService.RemovePhotoAsync();
+        showPhotoActionSheet = false;
+
+        if (!removed)
+        {
+            Toast.Show("Profile photo could not be deleted.", "error");
+            return;
+        }
+
+        showPhotoViewer = false;
+        Toast.Show("Profile photo deleted successfully.", "success");
+        StateHasChanged();
+    }
+
+    private void ClosePhotoActionSheet() => showPhotoActionSheet = false;
+    private void ClosePhotoViewer() => showPhotoViewer = false;
+}

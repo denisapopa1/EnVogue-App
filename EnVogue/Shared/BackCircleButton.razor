@@ -1,0 +1,80 @@
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<button class="back-circle-button" @onclick="HandleClick" aria-label="Back">
+    <svg viewBox="0 0 24 24">
+        <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+</button>
+
+<style>
+    .back-circle-button {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 8px 22px rgba(45, 27, 36, 0.12);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #d946ef;
+        padding: 0;
+        flex-shrink: 0;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+    }
+
+        .back-circle-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(45, 27, 36, 0.16);
+            color: #c026d3;
+        }
+
+        .back-circle-button svg {
+            width: 24px;
+            height: 24px;
+            display: block;
+        }
+
+    @@media (max-width: 768px) {
+        .back-circle-button {
+            width: 38px;
+            height: 38px;
+        }
+
+        .back-circle-button svg {
+            width: 18px;
+            height: 18px;
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public string? FallbackRoute { get; set; }
+    [Parameter] public EventCallback OnClick { get; set; }
+    [Parameter] public bool UseBrowserBack { get; set; } = true;
+
+    private async Task HandleClick()
+    {
+        if (OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync();
+            return;
+        }
+
+        if (UseBrowserBack)
+        {
+            var navigatedBack = await JS.InvokeAsync<bool>("enVogueNav.goBack");
+            if (navigatedBack)
+            {
+                return;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(FallbackRoute))
+        {
+            Nav.NavigateTo(FallbackRoute!);
+        }
+    }
+}

@@ -3,6 +3,7 @@
 @using EnVogue.Services
 @implements IDisposable
 @layout EmptyLayout
+@inject NotificationService Toast
 
 <div class="favorites-page-wrapper">
     @* FUNDAL CU IMAGINE BLURATĂ *@
@@ -15,13 +16,7 @@
         <div class="header-left">
             <div class="brand-nav-group">
 
-                <button class="profile-circle back-btn"
-                        @onclick='() => NavigationManager.NavigateTo("/home")'>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#d946ef" stroke-width="2.5">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                </button>
+                <BackCircleButton FallbackRoute="/home" />
 
                 <div class="brand-text-block">
                     <h1 class="brand-title-unified no-border">EnVogue</h1>
@@ -35,12 +30,7 @@
         </div>
 
         <div class="header-right">
-            <button class="profile-circle"
-                    @onclick='() => NavigationManager.NavigateTo("/profile")'>
-                <svg viewBox="0 0 24 24" class="profile-svg">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-            </button>
+            <ProfileAvatarButton />
         </div>
     </header>
 
@@ -65,25 +55,48 @@
         else
         {
             <div class="favorites-scroll-area">
+                <div class="favorites-cards-track">
                 <div class="favorites-grid">
                     @foreach (var outfit in favoriteOutfits)
                     {
-                        <div class="outfit-card-editorial glass-effect">
-                            <div class="outfit-card-header">
-                                <span class="outfit-name-tag">@outfit.Name</span>
-                                <button class="remove-fav-btn" @onclick="() => RemoveFromFavorites(outfit.Id)">✕</button>
+                        var sortedItems = GetSortedItems(outfit.Items);
+                        <article class="favorite-look-card glass-effect animate-fade-in"
+                                 @onclick='() => OpenOutfitDetails(outfit.Id)'>
+                            <div class="@GetPreviewShellClass(sortedItems.Count)">
+                                <div class="@GetPreviewGridClass(sortedItems.Count)">
+                                    @foreach (var item in sortedItems)
+                                    {
+                                        <div class="preview-piece">
+                                            <img src="@GetImageSource(item.ImagePath)" alt="@item.SubcategoryName" />
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="look-actions">
+                                    <button class="look-action-btn active"
+                                            @onclick="() => RemoveFromFavorites(outfit.Id)"
+                                            @onclick:stopPropagation="true"
+                                            aria-label="Remove from favorites">
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="outfit-images-preview">
-                                @foreach (var item in outfit.Items.Take(3))
-                                {
-                                    <div class="preview-tile">
-                                        @* Trimitem ImagePath (string) către noua metodă *@
-                                        <img src="@GetImageSource(item.ImagePath)" alt="item preview" />
-                                    </div>
-                                }
+
+                            <div class="look-info">
+                                <div>
+                                    <h3>@outfit.Name</h3>
+                                    <p>@(string.IsNullOrWhiteSpace(outfit.Occasion) ? "Manual Selection" : outfit.Occasion)</p>
+                                </div>
+                                <div class="look-meta">
+                                    <span>@outfit.Items.Count items</span>
+                                    <span>@outfit.CreatedDate.ToString("MMM d")</span>
+                                </div>
                             </div>
-                        </div>
+                        </article>
                     }
+                </div>
                 </div>
             </div>
         }
@@ -284,13 +297,27 @@
         flex: 1;
         overflow-y: auto;
         scrollbar-width: none;
+        padding: 10px 0 100px;
+    }
+
+    .favorites-scroll-area::-webkit-scrollbar {
+        display: none;
+    }
+
+    .favorites-cards-track {
+        width: 100%;
+        max-width: 1680px;
+        margin: 0 auto;
+        padding: 0 18px;
+        box-sizing: border-box;
     }
 
     .favorites-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-        margin-top: 30px;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 18px;
+        align-items: stretch;
+        margin-top: 8px;
     }
 
     .glass-effect {
@@ -301,78 +328,250 @@
         border: 1px solid rgba(255,255,255,0.4);
     }
 
-    /* --- REGLAJE FINALE PENTRU MOBILE --- */
-    @@media (max-width: 768px) {
-        /* HEADER IDENTIC CU ADD ITEM PE MOBIL */
-  
-        .hero-overlay, .content-overlay, .editorial-header-unified {
-            padding-top: clamp(12px, 3.5vh, 25px) !important;
-        }
-        /* 2. Alinierea elementelor pe aceeași axă orizontală */
-        /* Pe Home: .header-nav | Pe Closet: .editorial-header | Pe Add Item: .header-left/.header-right */
-        .header-nav, .editorial-header, .editorial-header-unified {
-            display: flex !important;
-            align-items: center !important; /* Aceasta garantează că Logo și Profil sunt la același nivel */
-            margin-top: 0 !important;
-            padding-bottom: 0 !important;
-        }
-        /* 3. Spațiul sub Logo (Distanța până la Search/Conținut) */
-        .editorial-header, .header-nav {
-            margin-bottom: clamp(20px, 4vh, 35px) !important;
-        }
-    .brand-nav-group {
-        gap: 10px !important;
+    .favorite-look-card {
+        position: relative;
+        width: 100%;
+        min-height: 304px;
+        padding: 14px;
+        border-radius: 20px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
     }
 
-        .brand-title-unified {
-            font-family: 'Playfair Display', serif;
-            font-size: 26px !important;
-            line-height: 1 !important;
-            letter-spacing: -0.5px;
+    .look-preview {
+        position: relative;
+        width: 100%;
+        height: 178px;
+        border-radius: 15px;
+        background: rgba(249, 250, 251, 0.88);
+        overflow: hidden;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .preview-grid {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .preview-grid.many-items {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+
+    .preview-grid.one-item {
+        display: grid;
+        place-items: center;
+    }
+
+    .preview-grid.one-item .preview-piece {
+        width: 74%;
+        height: 82%;
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .preview-grid.two-items {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: 1fr;
+    }
+
+    .preview-grid.three-items {
+        grid-template-rows: repeat(2, minmax(0, 1fr));
+    }
+
+    .preview-grid.three-items .preview-piece:nth-child(3) {
+        grid-column: 1 / -1;
+        padding: 5px 30px;
+    }
+
+    .preview-piece {
+        min-width: 0;
+        min-height: 0;
+        border-radius: 17px;
+        background: rgba(255, 255, 255, 0.72);
+        display: grid;
+        place-items: center;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .preview-piece:only-child {
+        grid-column: 1 / -1;
+        grid-row: 1 / -1;
+    }
+
+    .preview-piece:nth-child(3):last-child {
+        grid-column: 1 / -1;
+    }
+
+    .preview-piece img {
+        width: 86%;
+        height: 86%;
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        object-position: center;
+        filter: drop-shadow(0 10px 12px rgba(45, 27, 36, 0.11));
+    }
+
+    .preview-grid.four-items .preview-piece img,
+    .preview-grid.many-items .preview-piece img {
+        width: 80%;
+        height: 80%;
+    }
+
+    .look-actions {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 30;
+    }
+
+    .look-action-btn {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        border: none;
+        background: #d946ef;
+        color: white;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(45,27,36,0.22);
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .look-action-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .look-action-btn svg {
+        width: 20px;
+        height: 20px;
+        fill: white;
+        stroke: white;
+        stroke-width: 2;
+    }
+
+    .look-info {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        gap: 14px;
+        padding: 16px 2px 0;
+        text-align: left;
+    }
+
+    .look-info h3 {
+        margin: 0;
+        color: #17121a;
+        font-size: 15px;
+        font-weight: 900;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .look-info p {
+        margin: 7px 0 0;
+        color: #a855f7;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .look-meta {
+        display: grid;
+        justify-items: end;
+        gap: 6px;
+        color: #7a5c68;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    @@media (max-width: 1560px) {
+        .favorites-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 1180px) {
+        .favorites-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    /* --- REGLAJE FINALE PENTRU MOBILE --- */
+    @@media (max-width: 768px) {
+
+        .favorites-page-wrapper .editorial-header-unified {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            height: 80px !important;
+            padding: 20px 20px 0 !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
         }
 
-        .collection-tag-unified {
+        .favorites-page-wrapper .header-left {
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .favorites-page-wrapper .brand-nav-group {
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+        }
+
+        .favorites-page-wrapper .brand-title-unified {
+            font-size: 24px !important;
+            line-height: 1 !important;
+            letter-spacing: -0.5px !important;
+            margin: 0 !important;
+        }
+
+        .favorites-page-wrapper .collection-tag-unified {
             font-size: 8px !important;
             letter-spacing: 2px !important;
-            margin-top: 2px !important;
+            margin-top: 0 !important;
         }
 
-    /* BUTOANE CIRCULARE MICȘORATE MOBILE */
-        .profile-circle {
+        .favorites-page-wrapper .header-right {
+            display: flex !important;
+            align-items: flex-start !important;
+            margin-top: 0 !important;
+        }
+        /* 👇 IMPORTANT: aici nu ai .header-actions, dar poți controla direct butonul */
+        .favorites-page-wrapper .profile-circle {
+            position: relative !important;
+            top: 0 !important;
             width: 38px !important;
             height: 38px !important;
-            margin-bottom: 0 !important; /* Elimină spațiul de jos pe mobile pentru aliniere */
+            margin: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
 
-            .profile-circle svg {
+            .favorites-page-wrapper .profile-circle svg {
                 width: 18px !important;
                 height: 18px !important;
             }
-
-    /* REPARAȚIE BOX MOBILE */
-    .content-overlay-editorial {
-        padding: 110px 20px 100px;
     }
 
-    .section-title-bold {
-        font-size: 28px;
-    }
-
-    .empty-box-dashed-favorites {
-        height: 300px !important;
-        width: 90% !important;
-        padding: 30px !important;
-        border-radius: 35px !important;
-    }
-
-    .plus-large-favorites {
-        font-size: 48px;
-    }
-
-    .empty-msg-main {
-        font-size: 16px;
-    }
-
+    @@media (max-width: 520px) {
+        .favorites-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     .empty-box-dashed-favorites:hover {
@@ -434,20 +633,76 @@
         StateHasChanged();
     }
 
-    private async Task RemoveFromFavorites(string outfitId)
+    private async Task RemoveFromFavorites(int outfitId)
     {
         // 3. Apelăm toggle-ul din serviciu (care ar trebui să facă un apel PUT la API)
-        await WardrobeService.ToggleFavorite(outfitId);
+        var updatedSuccessfully = await WardrobeService.ToggleFavorite(outfitId);
+        if (!updatedSuccessfully)
+        {
+            Toast.Show("Favorite status could not be saved.", "error");
+        }
         RefreshData();
+    }
+
+    private void OpenOutfitDetails(int outfitId)
+    {
+        NavigationManager.NavigateTo($"/outfit-details/{outfitId}");
+    }
+
+    private List<ClothingItem> GetSortedItems(List<ClothingItem> items)
+    {
+        var order = new List<string> { "Outerwear", "Tops", "Dress", "Bottoms", "Shoes", "Accessories" };
+        return items.OrderBy(i =>
+        {
+            var idx = order.IndexOf(i.CategoryName ?? "");
+            return idx == -1 ? 99 : idx;
+        }).ToList();
+    }
+
+    private string GetPreviewGridClass(int itemCount)
+    {
+        if (itemCount <= 1)
+        {
+            return "preview-grid one-item";
+        }
+
+        if (itemCount == 2)
+        {
+            return "preview-grid two-items";
+        }
+
+        if (itemCount == 3)
+        {
+            return "preview-grid three-items";
+        }
+
+        if (itemCount == 4)
+        {
+            return "preview-grid four-items";
+        }
+
+        return "preview-grid many-items";
+    }
+
+    private string GetPreviewShellClass(int itemCount)
+    {
+        return "look-preview";
     }
 
     // --- REPARAȚIE IMAGINI: Sursa de pe Backend ---
     private string GetImageSource(string? imagePath)
     {
-        if (string.IsNullOrWhiteSpace(imagePath))
+        if (string.IsNullOrWhiteSpace(imagePath) || imagePath == "du")
             return "Images/placeholder.png";
 
-        return $"https://localhost:7081/{imagePath}";
+        if (imagePath.StartsWith("Images/", StringComparison.OrdinalIgnoreCase) ||
+            imagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            return imagePath;
+        }
+
+        var fileName = System.IO.Path.GetFileName(imagePath);
+        return $"https://localhost:7081/uploads/images/{fileName}";
     }
 
     public void Dispose()
