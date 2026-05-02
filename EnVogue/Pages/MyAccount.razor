@@ -1,4 +1,4 @@
-@page "/my-account"
+﻿@page "/my-account"
 @using EnVogue.Models
 @using EnVogue.Services
 @inject UserState UserState
@@ -472,7 +472,6 @@
 
     .account-locked-card {
         width: min(100%, 460px);
-        margin: 120px auto 0;
         padding: 32px 28px;
         text-align: center;
     }
@@ -597,52 +596,240 @@
     }
 
     @@media (max-width: 768px) {
-        .my-account-page-wrapper .editorial-header-unified {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            height: 80px !important;
-            padding: 20px 20px 0 !important;
-            margin: 0 !important;
-            box-sizing: border-box !important;
+        .my-account-page-wrapper {
+            position: fixed !important;
+            inset: 0 !important;
+            overflow: hidden !important;
         }
 
-        .my-account-page-wrapper .header-left {
-            display: flex !important;
-            align-items: center !important;
+            .my-account-page-wrapper .editorial-header-unified {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 9999 !important;
+                height: 92px !important;
+                padding: 20px 20px 0 !important;
+                margin: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                background: linear-gradient( to bottom, rgba(253,242,248,0.92) 0%, rgba(253,242,248,0.82) 65%, rgba(253,242,248,0) 100% ) !important;
+                backdrop-filter: none !important;
+            }
+
+            .my-account-page-wrapper .header-left {
+                display: flex !important;
+                align-items: center !important;
+            }
+
+            .my-account-page-wrapper .brand-nav-group {
+                display: flex !important;
+                align-items: center !important;
+                gap: 10px !important;
+            }
+
+            .my-account-page-wrapper .brand-title-unified {
+                font-size: 24px !important;
+                line-height: 1 !important;
+                letter-spacing: -0.5px !important;
+                margin: 0 !important;
+            }
+
+            .my-account-page-wrapper .collection-tag-unified {
+                font-size: 8px !important;
+                letter-spacing: 2px !important;
+                margin-top: 0 !important;
+            }
+
+        @@media (max-width: 768px) {
+            .my-account-page-wrapper {
+                position: fixed !important;
+                inset: 0 !important;
+                overflow: hidden !important;
+            }
+
+                .my-account-page-wrapper .editorial-header-unified {
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    z-index: 9999 !important;
+                    height: 95px !important;
+                    padding: 20px 20px 0 !important;
+                    margin: 0 !important;
+                    box-sizing: border-box !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    background: transparent !important;
+                    backdrop-filter: none !important;
+                }
+
+                .my-account-page-wrapper .account-content-shell {
+                    position: fixed !important;
+                    top: 95px !important; /* începe DUPĂ header */
+                    left: 0 !important;
+                    right: 0 !important;
+                    bottom: 90px !important; /* spațiu pentru navbar */
+
+                    height: auto !important;
+                    padding: 10px 18px 20px !important;
+                    overflow-y: auto !important;
+                    overflow-x: hidden !important;
+                    box-sizing: border-box !important;
+                    -webkit-overflow-scrolling: touch !important;
+                }
+
+                .my-account-page-wrapper .account-page-grid {
+                    grid-template-columns: 1fr !important;
+                    gap: 14px !important;
+                    height: auto !important;
+                }
         }
 
-        .my-account-page-wrapper .brand-nav-group {
-            display: flex !important;
-            align-items: center !important;
-            gap: 10px !important;
-        }
+            .my-account-page-wrapper .account-page-grid {
+                grid-template-columns: 1fr !important;
+                gap: 14px !important;
+                height: auto !important;
+            }
 
-        .my-account-page-wrapper .brand-title-unified {
-            font-size: 24px !important;
-            line-height: 1 !important;
-            letter-spacing: -0.5px !important;
-            margin: 0 !important;
-        }
+            .my-account-page-wrapper .account-hero-card {
+                width: 88% !important;
+                margin: 0 auto !important;
+                padding: 18px 16px !important;
+                border-radius: 24px !important;
+                gap: 10px !important;
+                max-height: none !important;
+                position: static !important;
+            }
 
-        .my-account-page-wrapper .collection-tag-unified {
-            font-size: 8px !important;
-            letter-spacing: 2px !important;
-            margin-top: 0 !important;
-        }
+            .my-account-page-wrapper .account-avatar-button {
+                width: 82px !important;
+                height: 82px !important;
+                font-size: 32px !important;
+            }
 
-        .my-account-page-wrapper .profile-circle {
-            width: 38px !important;
-            height: 38px !important;
-            margin: 0 !important;
+            .my-account-page-wrapper .account-identity-copy h2 {
+                font-size: 22px !important;
+                margin-bottom: 3px !important;
+            }
+
+            .my-account-page-wrapper .account-identity-copy p {
+                font-size: 12px !important;
+                word-break: break-word !important;
+            }
+
+            .my-account-page-wrapper .account-identity-tags {
+                gap: 7px !important;
+            }
+
+                .my-account-page-wrapper .account-identity-tags span {
+                    min-height: 30px !important;
+                    border-radius: 12px !important;
+                    font-size: 10px !important;
+                    padding: 0 10px !important;
+                }
+
+            .my-account-page-wrapper .account-form-card {
+                width: 88% !important;
+                margin: 0 auto !important;
+                padding: 18px 16px !important;
+                border-radius: 24px !important;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .my-account-page-wrapper .account-card-header {
+                margin-bottom: 14px !important;
+            }
+
+                .my-account-page-wrapper .account-card-header h3 {
+                    font-size: 22px !important;
+                }
+
+                .my-account-page-wrapper .account-card-header p {
+                    font-size: 12px !important;
+                }
+
+            .my-account-page-wrapper .account-form-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+
+            .my-account-page-wrapper .account-field {
+                gap: 5px !important;
+            }
+
+                .my-account-page-wrapper .account-field span {
+                    font-size: 9px !important;
+                    letter-spacing: 1.3px !important;
+                }
+
+                .my-account-page-wrapper .account-field input,
+                .my-account-page-wrapper .account-field select,
+                .my-account-page-wrapper .account-field textarea {
+                    min-height: 42px !important;
+                    padding: 10px 12px !important;
+                    border-radius: 14px !important;
+                    font-size: 16px !important;
+                }
+
+                .my-account-page-wrapper .account-field textarea {
+                    min-height: 78px !important;
+                }
+
+            .my-account-page-wrapper .account-actions {
+                position: static !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+                margin-top: 14px !important;
+                padding-top: 0 !important;
+                background: transparent !important;
+            }
+
+            .my-account-page-wrapper .primary-account-btn,
+            .my-account-page-wrapper .secondary-account-btn {
+                width: 100% !important;
+                min-height: 42px !important;
+                border-radius: 15px !important;
+                font-size: 12px !important;
+            }
+
+        .my-account-page-wrapper .account-content-shell:has(.account-locked-card) {
+            top: 95px !important;
+            bottom: 90px !important;
+            padding: 0 18px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            overflow: hidden !important;
         }
 
-            .my-account-page-wrapper .profile-circle svg {
-                width: 18px !important;
-                height: 18px !important;
+        .my-account-page-wrapper .account-locked-card {
+            width: 82% !important;
+            max-width: 340px !important;
+            min-height: 185px !important;
+            margin: 0 auto !important;
+            padding: 34px 24px !important;
+            border-radius: 30px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+        }
+
+            .my-account-page-wrapper .account-locked-card h2 {
+                font-size: 24px !important;
+                line-height: 1.1 !important;
+            }
+
+            .my-account-page-wrapper .account-locked-card p {
+                font-size: 14px !important;
+                line-height: 1.5 !important;
+                margin: 14px 0 18px !important;
+            }
+
+            .my-account-page-wrapper .account-locked-card .primary-account-btn {
+                min-height: 44px !important;
+                border-radius: 16px !important;
             }
     }
 </style>

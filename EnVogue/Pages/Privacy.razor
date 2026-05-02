@@ -550,54 +550,183 @@
     }
 
     @@media (max-width: 768px) {
-        .privacy-page-wrapper .editorial-header-unified {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            height: 80px !important;
-            padding: 20px 20px 0 !important;
-            margin: 0 !important;
-            box-sizing: border-box !important;
+        .privacy-page-wrapper {
+            position: fixed !important;
+            inset: 0 !important;
+            overflow: hidden !important;
         }
 
-        .privacy-page-wrapper .header-left {
-            display: flex !important;
-            align-items: center !important;
-        }
+            .privacy-page-wrapper .editorial-header-unified {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                z-index: 9999 !important;
+                height: 95px !important;
+                padding: 20px 20px 0 !important;
+                background: transparent !important;
+                backdrop-filter: none !important;
+            }
 
-        .privacy-page-wrapper .brand-nav-group {
-            display: flex !important;
-            align-items: center !important;
-            gap: 10px !important;
-        }
+            .privacy-page-wrapper .privacy-content-shell {
+                position: fixed !important;
+                top: 95px !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 90px !important;
+                height: auto !important;
+                min-height: 0 !important;
+                padding: 10px 18px 20px !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+                box-sizing: border-box !important;
+                -webkit-overflow-scrolling: touch !important;
+            }
 
-        .privacy-page-wrapper .brand-title-unified {
-            font-size: 24px !important;
-            line-height: 1 !important;
-            letter-spacing: -0.5px !important;
-            margin: 0 !important;
-        }
+            .privacy-page-wrapper .privacy-page-grid {
+                grid-template-columns: 1fr !important;
+                gap: 14px !important;
+            }
 
-        .privacy-page-wrapper .collection-tag-unified {
-            font-size: 8px !important;
-            letter-spacing: 2px !important;
-            margin-top: 0 !important;
-        }
+            .privacy-page-wrapper .privacy-hero-card,
+            .privacy-page-wrapper .privacy-form-card,
+            .privacy-page-wrapper .danger-zone-card {
+                width: 88% !important;
+                margin: 0 auto !important;
+                border-radius: 24px !important;
+                padding: 18px 16px !important;
+                max-height: none !important;
+                position: static !important;
+            }
 
-        .privacy-page-wrapper .profile-circle {
-            width: 38px !important;
-            height: 38px !important;
-            margin: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
+            .privacy-page-wrapper .privacy-icon-chip {
+                width: 52px !important;
+                height: 52px !important;
+                border-radius: 18px !important;
+                font-size: 24px !important;
+            }
 
-            .privacy-page-wrapper .profile-circle svg {
-                width: 18px !important;
-                height: 18px !important;
+            .privacy-page-wrapper .privacy-hero-card {
+                gap: 12px !important;
+            }
+
+                .privacy-page-wrapper .privacy-hero-card h2,
+                .privacy-page-wrapper .privacy-card-header h3 {
+                    font-size: 22px !important;
+                    line-height: 1.1 !important;
+                }
+
+                .privacy-page-wrapper .privacy-hero-card p,
+                .privacy-page-wrapper .privacy-card-header p,
+                .privacy-page-wrapper .privacy-inline-hint,
+                .privacy-page-wrapper .danger-zone-copy {
+                    font-size: 12px !important;
+                    line-height: 1.45 !important;
+                }
+
+            .privacy-page-wrapper .privacy-summary-list {
+                gap: 7px !important;
+            }
+
+            .privacy-page-wrapper .privacy-summary-item {
+                min-height: 46px !important;
+                border-radius: 14px !important;
+                padding: 9px 12px !important;
+            }
+
+            .privacy-page-wrapper .privacy-summary-label {
+                font-size: 8px !important;
+                letter-spacing: 1.2px !important;
+            }
+
+            .privacy-page-wrapper .privacy-summary-item strong {
+                font-size: 12px !important;
+                word-break: break-word !important;
+            }
+
+            .privacy-page-wrapper .privacy-right-column {
+                gap: 14px !important;
+            }
+
+            .privacy-page-wrapper .privacy-form-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+
+            .privacy-page-wrapper .privacy-field {
+                gap: 5px !important;
+            }
+
+                .privacy-page-wrapper .privacy-field span {
+                    font-size: 9px !important;
+                    letter-spacing: 1.3px !important;
+                }
+
+                .privacy-page-wrapper .privacy-field input {
+                    min-height: 42px !important;
+                    padding: 10px 44px 10px 12px !important;
+                    border-radius: 14px !important;
+                    font-size: 16px !important;
+                }
+
+            .privacy-page-wrapper .password-visibility-btn {
+                right: 12px !important;
+                width: 22px !important;
+                height: 22px !important;
+            }
+
+                .privacy-page-wrapper .password-visibility-btn svg {
+                    width: 18px !important;
+                    height: 18px !important;
+                }
+
+            .privacy-page-wrapper .privacy-actions,
+            .privacy-page-wrapper .danger-zone-actions {
+                flex-direction: column !important;
+                gap: 10px !important;
+                margin-top: 14px !important;
+            }
+
+            .privacy-page-wrapper .primary-privacy-btn,
+            .privacy-page-wrapper .secondary-privacy-btn,
+            .privacy-page-wrapper .danger-privacy-btn {
+                width: 100% !important;
+                min-height: 42px !important;
+                border-radius: 15px !important;
+                font-size: 12px !important;
+            }
+
+            .privacy-page-wrapper .privacy-locked-card {
+                width: 82% !important;
+                max-width: 340px !important;
+                min-height: 185px !important;
+                margin: 0 auto !important;
+                padding: 34px 24px !important;
+                border-radius: 30px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
+            }
+
+            .privacy-page-wrapper .privacy-content-shell:has(.privacy-locked-card) {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                overflow: hidden !important;
+            }
+
+            .privacy-page-wrapper .privacy-locked-card h2 {
+                font-size: 24px !important;
+                line-height: 1.1 !important;
+            }
+
+            .privacy-page-wrapper .privacy-locked-card p {
+                font-size: 14px !important;
+                line-height: 1.5 !important;
+                margin: 14px 0 18px !important;
             }
     }
+    
 </style>
 
 @code {
