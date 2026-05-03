@@ -173,13 +173,7 @@
                         <button class="text-reset-link" @onclick="() => generatedOutfit = null">RESET</button>
                     </div>
                     <div class="outfit-display-grid">
-                        @foreach (var item in generatedOutfit.Items)
-                        {
-                            <div class="result-item-card">
-                                @* Trimitem ImagePath (string) către noua metodă *@
-                                <img src="@GetImageSource(item.ImagePath)" alt="curated item" />
-                            </div>
-                        }
+                        <OutfitCollage Items="generatedOutfit.Items" ImageSourceResolver="GetImageSource" />
                     </div>
                     <div class="result-actions">
                         <button class="action-pill-btn-white full-w" @onclick="SaveOutfit">SAVE</button>
@@ -481,8 +475,33 @@
     .manual-canvas-area:hover .canvas-desc {
         opacity: 1; /* Se clarifică descrierea la interacțiune */
     }
+    .outfit-result-area {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
     .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .outfit-display-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+    .outfit-display-grid {
+        width: 100%;
+        height: min(38vh, 320px);
+        min-height: 220px;
+        margin-bottom: 12px;
+        border-radius: 22px;
+        overflow: hidden;
+        background: rgba(255,255,255,0.92);
+    }
+
+    .outfit-display-grid .outfit-collage {
+        min-height: 100%;
+        padding: 14px;
+    }
+
+    .result-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
 
     .result-item-card {
         opacity: 0;
@@ -644,6 +663,45 @@
         .add-item-page-wrapper .luxury-form-card.ai-white-card {
             margin-top: 14px !important;
         }
+
+        .add-item-page-wrapper .luxury-form-card.ai-white-card:has(.outfit-result-area) {
+            padding: 18px 16px !important;
+            max-height: calc(100vh - 220px) !important;
+            overflow-y: auto !important;
+        }
+
+        .add-item-page-wrapper .outfit-result-area {
+            gap: 0 !important;
+        }
+
+        .add-item-page-wrapper .result-header {
+            margin-bottom: 10px !important;
+        }
+
+        .add-item-page-wrapper .outfit-display-grid {
+            height: clamp(250px, 38vh, 300px) !important;
+            min-height: 0 !important;
+            margin-bottom: 10px !important;
+            border-radius: 20px !important;
+        }
+
+        .add-item-page-wrapper .outfit-display-grid .outfit-collage {
+            padding: 10px !important;
+        }
+
+        .add-item-page-wrapper .result-actions {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+        }
+
+        .add-item-page-wrapper .result-actions .action-pill-btn-white,
+        .add-item-page-wrapper .result-actions .ai-generate-btn-black {
+            min-height: 42px !important;
+            padding: 10px 8px !important;
+            border-radius: 16px !important;
+            font-size: 10px !important;
+            margin-top: 0 !important;
+        }
     }
     }</style>
 
@@ -687,6 +745,7 @@
         }
 
         isGenerating = true;
+        generatedOutfit = null;
         StateHasChanged();
 
         var hasCustomPreferences =

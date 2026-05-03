@@ -10,7 +10,7 @@
 
 <div class="outfit-details-page-wrapper">
     <div class="editorial-background-container">
-        <img src="Images/outfits-background.png" alt="Outfit background" />
+        <img src="Images/outfits_details.png" alt="Outfit background" />
         <div class="overlay-gradient"></div>
     </div>
 
@@ -43,14 +43,7 @@
             <div class="outfit-details-grid">
                 <div class="outfit-hero-card animate-fade-in">
                     <div class="outfit-collage-shell">
-                        <div class="@GetPreviewGridClass(outfit.Items.Count)">
-                            @foreach (var item in GetSortedItems(outfit.Items))
-                            {
-                                <div class="preview-piece">
-                                    <img src="@GetImageSource(item.ImagePath)" alt="@item.SubcategoryName" />
-                                </div>
-                            }
-                        </div>
+                        <OutfitCollage Items="outfit.Items" ImageSourceResolver="GetImageSource" Size="detail" />
                     </div>
                 </div>
 
@@ -228,14 +221,16 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        filter: blur(10px);
-        opacity: 0.78;
+        filter: blur(6px) saturate(0.98);
+        opacity: 0.72;
     }
 
     .overlay-gradient {
         position: absolute;
         inset: 0;
-        background: rgba(255, 255, 255, 0.32);
+        background:
+            linear-gradient(90deg, rgba(255, 255, 255, 0.42), rgba(255, 238, 244, 0.18)),
+            rgba(255, 255, 255, 0.12);
     }
 
     .editorial-header-unified {

@@ -22,6 +22,7 @@ builder.Services.AddBlazoredLocalStorage();
 
 // 2. ÎNREGISTREAZĂ SERVICIILE TALE
 builder.Services.AddScoped<WardrobeServices>();
+builder.Services.AddScoped<DatasetImportService>();
 builder.Services.AddScoped<UserState>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<ProfilePhotoService>();

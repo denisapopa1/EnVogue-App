@@ -101,30 +101,6 @@
 
                         </div>
 
-                        <div class="action-header-inline">
-
-                            @if (isEditing)
-
-                            {
-
-                                <button class="small-action-btn success" @onclick="SaveChanges"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
-
-                                <button class="small-action-btn cancel" @onclick="CancelEdit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-
-                            }
-
-                            else
-
-                            {
-
-                                <button class="small-action-btn edit" @onclick="() => isEditing = true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-
-                                <button class="small-action-btn delete" @onclick="HandleDelete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-
-                            }
-
-                        </div>
-
                     </div>
 
                 </div>
@@ -135,8 +111,18 @@
 
                 <div class="info-showcase animate-slide-right">
 
-                    @* BUTOANE ACȚIUNE POZIȚIONATE DEASUPRA POZEI PE MOBIL *@
-
+                    <div class="action-header-inline">
+                        @if (isEditing)
+                        {
+                            <button class="small-action-btn success" @onclick="SaveChanges"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                            <button class="small-action-btn cancel" @onclick="CancelEdit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                        }
+                        else
+                        {
+                            <button class="small-action-btn edit" @onclick="() => isEditing = true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                            <button class="small-action-btn delete" @onclick="HandleDelete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                        }
+                    </div>
 
 
                     <div class="luxury-info-card">
@@ -271,7 +257,20 @@
 
                                 {
 
-                                    <input class="luxury-input" placeholder="Black, Beige..." @bind="item.Color" />
+                                    <div class="detail-color-picker">
+                                        @foreach (var option in ColorOptions)
+                                        {
+                                            <button type="button"
+                                                    class="detail-color-swatch-btn @(item.Color == option ? "active" : "")"
+                                                    style="@($"--swatch-color: {GetColorHex(option)}")"
+                                                    title="@option"
+                                                    aria-label="@($"Select {option}")"
+                                                    @onclick="() => SetItemColor(option)">
+                                                <span class="detail-color-dot"></span>
+                                            </button>
+                                        }
+                                    </div>
+                                    <span class="selected-detail-color">@(!string.IsNullOrWhiteSpace(item.Color) ? item.Color : "Black")</span>
 
                                 }
 
@@ -281,7 +280,10 @@
 
 
 
-                                    <span>@(string.IsNullOrEmpty(item.Color) ? "-" : item.Color)</span>
+                                    <span class="color-display-value">
+                                        <span class="detail-color-dot" style="@($"--swatch-color: {GetColorHex(item.Color)}")"></span>
+                                        @(string.IsNullOrEmpty(item.Color) ? "-" : item.Color)
+                                    </span>
 
                                 }
 
@@ -566,6 +568,9 @@
         justify-content: flex-end;
         gap: 10px;
         margin-bottom: 12px;
+        position: relative;
+        z-index: 60;
+        width: 100%;
     }
 
 
@@ -581,6 +586,8 @@
         justify-content: center;
         transition: all 0.25s ease;
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        opacity: 1;
+        visibility: visible;
     }
 
 
@@ -615,7 +622,8 @@
 
 
 
-    .save {
+    .save,
+    .success {
         background: #d946ef;
         color: white;
     }
@@ -718,6 +726,60 @@
         font-weight: 700;
         font-size: 16px;
         color: #2d1b24;
+    }
+
+    .color-display-value {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .detail-color-picker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 4px;
+    }
+
+    .detail-color-swatch-btn {
+        width: 28px;
+        height: 28px;
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 8px 18px rgba(45, 27, 36, 0.08);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        transition: all 0.22s ease;
+    }
+
+    .detail-color-swatch-btn:hover,
+    .detail-color-swatch-btn.active {
+        border-color: #d946ef;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(217, 70, 239, 0.16);
+    }
+
+    .detail-color-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: var(--swatch-color);
+        box-shadow: inset 0 0 0 1px rgba(45, 27, 36, 0.18);
+        flex: 0 0 auto;
+    }
+
+    .selected-detail-color {
+        display: inline-block;
+        margin-top: 6px;
+        font-size: 10px !important;
+        font-weight: 900 !important;
+        letter-spacing: 0.12em;
+        color: #d946ef !important;
+        text-transform: uppercase;
     }
 
 
@@ -948,14 +1010,15 @@
 
 
         .action-header-inline {
-            position: absolute;
-            top: -40px; /* 👈 CHEIA: negativ = urcă deasupra pozei */
-
-            right: 10px;
+            position: relative;
+            top: auto;
+            right: auto;
             display: flex;
             gap: 8px;
             z-index: 50;
             padding-right: 5px;
+            width: 100%;
+            justify-content: flex-end;
         }
 
         .small-action-btn {
@@ -1015,6 +1078,9 @@
             width: 100%;
             margin-bottom: 8px;
             justify-content: flex-end;
+            position: relative;
+            top: auto;
+            right: auto;
         }
 
 
@@ -1140,16 +1206,21 @@
 
 
         .action-header-inline {
-            position: absolute;
-            top: 20px;
-            /* 👇 CHEIA: le mutăm peste coloana 2 */
-
-            left: calc(50% + 700px);
-            /* fine tuning */
-
+            position: relative;
+            top: auto;
+            right: auto;
+            left: auto;
             display: flex;
             gap: 10px;
-            z-index: 50;
+            z-index: 80;
+            padding: 8px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.74);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 14px 30px rgba(45, 27, 36, 0.12);
+            width: max-content;
+            margin-left: auto;
+            margin-bottom: 10px;
         }
     }
 
@@ -1168,6 +1239,11 @@
 
     private List<string> Seasons = new() { "Spring", "Summer", "Autumn", "Winter", "All Seasons" };
     private List<string> Styles = new() { "Casual Style", "Elegant Style", "Formal Wear", "Sporty Look" };
+    private List<string> ColorOptions = new()
+    {
+        "Black", "White", "Gray", "Silver", "Beige", "Brown", "Navy",
+        "Blue", "Red", "Green", "Pink", "Purple", "Gold"
+    };
 
 
     // Modifică începutul blocului @code
@@ -1186,6 +1262,31 @@
         item?.CategoryId is int categoryId
             ? SubcategoriesFromDb.Where(s => s.CategoryId == categoryId).ToList()
             : new();
+
+    private void SetItemColor(string selectedColor)
+    {
+        if (item == null) return;
+
+        item.Color = selectedColor;
+    }
+
+    private string GetColorHex(string? colorName) => colorName switch
+    {
+        "Black" => "#1a1a1a",
+        "White" => "#ffffff",
+        "Gray" => "#808080",
+        "Silver" => "#c0c0c0",
+        "Beige" => "#f5f5dc",
+        "Brown" => "#8b4513",
+        "Navy" => "#000080",
+        "Blue" => "#3b82f6",
+        "Red" => "#ef4444",
+        "Green" => "#22c55e",
+        "Pink" => "#ec4899",
+        "Purple" => "#a855f7",
+        "Gold" => "#ffd700",
+        _ => "#1a1a1a"
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -1401,7 +1502,7 @@
                 await WardrobeService.UpdateClothingItem(item);
 
                 // REÎNCĂRCARE DATE: Fără asta, Closet va afișa datele vechi din memorie
-                await WardrobeService.InitializeAsync();
+                await WardrobeService.InitializeAsync(forceReload: true);
 
                 Toast.Show("Updated!", "success");
             }

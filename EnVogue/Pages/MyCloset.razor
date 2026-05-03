@@ -4,6 +4,7 @@
 @using EnVogue.Services
 @inject NavigationManager NavigationManager
 @inject WardrobeServices WardrobeService
+@inject DatasetImportService DatasetImportService
 @implements IDisposable
 @layout EmptyLayout
 @inject EnVogue.Services.NotificationService Toast
@@ -126,6 +127,14 @@
                 <div class="stats-badge-editorial closet-stats-badge">
                     <span>📦 TOTAL: @AllItems.Count ITEMS</span>
                 </div>
+                @if (ShouldShowDatasetImportButton)
+                {
+                    <button class="dataset-import-btn"
+                            @onclick="HandleDatasetImportAsync"
+                            disabled="@isDatasetImporting">
+                        @DatasetImportButtonText
+                    </button>
+                }
             </div>
         }
         <div class="search-bar-editorial">
@@ -262,7 +271,16 @@
                         <div class="empty-box-dashed" @onclick='() => NavigationManager.NavigateTo("/add-item")'>
                             <span class="plus-large">+</span>
                             <p>Your closet is empty.</p>
-                            <p class="sub-text">Start building your collection now.</p>
+                            <p class="sub-text">Start building your collection now or import the local dataset.</p>
+                            @if (ShouldShowDatasetImportButton)
+                            {
+                                <button class="dataset-import-btn empty-dataset-import-btn"
+                                        @onclick="HandleDatasetImportAsync"
+                                        @onclick:stopPropagation="true"
+                                        disabled="@isDatasetImporting">
+                                    @DatasetImportButtonText
+                                </button>
+                            }
                         </div>
                     </div>
                 }
@@ -377,7 +395,11 @@
     .selection-scroll .editorial-controls {
         position: relative !important;
         top: auto !important;
-        z-index: 10;
+        z-index: 1700;
+    }
+
+    .selection-scroll .editorial-controls {
+        z-index: 2200 !important;
     }
     /* Search-ul, filtrele și itemele derulează împreună; headerul și selection box rămân pe loc. */
     .selection-scroll .wardrobe-scroll-area {
@@ -1396,6 +1418,9 @@
     .closet-top-stats {
         display: flex;
         justify-content: flex-start;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
         margin: 0 0 12px;
     }
 
@@ -1405,6 +1430,36 @@
         line-height: 1.1;
         border-radius: 999px;
         white-space: nowrap;
+    }
+
+    .dataset-import-btn {
+        border: none;
+        border-radius: 999px;
+        padding: 10px 16px;
+        background: #1f1726;
+        color: white;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 10px 24px rgba(31, 23, 38, 0.16);
+    }
+
+    .dataset-import-btn:hover:not(:disabled) {
+        transform: translateY(-1px);
+    }
+
+    .dataset-import-btn:disabled {
+        opacity: 0.72;
+        cursor: wait;
+    }
+
+    .empty-dataset-import-btn {
+        margin-top: 18px;
+        background: #d946ef;
+        box-shadow: 0 12px 28px rgba(217, 70, 239, 0.18);
     }
 
     .empty-closet-box {
@@ -1987,6 +2042,11 @@
             font-size: 12px !important;
             padding: 6px 12px !important;
         }
+
+        .dataset-import-btn {
+            font-size: 10px;
+            padding: 8px 12px;
+        }
         .editorial-grid {
             grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
             gap: 10px;
@@ -2392,7 +2452,11 @@
     private List<string> AllCategories = new() { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
     private List<string> PopularColors = new() { "Black", "White", "Gray", "Silver", "Beige", "Brown", "Navy", "Blue", "Red", "Green", "Pink", "Purple", "Gold" };
     private List<string> AvailableSubcategories = new();
+    private DatasetCatalogManifest? datasetCatalog;
+    private DatasetImportProgress datasetImportProgress = new();
     private bool isLoading = true;
+    private bool isDatasetImporting;
+    private bool showDatasetTools;
     private bool isFilterOpen = false;
     private bool isSortOpen = false;
     private string? localSuccessMessage;
@@ -2413,6 +2477,13 @@
     private string NormalizedOutfitName => outfitName.Trim();
     private bool IsOutfitNameValid => NormalizedOutfitName.Length >= MinOutfitNameLength;
     private bool CanSaveOutfit => SelectedItems.Any() && IsOutfitNameValid;
+    private string DatasetImportButtonText => isDatasetImporting
+        ? $"IMPORTING {datasetImportProgress.Processed}/{datasetImportProgress.Total}"
+        : datasetCatalog == null
+            ? "IMPORT DATASET"
+            : $"IMPORT {datasetCatalog.ItemCount} DATASET ITEMS";
+    private bool ShouldShowDatasetImportButton =>
+        showDatasetTools || (datasetCatalog != null && (AllItems == null || !AllItems.Any()));
     private string GetOutfitNameInputClass() => !string.IsNullOrWhiteSpace(outfitName) && !IsOutfitNameValid
         ? "input-invalid"
         : string.Empty;
@@ -2480,6 +2551,7 @@
     protected override async Task OnInitializedAsync()
     {
         isLoading = true;
+        datasetCatalog = await LoadDatasetCatalogAsync();
         await RefreshData();
         DraftFilter = CloneFilter(Filter);
         UpdateSubcategories(Filter);
@@ -2487,6 +2559,8 @@
 
         // --- LOGICA PENTRU AFIȘARE MESAJ ȘI CURĂȚARE URL ---
         var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        showDatasetTools = UriHasQueryKey(uri, "seed");
+
         if (uri.Query.Contains("success=true"))
         {
             ShowToast("✨ Item added to your collection!");
@@ -2498,6 +2572,31 @@
 
         await Task.Delay(800);
         isLoading = false;
+    }
+
+    private async Task<DatasetCatalogManifest?> LoadDatasetCatalogAsync()
+    {
+        try
+        {
+            return await DatasetImportService.LoadCatalogAsync();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool UriHasQueryKey(Uri uri, string key)
+    {
+        var query = uri.Query.TrimStart('?');
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return false;
+        }
+
+        return query.Split('&', StringSplitOptions.RemoveEmptyEntries)
+            .Select(part => part.Split('=', 2)[0])
+            .Any(queryKey => string.Equals(Uri.UnescapeDataString(queryKey), key, StringComparison.OrdinalIgnoreCase));
     }
 
     // Această metodă va fi apelată DOAR dacă se schimbă datele în timp ce ești pe pagină
@@ -2534,15 +2633,100 @@
         ApplyFilters();
         StateHasChanged();
     }
-    private void SetCategory(string cat) { DraftFilter.SelectedCategory = cat; DraftFilter.Subcategory = ""; UpdateSubcategories(DraftFilter); }
+
+    private async Task HandleDatasetImportAsync()
+    {
+        if (isDatasetImporting)
+        {
+            return;
+        }
+
+        isDatasetImporting = true;
+        datasetImportProgress = new DatasetImportProgress
+        {
+            Total = datasetCatalog?.ItemCount ?? 0
+        };
+
+        StateHasChanged();
+
+        var result = await DatasetImportService.ImportAsync(async progress =>
+        {
+            datasetImportProgress = new DatasetImportProgress
+            {
+                Total = progress.Total,
+                Processed = progress.Processed,
+                Imported = progress.Imported,
+                Updated = progress.Updated,
+                Skipped = progress.Skipped,
+                Failed = progress.Failed,
+                CurrentItemName = progress.CurrentItemName
+            };
+
+            await InvokeAsync(StateHasChanged);
+        });
+
+        isDatasetImporting = false;
+
+        if (result.Success)
+        {
+            await WardrobeService.InitializeAsync(forceReload: true);
+            await RefreshData();
+            Toast.Show(result.Message, "success");
+        }
+        else
+        {
+            Toast.Show(result.Message, "error");
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+    private void SetCategory(string cat)
+    {
+        DraftFilter.SelectedCategory = cat;
+        DraftFilter.Subcategory = "";
+        UpdateSubcategories(DraftFilter);
+        ApplyDraftFilters();
+    }
+
     private void UpdateSubcategories(FilterModel source) { AvailableSubcategories = SubcategoryMap.ContainsKey(source.SelectedCategory) ? SubcategoryMap[source.SelectedCategory] : new(); }
-    private void SetSubcategory(string sub) { DraftFilter.Subcategory = sub; }
-    private void SetColor(string color) { DraftFilter.Color = color; }
-    private void SetSeason(string season) { DraftFilter.SelectedSeason = season; }
-    private void SetStyle(string style) { DraftFilter.Style = style; }
+
+    private void SetSubcategory(string sub)
+    {
+        DraftFilter.Subcategory = sub;
+        ApplyDraftFilters();
+    }
+
+    private void SetColor(string color)
+    {
+        DraftFilter.Color = string.Equals(DraftFilter.Color, color, StringComparison.OrdinalIgnoreCase)
+            ? ""
+            : color;
+        ApplyDraftFilters();
+    }
+
+    private void SetSeason(string season)
+    {
+        DraftFilter.SelectedSeason = season;
+        ApplyDraftFilters();
+    }
+
+    private void SetStyle(string style)
+    {
+        DraftFilter.Style = style;
+        ApplyDraftFilters();
+    }
+
     private void SetSort(string sort)
     {
         DraftFilter.SortBy = sort;
+        ApplyDraftFilters();
+    }
+
+    private void ApplyDraftFilters()
+    {
+        Filter = CloneFilter(DraftFilter);
+        UpdateSubcategories(Filter);
+        ApplyFilters();
     }
     private void ResetFilters()
     {
@@ -2572,7 +2756,7 @@
         DraftFilter.Style = "All";
         DraftFilter.SortBy = "Newest";
         UpdateSubcategories(DraftFilter);
-        StateHasChanged();
+        ApplyDraftFilters();
     }
     private string GetColorHex(string colorName) => colorName.ToLower() switch
     {

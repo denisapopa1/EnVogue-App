@@ -121,6 +121,24 @@
                         </div>
                     </div>
 
+                    <div class="input-block-fit color-picker-block">
+                        <label class="label-bold">COLOR</label>
+                        <div class="color-swatch-row">
+                            @foreach (var option in ColorOptions)
+                            {
+                                <button type="button"
+                                        class="color-swatch-btn @(color == option ? "active" : "")"
+                                        style="@($"--swatch-color: {GetColorHex(option)}")"
+                                        title="@option"
+                                        aria-label="@($"Select {option}")"
+                                        @onclick="() => SetColor(option)">
+                                    <span class="color-swatch-dot"></span>
+                                </button>
+                            }
+                        </div>
+                        <span class="selected-color-label">@(string.IsNullOrWhiteSpace(color) ? "Choose color" : color)</span>
+                    </div>
+
                     <button class="add-piece-btn" @onclick="SaveItem">ADD TO COLLECTION</button>
                 </div>
             </div>
@@ -273,6 +291,57 @@
     .input-block-fit input, .input-block-fit select {
         width: 100%; padding: 12px 16px; border-radius: 12px;
         border: 1px solid #eee; font-weight: 700; font-size: 14px; outline: none;
+    }
+
+    .color-picker-block {
+        margin-bottom: 8px;
+    }
+
+    .color-swatch-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .color-swatch-btn {
+        width: 30px;
+        height: 30px;
+        border: 2px solid transparent;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 8px 18px rgba(45, 27, 36, 0.08);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        transition: all 0.22s ease;
+    }
+
+    .color-swatch-btn:hover,
+    .color-swatch-btn.active {
+        border-color: #d946ef;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(217, 70, 239, 0.18);
+    }
+
+    .color-swatch-dot {
+        width: 19px;
+        height: 19px;
+        border-radius: 999px;
+        background: var(--swatch-color);
+        box-shadow: inset 0 0 0 1px rgba(45, 27, 36, 0.18);
+    }
+
+    .selected-color-label {
+        display: inline-block;
+        margin-top: 6px;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        color: #d946ef;
+        text-transform: uppercase;
     }
 
     .add-piece-btn {
@@ -620,6 +689,7 @@
     private string subcategory = "";
     private string season = "Summer";
     private string style = "Casual Style";
+    private string color = "";
     private List<Category> CategoriesFromDb = new();
     private List<Subcategory> SubcategoriesFromDb = new();
     private int selectedCategoryId; // Aici vom stoca ID-ul ales
@@ -632,6 +702,11 @@
 
     private List<string> MainCategories = new() { "Tops", "Bottoms", "Dress", "Outerwear", "Shoes", "Accessories" };
     private List<string> Seasons = new() { "Summer", "Winter", "Spring", "Autumn" };
+    private List<string> ColorOptions = new()
+    {
+        "Black", "White", "Gray", "Silver", "Beige", "Brown", "Navy",
+        "Blue", "Red", "Green", "Pink", "Purple", "Gold"
+    };
     private Dictionary<string, List<string>> SubcategoryMap = new() {
         { "Tops", new() { "T-shirt", "Blouse", "Hoodie", "Sweater" } },
         { "Bottoms", new() { "Jeans", "Trousers", "Skirt", "Shorts" } },
@@ -641,6 +716,29 @@
         { "Accessories", new() { "Scarf", "Belt", "Jewelry", "Hat" } }
     };
   
+    private void SetColor(string selectedColor)
+    {
+        color = selectedColor;
+    }
+
+    private string GetColorHex(string colorName) => colorName switch
+    {
+        "Black" => "#1a1a1a",
+        "White" => "#ffffff",
+        "Gray" => "#808080",
+        "Silver" => "#c0c0c0",
+        "Beige" => "#f5f5dc",
+        "Brown" => "#8b4513",
+        "Navy" => "#000080",
+        "Blue" => "#3b82f6",
+        "Red" => "#ef4444",
+        "Green" => "#22c55e",
+        "Pink" => "#ec4899",
+        "Purple" => "#a855f7",
+        "Gold" => "#ffd700",
+        _ => "#1a1a1a"
+    };
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -721,6 +819,12 @@
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(color))
+        {
+            Toast.Show("Alege o culoare pentru haină.", "error");
+            return;
+        }
+
         try
         {
             // --- PASUL 1: Trimiterea imaginii la API ---
@@ -794,7 +898,7 @@
                 Style = style,
                 ImagePath = serverFileName,
                 UserId = userEmail ?? "unknown_user", // <--- DACĂ E GOL, PUNEM UN STRING CA SĂ NU DEA EROARE DB
-                Color = "Black" // Pune o valoare default ca să nu fie NULL în DB dacă e obligatoriu
+                Color = color
             };
             // 4. Salvăm haina prin serviciu
             // 1. Trimitem direct prin Client ca să vedem răspunsul serverului

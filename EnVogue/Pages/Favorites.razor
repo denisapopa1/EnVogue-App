@@ -59,19 +59,10 @@
                 <div class="favorites-grid">
                     @foreach (var outfit in favoriteOutfits)
                     {
-                        var sortedItems = GetSortedItems(outfit.Items);
                         <article class="favorite-look-card glass-effect animate-fade-in"
                                  @onclick='() => OpenOutfitDetails(outfit.Id)'>
-                            <div class="@GetPreviewShellClass(sortedItems.Count)">
-                                <div class="@GetPreviewGridClass(sortedItems.Count)">
-                                    @foreach (var item in sortedItems)
-                                    {
-                                        <div class="preview-piece">
-                                            <img src="@GetImageSource(item.ImagePath)" alt="@item.SubcategoryName" />
-                                        </div>
-                                    }
-                                </div>
-
+                            <div class="@GetPreviewShellClass(outfit.Items.Count)">
+                                <OutfitCollage Items="outfit.Items" ImageSourceResolver="GetImageSource">
                                 <div class="look-actions">
                                     <button class="look-action-btn active"
                                             @onclick="() => RemoveFromFavorites(outfit.Id)"
@@ -82,6 +73,7 @@
                                         </svg>
                                     </button>
                                 </div>
+                                </OutfitCollage>
                             </div>
 
                             <div class="look-info">
@@ -314,9 +306,10 @@
 
     .favorites-grid {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(286px, 330px));
+        gap: 22px;
         align-items: stretch;
+        justify-content: start;
         margin-top: 8px;
     }
 
@@ -331,22 +324,23 @@
     .favorite-look-card {
         position: relative;
         width: 100%;
-        min-height: 304px;
-        padding: 14px;
-        border-radius: 20px;
+        min-height: 410px;
+        padding: 12px;
+        border-radius: 22px;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
+        gap: 12px;
     }
 
     .look-preview {
         position: relative;
         width: 100%;
-        height: 178px;
-        border-radius: 15px;
+        height: 310px;
+        border-radius: 20px;
         background: rgba(249, 250, 251, 0.88);
         overflow: hidden;
-        padding: 10px;
+        padding: 0;
         box-sizing: border-box;
     }
 
@@ -462,16 +456,18 @@
     .look-info {
         display: grid;
         grid-template-columns: 1fr auto;
-        align-items: end;
-        gap: 14px;
-        padding: 16px 2px 0;
+        align-items: center;
+        gap: 12px;
+        min-height: 62px;
+        padding: 0 6px 2px;
         text-align: left;
     }
 
     .look-info h3 {
         margin: 0;
         color: #17121a;
-        font-size: 15px;
+        font-size: 18px;
+        line-height: 1.1;
         font-weight: 900;
         white-space: nowrap;
         overflow: hidden;
@@ -479,7 +475,7 @@
     }
 
     .look-info p {
-        margin: 7px 0 0;
+        margin: 5px 0 0;
         color: #a855f7;
         font-size: 12px;
         font-weight: 800;
@@ -494,17 +490,23 @@
         font-weight: 800;
         text-transform: uppercase;
         white-space: nowrap;
+        min-width: 68px;
+    }
+
+    .favorite-look-card .outfit-collage {
+        min-height: 100%;
+        padding: 14px;
     }
 
     @@media (max-width: 1560px) {
         .favorites-grid {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(330px, 380px));
         }
     }
 
     @@media (max-width: 1180px) {
         .favorites-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         }
     }
 
@@ -571,6 +573,15 @@
     @@media (max-width: 520px) {
         .favorites-grid {
             grid-template-columns: 1fr;
+        }
+
+        .favorite-look-card {
+            min-height: 390px;
+        }
+
+        .look-preview {
+            height: 292px;
+            border-radius: 18px;
         }
     }
 

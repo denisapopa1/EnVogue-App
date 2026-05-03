@@ -1,0 +1,1407 @@
+﻿{
+    "Name":  "my__DataSet",
+    "GeneratedOn":  "2026-05-03T18:37:51.8466947+03:00",
+    "ItemCount":  140,
+    "Items":  [
+                  {
+                      "Name":  "Dataset Belt 001",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Belt",
+                      "Season":  "Autumn",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Belt/belt-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Belt 002",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Belt",
+                      "Season":  "Autumn",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Belt/belt-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Belt 003",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Belt",
+                      "Season":  "Autumn",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Belt/belt-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Belt 004",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Belt",
+                      "Season":  "Autumn",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Belt/belt-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Belt 005",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Belt",
+                      "Season":  "Autumn",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Belt/belt-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hat 001",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Hat",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Hat/hat-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hat 002",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Hat",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Hat/hat-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hat 003",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Hat",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Hat/hat-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hat 004",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Hat",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Hat/hat-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hat 005",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Hat",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Hat/hat-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hat 006",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Hat",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Hat/hat-006.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hat 007",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Hat",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Hat/hat-007.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hat 008",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Hat",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Hat/hat-008.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hat 009",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Hat",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Hat/hat-009.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 001",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-001.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 002",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-002.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 003",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-003.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 004",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-004.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 005",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-005.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 006",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-006.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 007",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-007.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 008",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-008.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 009",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-009.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 010",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-010.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 011",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-011.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 012",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-012.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 013",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-013.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 014",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-014.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 015",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-015.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 016",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-016.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 017",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-017.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 018",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-018.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 019",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-019.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 020",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-020.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 021",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-021.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 022",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-022.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jewelry 023",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Jewelry",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Jewelry/jewelry-023.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Scarf 001",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Scarf",
+                      "Season":  "Winter",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Scarf/scarf-001.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Scarf 002",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Scarf",
+                      "Season":  "Winter",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Scarf/scarf-002.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Scarf 003",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Scarf",
+                      "Season":  "Winter",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Scarf/scarf-003.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Scarf 004",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Scarf",
+                      "Season":  "Winter",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Scarf/scarf-004.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Scarf 005",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Scarf",
+                      "Season":  "Winter",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Scarf/scarf-005.jpg"
+                  },
+                  {
+                      "Name":  "Dataset Scarf 006",
+                      "Category":  "Accessories",
+                      "Subcategory":  "Scarf",
+                      "Season":  "Winter",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Accessories/Scarf/scarf-006.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jeans 001",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Jeans",
+                      "Season":  "Autumn",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Jeans/jeans-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jeans 002",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Jeans",
+                      "Season":  "Autumn",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Jeans/jeans-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jeans 003",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Jeans",
+                      "Season":  "Autumn",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Jeans/jeans-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jeans 004",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Jeans",
+                      "Season":  "Autumn",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Jeans/jeans-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jeans 005",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Jeans",
+                      "Season":  "Autumn",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Jeans/jeans-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Shorts 001",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Shorts",
+                      "Season":  "Summer",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Shorts/shorts-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Shorts 002",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Shorts",
+                      "Season":  "Summer",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Shorts/shorts-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Shorts 003",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Shorts",
+                      "Season":  "Summer",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Shorts/shorts-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Shorts 004",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Shorts",
+                      "Season":  "Summer",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Shorts/shorts-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Skirt 001",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Skirt",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Skirt/skirt-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Skirt 002",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Skirt",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Skirt/skirt-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Skirt 003",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Skirt",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Skirt/skirt-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Skirt 004",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Skirt",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Skirt/skirt-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Skirt 005",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Skirt",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Skirt/skirt-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Trousers 001",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Trousers",
+                      "Season":  "Winter",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Trousers/trousers-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Trousers 002",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Trousers",
+                      "Season":  "Winter",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Trousers/trousers-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Trousers 003",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Trousers",
+                      "Season":  "Winter",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Trousers/trousers-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Trousers 004",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Trousers",
+                      "Season":  "Winter",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Trousers/trousers-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Trousers 005",
+                      "Category":  "Bottoms",
+                      "Subcategory":  "Trousers",
+                      "Season":  "Winter",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Bottoms/Trousers/trousers-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Cocktail 001",
+                      "Category":  "Dress",
+                      "Subcategory":  "Cocktail",
+                      "Season":  "Summer",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Cocktail/cocktail-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Cocktail 002",
+                      "Category":  "Dress",
+                      "Subcategory":  "Cocktail",
+                      "Season":  "Summer",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Cocktail/cocktail-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Cocktail 003",
+                      "Category":  "Dress",
+                      "Subcategory":  "Cocktail",
+                      "Season":  "Summer",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Cocktail/cocktail-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Cocktail 004",
+                      "Category":  "Dress",
+                      "Subcategory":  "Cocktail",
+                      "Season":  "Summer",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Cocktail/cocktail-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Cocktail 005",
+                      "Category":  "Dress",
+                      "Subcategory":  "Cocktail",
+                      "Season":  "Summer",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Cocktail/cocktail-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Evening 001",
+                      "Category":  "Dress",
+                      "Subcategory":  "Evening",
+                      "Season":  "Winter",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Evening/evening-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Evening 002",
+                      "Category":  "Dress",
+                      "Subcategory":  "Evening",
+                      "Season":  "Winter",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Evening/evening-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Evening 003",
+                      "Category":  "Dress",
+                      "Subcategory":  "Evening",
+                      "Season":  "Winter",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Evening/evening-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Evening 004",
+                      "Category":  "Dress",
+                      "Subcategory":  "Evening",
+                      "Season":  "Winter",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Evening/evening-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Evening 005",
+                      "Category":  "Dress",
+                      "Subcategory":  "Evening",
+                      "Season":  "Winter",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Evening/evening-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Maxi 001",
+                      "Category":  "Dress",
+                      "Subcategory":  "Maxi",
+                      "Season":  "Summer",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Maxi/maxi-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Maxi 002",
+                      "Category":  "Dress",
+                      "Subcategory":  "Maxi",
+                      "Season":  "Summer",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Maxi/maxi-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Maxi 003",
+                      "Category":  "Dress",
+                      "Subcategory":  "Maxi",
+                      "Season":  "Summer",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Maxi/maxi-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Maxi 004",
+                      "Category":  "Dress",
+                      "Subcategory":  "Maxi",
+                      "Season":  "Summer",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Maxi/maxi-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Maxi 005",
+                      "Category":  "Dress",
+                      "Subcategory":  "Maxi",
+                      "Season":  "Summer",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Maxi/maxi-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Mini 001",
+                      "Category":  "Dress",
+                      "Subcategory":  "Mini",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Mini/mini-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Mini 002",
+                      "Category":  "Dress",
+                      "Subcategory":  "Mini",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Mini/mini-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Mini 003",
+                      "Category":  "Dress",
+                      "Subcategory":  "Mini",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Mini/mini-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Mini 004",
+                      "Category":  "Dress",
+                      "Subcategory":  "Mini",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Dress/Mini/mini-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Blazer 001",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Blazer",
+                      "Season":  "Autumn",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Blazer/blazer-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Blazer 002",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Blazer",
+                      "Season":  "Autumn",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Blazer/blazer-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Blazer 003",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Blazer",
+                      "Season":  "Autumn",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Blazer/blazer-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Blazer 004",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Blazer",
+                      "Season":  "Autumn",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Blazer/blazer-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Blazer 005",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Blazer",
+                      "Season":  "Autumn",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Blazer/blazer-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Coat 001",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Coat",
+                      "Season":  "Winter",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Coat/coat-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Coat 002",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Coat",
+                      "Season":  "Winter",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Coat/coat-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Coat 003",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Coat",
+                      "Season":  "Winter",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Coat/coat-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Coat 004",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Coat",
+                      "Season":  "Winter",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Coat/coat-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Coat 005",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Coat",
+                      "Season":  "Winter",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Coat/coat-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jacket 001",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Jacket",
+                      "Season":  "Autumn",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Jacket/jacket-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jacket 002",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Jacket",
+                      "Season":  "Autumn",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Jacket/jacket-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jacket 003",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Jacket",
+                      "Season":  "Autumn",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Jacket/jacket-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jacket 004",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Jacket",
+                      "Season":  "Autumn",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Jacket/jacket-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Jacket 005",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Jacket",
+                      "Season":  "Autumn",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Jacket/jacket-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Vest 001",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Vest",
+                      "Season":  "Spring",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Vest/vest-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Vest 002",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Vest",
+                      "Season":  "Spring",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Vest/vest-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Vest 003",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Vest",
+                      "Season":  "Spring",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Vest/vest-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Vest 004",
+                      "Category":  "Outerwear",
+                      "Subcategory":  "Vest",
+                      "Season":  "Spring",
+                      "Style":  "Formal Wear",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Outerwear/Vest/vest-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Boots 001",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Boots",
+                      "Season":  "Winter",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Boots/boots-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Boots 002",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Boots",
+                      "Season":  "Winter",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Boots/boots-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Boots 003",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Boots",
+                      "Season":  "Winter",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Boots/boots-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Boots 004",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Boots",
+                      "Season":  "Winter",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Boots/boots-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Boots 005",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Boots",
+                      "Season":  "Winter",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Boots/boots-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Heels 001",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Heels",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Heels/heels-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Heels 002",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Heels",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Heels/heels-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Heels 003",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Heels",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Heels/heels-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Heels 004",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Heels",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Heels/heels-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Heels 005",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Heels",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Heels/heels-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sandals 001",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Sandals",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Sandals/sandals-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sandals 002",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Sandals",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Sandals/sandals-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sandals 003",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Sandals",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Sandals/sandals-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sandals 004",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Sandals",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Sandals/sandals-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sandals 005",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Sandals",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Sandals/sandals-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sneakers 001",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Sneakers",
+                      "Season":  "Spring",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Sneakers/sneakers-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sneakers 002",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Sneakers",
+                      "Season":  "Spring",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Sneakers/sneakers-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sneakers 003",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Sneakers",
+                      "Season":  "Spring",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Sneakers/sneakers-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sneakers 004",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Sneakers",
+                      "Season":  "Spring",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Sneakers/sneakers-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sneakers 005",
+                      "Category":  "Shoes",
+                      "Subcategory":  "Sneakers",
+                      "Season":  "Spring",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Shoes/Sneakers/sneakers-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Blouse 001",
+                      "Category":  "Tops",
+                      "Subcategory":  "Blouse",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Blouse/blouse-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Blouse 002",
+                      "Category":  "Tops",
+                      "Subcategory":  "Blouse",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Blouse/blouse-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Blouse 003",
+                      "Category":  "Tops",
+                      "Subcategory":  "Blouse",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Blouse/blouse-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Blouse 004",
+                      "Category":  "Tops",
+                      "Subcategory":  "Blouse",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Blouse/blouse-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Blouse 005",
+                      "Category":  "Tops",
+                      "Subcategory":  "Blouse",
+                      "Season":  "Spring",
+                      "Style":  "Elegant Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Blouse/blouse-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hoodie 001",
+                      "Category":  "Tops",
+                      "Subcategory":  "Hoodie",
+                      "Season":  "Autumn",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Hoodie/hoodie-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hoodie 002",
+                      "Category":  "Tops",
+                      "Subcategory":  "Hoodie",
+                      "Season":  "Autumn",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Hoodie/hoodie-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hoodie 003",
+                      "Category":  "Tops",
+                      "Subcategory":  "Hoodie",
+                      "Season":  "Autumn",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Hoodie/hoodie-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hoodie 004",
+                      "Category":  "Tops",
+                      "Subcategory":  "Hoodie",
+                      "Season":  "Autumn",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Hoodie/hoodie-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Hoodie 005",
+                      "Category":  "Tops",
+                      "Subcategory":  "Hoodie",
+                      "Season":  "Autumn",
+                      "Style":  "Sporty Look",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Hoodie/hoodie-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sweater 001",
+                      "Category":  "Tops",
+                      "Subcategory":  "Sweater",
+                      "Season":  "Winter",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Sweater/sweater-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sweater 002",
+                      "Category":  "Tops",
+                      "Subcategory":  "Sweater",
+                      "Season":  "Winter",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Sweater/sweater-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sweater 003",
+                      "Category":  "Tops",
+                      "Subcategory":  "Sweater",
+                      "Season":  "Winter",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Sweater/sweater-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sweater 004",
+                      "Category":  "Tops",
+                      "Subcategory":  "Sweater",
+                      "Season":  "Winter",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Sweater/sweater-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset Sweater 005",
+                      "Category":  "Tops",
+                      "Subcategory":  "Sweater",
+                      "Season":  "Winter",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/Sweater/sweater-005.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset T-shirt 001",
+                      "Category":  "Tops",
+                      "Subcategory":  "T-shirt",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/T-shirt/t-shirt-001.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset T-shirt 002",
+                      "Category":  "Tops",
+                      "Subcategory":  "T-shirt",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/T-shirt/t-shirt-002.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset T-shirt 003",
+                      "Category":  "Tops",
+                      "Subcategory":  "T-shirt",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/T-shirt/t-shirt-003.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset T-shirt 004",
+                      "Category":  "Tops",
+                      "Subcategory":  "T-shirt",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/T-shirt/t-shirt-004.jpeg"
+                  },
+                  {
+                      "Name":  "Dataset T-shirt 005",
+                      "Category":  "Tops",
+                      "Subcategory":  "T-shirt",
+                      "Season":  "Summer",
+                      "Style":  "Casual Style",
+                      "Color":  "Black",
+                      "Brand":  "",
+                      "RelativeImagePath":  "datasets/my__DataSet/images/Tops/T-shirt/t-shirt-005.jpeg"
+                  }
+              ]
+}

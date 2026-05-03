@@ -1,0 +1,209 @@
+@using EnVogue.Models
+
+<div class="outfit-collage @SizeClass">
+    @foreach (var slot in BuildSlots())
+    {
+        <div class="outfit-collage-piece @slot.ClassName">
+            <img src="@ResolveImage(slot.Item.ImagePath)" alt="@BuildAltText(slot.Item)" />
+        </div>
+    }
+
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public IReadOnlyList<ClothingItem> Items { get; set; } = Array.Empty<ClothingItem>();
+    [Parameter] public Func<string?, string>? ImageSourceResolver { get; set; }
+    [Parameter] public string Size { get; set; } = "card";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string SizeClass => $"outfit-collage-{Size}";
+
+    private string ResolveImage(string? imagePath)
+        => ImageSourceResolver?.Invoke(imagePath) ?? imagePath ?? "Images/placeholder.png";
+
+    private static string BuildAltText(ClothingItem item)
+        => string.IsNullOrWhiteSpace(item.SubcategoryName)
+            ? string.IsNullOrWhiteSpace(item.Name) ? "Outfit item" : item.Name
+            : item.SubcategoryName;
+
+    private List<CollageSlot> BuildSlots()
+    {
+        var availableItems = (Items ?? Array.Empty<ClothingItem>())
+            .Where(item => item != null)
+            .ToList();
+
+        var slots = new List<CollageSlot>();
+        var dress = TakeFirst(availableItems, IsDress);
+
+        if (dress != null)
+        {
+            slots.Add(new CollageSlot(dress, "slot-dress"));
+        }
+        else
+        {
+            AddSlot(slots, TakeFirst(availableItems, IsTop), "slot-top");
+            AddSlot(slots, TakeFirst(availableItems, IsBottom), "slot-bottom");
+        }
+
+        AddSlot(slots, TakeFirst(availableItems, IsShoe), "slot-shoes");
+        AddSlot(slots, TakeFirst(availableItems, IsAccessory), "slot-accessory");
+        AddSlot(slots, TakeFirst(availableItems, IsOuterwear), "slot-outerwear");
+
+        foreach (var item in availableItems.Take(2))
+        {
+            slots.Add(new CollageSlot(item, slots.Count % 2 == 0 ? "slot-extra-left" : "slot-extra-right"));
+        }
+
+        return slots;
+    }
+
+    private static void AddSlot(List<CollageSlot> slots, ClothingItem? item, string className)
+    {
+        if (item != null)
+        {
+            slots.Add(new CollageSlot(item, className));
+        }
+    }
+
+    private static ClothingItem? TakeFirst(List<ClothingItem> items, Func<ClothingItem, bool> predicate)
+    {
+        var item = items.FirstOrDefault(predicate);
+        if (item != null)
+        {
+            items.Remove(item);
+        }
+
+        return item;
+    }
+
+    private static bool IsTop(ClothingItem item)
+        => Matches(item, "Tops", "T-shirt", "Blouse", "Sweater", "Hoodie");
+
+    private static bool IsBottom(ClothingItem item)
+        => Matches(item, "Bottoms", "Jeans", "Trousers", "Skirt", "Shorts");
+
+    private static bool IsDress(ClothingItem item)
+        => Matches(item, "Dress", "Mini", "Maxi", "Cocktail", "Evening");
+
+    private static bool IsOuterwear(ClothingItem item)
+        => Matches(item, "Outerwear", "Jacket", "Coat", "Blazer", "Vest");
+
+    private static bool IsShoe(ClothingItem item)
+        => Matches(item, "Shoes", "Sneakers", "Boots", "Heels", "Sandals");
+
+    private static bool IsAccessory(ClothingItem item)
+        => Matches(item, "Accessories", "Scarf", "Belt", "Jewelry", "Hat");
+
+    private static bool Matches(ClothingItem item, string category, params string[] subcategories)
+        => string.Equals(item.CategoryName, category, StringComparison.OrdinalIgnoreCase) ||
+           subcategories.Any(subcategory => string.Equals(item.SubcategoryName, subcategory, StringComparison.OrdinalIgnoreCase));
+
+    private sealed record CollageSlot(ClothingItem Item, string ClassName);
+}
+
+<style>
+    .outfit-collage {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 190px;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        grid-template-rows: repeat(6, minmax(0, 1fr));
+        gap: 4px;
+        padding: 12px;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .outfit-collage-detail {
+        min-height: 420px;
+        padding: 22px;
+    }
+
+    .outfit-collage-piece {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .outfit-collage-piece img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 14px 16px rgba(30, 20, 28, 0.12));
+    }
+
+    .slot-top {
+        grid-column: 2 / 5;
+        grid-row: 1 / 3;
+    }
+
+    .slot-bottom {
+        grid-column: 2 / 5;
+        grid-row: 3 / 6;
+    }
+
+    .slot-shoes {
+        grid-column: 3 / 5;
+        grid-row: 5 / 7;
+    }
+
+    .slot-accessory {
+        grid-column: 5 / 7;
+        grid-row: 1 / 3;
+    }
+
+    .slot-outerwear {
+        grid-column: 5 / 7;
+        grid-row: 3 / 6;
+    }
+
+    .slot-dress {
+        grid-column: 2 / 5;
+        grid-row: 1 / 6;
+    }
+
+    .slot-extra-left {
+        grid-column: 1 / 3;
+        grid-row: 4 / 6;
+    }
+
+    .slot-extra-right {
+        grid-column: 5 / 7;
+        grid-row: 5 / 7;
+    }
+
+    .outfit-collage-card .slot-top {
+        grid-column: 1 / 4;
+        grid-row: 1 / 3;
+    }
+
+    .outfit-collage-card .slot-bottom {
+        grid-column: 1 / 4;
+        grid-row: 3 / 6;
+    }
+
+    .outfit-collage-card .slot-shoes {
+        grid-column: 2 / 4;
+        grid-row: 5 / 7;
+    }
+
+    .outfit-collage-card .slot-accessory {
+        grid-column: 4 / 7;
+        grid-row: 1 / 3;
+    }
+
+    .outfit-collage-card .slot-outerwear {
+        grid-column: 4 / 7;
+        grid-row: 3 / 6;
+    }
+
+    .outfit-collage-card .slot-dress {
+        grid-column: 1 / 4;
+        grid-row: 1 / 6;
+    }
+</style>
