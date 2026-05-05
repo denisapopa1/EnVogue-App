@@ -510,6 +510,36 @@
         }
     }
 
+    /* Match Looks alignment: wider cards, centered row, nudged right on desktop. */
+    .favorites-page-wrapper .favorites-cards-track {
+        max-width: 1540px !important;
+        margin: 0 auto !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        padding: 0 8px !important;
+    }
+
+    .favorites-page-wrapper .favorites-grid {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 360px)) !important;
+        gap: 24px !important;
+        justify-content: center !important;
+        margin: 8px auto 0 !important;
+        transform: none !important;
+    }
+
+    @@media (max-width: 1500px) {
+        .favorites-page-wrapper .favorites-grid {
+            transform: none !important;
+        }
+    }
+
+    @@media (max-width: 1120px) {
+        .favorites-page-wrapper .favorites-grid {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 360px)) !important;
+            transform: none !important;
+        }
+    }
+
     /* --- REGLAJE FINALE PENTRU MOBILE --- */
     @@media (max-width: 768px) {
 
@@ -713,7 +743,7 @@
         }
 
         var fileName = System.IO.Path.GetFileName(imagePath);
-        return $"https://localhost:7081/uploads/images/{fileName}";
+        return ApiEndpoints.ImageUrl(fileName);
     }
 
     public void Dispose()

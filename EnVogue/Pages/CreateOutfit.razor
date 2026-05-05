@@ -594,6 +594,15 @@
             gap: 8px !important;
         }
 
+        .add-item-page-wrapper .header-actions .profile-action,
+        .add-item-page-wrapper .header-actions .profile-avatar-button {
+            order: 1 !important;
+        }
+
+        .add-item-page-wrapper .header-actions .fav-circle {
+            order: 2 !important;
+        }
+
         .add-item-page-wrapper .profile-action {
             position: relative !important;
             top: 24px !important;
@@ -789,7 +798,7 @@
         }
 
         var fileName = System.IO.Path.GetFileName(imagePath);
-        return $"https://localhost:7081/uploads/images/{fileName}";
+        return ApiEndpoints.ImageUrl(fileName);
     }
 
     private async Task SaveOutfit()

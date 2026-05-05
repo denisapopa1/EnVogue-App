@@ -2,6 +2,7 @@
 @layout EmptyLayout
 @using EnVogue.Models
 @using EnVogue.Services
+@implements IDisposable
 @inject NavigationManager NavigationManager
 @inject WardrobeServices WardrobeService
 
@@ -1054,6 +1055,15 @@
 
         }
 
+        .header-actions .profile-action,
+        .header-actions .profile-avatar-button {
+            order: 1 !important;
+        }
+
+        .header-actions .fav-circle {
+            order: 2 !important;
+        }
+
         .hero-section .header-actions {
             position: relative !important;
             right: -20px !important;
@@ -1113,6 +1123,28 @@
 
         await WardrobeService.InitializeAsync();
 
+        RefreshDashboardData();
+        WardrobeService.OnChange += HandleWardrobeChanged;
+
+        // Logica pentru nume utilizator
+        var parts = userEmail.Split('@');
+        if (parts.Length > 0 && !string.IsNullOrEmpty(parts[0]))
+        {
+            var rawName = parts[0];
+            userName = char.ToUpper(rawName[0]) + (rawName.Length > 1 ? rawName.Substring(1) : "");
+        }
+
+        isLoading = false;
+    }
+
+    private void HandleWardrobeChanged() => InvokeAsync(() =>
+    {
+        RefreshDashboardData();
+        StateHasChanged();
+    });
+
+    private void RefreshDashboardData()
+    {
         // Luăm toate hainele
         var all = WardrobeService.GetAllClothes();
         var allOutfits = WardrobeService.GetAllOutfits();
@@ -1136,7 +1168,7 @@
         }
 
         totalItems = all.Count;
-        favoriteCount = all.Count(i => i.IsFavorite);
+        favoriteCount = allOutfits.Count(o => o.IsFavorite);
         categoriesCount = all.Select(c => c.CategoryName).Distinct().Count();
 
         // Luăm mai multe elemente pentru carusel
@@ -1147,16 +1179,6 @@
             .ThenByDescending(o => o.Id)
             .Take(12)
             .ToList();
-
-        // Logica pentru nume utilizator
-        var parts = userEmail.Split('@');
-        if (parts.Length > 0 && !string.IsNullOrEmpty(parts[0]))
-        {
-            var rawName = parts[0];
-            userName = char.ToUpper(rawName[0]) + (rawName.Length > 1 ? rawName.Substring(1) : "");
-        }
-
-        isLoading = false;
     }
     // --- REPARAȚIE IMAGINI: Calea de pe Backend (7081) ---
     private string GetImageSource(string? imagePath)
@@ -1171,7 +1193,7 @@
         var fileName = System.IO.Path.GetFileName(imagePath);
 
         // CONSTRUCȚIA CORECTĂ A URL-ULUI (trebuie să includă folderul de pe server)
-        return $"https://localhost:7081/uploads/images/{fileName}";
+        return ApiEndpoints.ImageUrl(fileName);
     }
 
     private static IEnumerable<ClothingItem?> GetOutfitPreviewItems(Outfit outfit)
@@ -1210,5 +1232,10 @@
                (string.IsNullOrWhiteSpace(outfit.CreationSource) ||
                 string.Equals(outfit.CreationSource, "Manual", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(outfit.CreationSource, "AI", StringComparison.OrdinalIgnoreCase));
+    }
+
+    public void Dispose()
+    {
+        WardrobeService.OnChange -= HandleWardrobeChanged;
     }
 }

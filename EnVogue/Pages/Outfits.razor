@@ -1171,6 +1171,15 @@
         gap: 8px !important;
     }
 
+    .outfits-page-container .header-actions .profile-action,
+    .outfits-page-container .header-actions .profile-avatar-button {
+        order: 1 !important;
+    }
+
+    .outfits-page-container .header-actions .fav-circle {
+        order: 2 !important;
+    }
+
     .outfits-page-container .profile-action {
         position: relative !important;
         top: 24px !important;
@@ -1375,9 +1384,9 @@
     }
 .outfits-page-container .outfits-cards-track {
     width: 100% !important;
-   max-width: 1700px !important; 
+    max-width: 1540px !important;
     margin: 0 auto !important;
-    padding: 0 18px !important;
+    padding: 0 8px !important;
     box-sizing: border-box !important;
        margin-left: 150px !important; /* ajustezi cât vrei */
 }
@@ -1442,6 +1451,37 @@
         padding: 0 !important;
         box-sizing: border-box !important;
     }
+
+    /* Center the four-card desktop row and make each look wider. */
+    .outfits-page-container .outfits-cards-track {
+        max-width: 1540px !important;
+        margin: 0 auto !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        padding: 0 8px !important;
+    }
+
+    .outfits-page-container .outfits-grid {
+        grid-template-columns: repeat(4, minmax(320px, 360px)) !important;
+        gap: 24px !important;
+        justify-content: center !important;
+        margin: 8px auto 0 !important;
+        transform: translateX(150px) !important;
+    }
+
+@@media (max-width: 1500px) {
+    .outfits-page-container .outfits-grid {
+        grid-template-columns: repeat(3, minmax(320px, 360px)) !important;
+        transform: translateX(72px) !important;
+    }
+}
+
+@@media (max-width: 1120px) {
+    .outfits-page-container .outfits-grid {
+        grid-template-columns: repeat(2, minmax(300px, 360px)) !important;
+        transform: none !important;
+    }
+}
 @@media (max-width: 768px) {
     .outfits-page-container .outfits-content {
         padding-left: 20px !important;
@@ -1759,7 +1799,7 @@
         }
 
         var fileName = System.IO.Path.GetFileName(imagePath);
-        return $"https://localhost:7081/uploads/images/{fileName}";
+        return ApiEndpoints.ImageUrl(fileName);
     }
 
     public void Dispose()

@@ -50,6 +50,30 @@ body {
     min-height: 100vh;
 }
 
+.editorial-header-unified .header-actions,
+.editorial-header .header-actions,
+.header-nav .header-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.editorial-header-unified .header-actions .profile-action,
+.editorial-header-unified .header-actions .profile-avatar-button,
+.editorial-header .header-actions .profile-action,
+.editorial-header .header-actions .profile-avatar-button,
+.header-nav .header-actions .profile-action,
+.header-nav .header-actions .profile-avatar-button {
+    order: 1;
+}
+
+.editorial-header-unified .header-actions .fav-circle,
+.editorial-header .header-actions .fav-circle,
+.header-nav .header-actions .fav-circle {
+    order: 2;
+}
+
 @media (max-width: 768px) {
     .editorial-header-unified,
     .editorial-header,

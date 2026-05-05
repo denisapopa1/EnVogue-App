@@ -10,11 +10,20 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// --- MODIFICARE AICI ---
-// Schimbăm BaseAddress de la adresa locală a browserului la adresa fixă a API-ului tău
+var frontendAddress = new Uri(builder.HostEnvironment.BaseAddress);
+const string lanApiHost = "192.168.1.3";
+var frontendHost = frontendAddress.Host;
+var apiHost = string.Equals(frontendHost, "localhost", StringComparison.OrdinalIgnoreCase)
+    || string.Equals(frontendHost, "127.0.0.1", StringComparison.OrdinalIgnoreCase)
+    || string.Equals(frontendHost, "0.0.0.0", StringComparison.OrdinalIgnoreCase)
+        ? lanApiHost
+        : frontendHost;
+
+ApiEndpoints.BaseAddress = new Uri($"http://{apiHost}:5203/");
+
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("https://localhost:7081/")
+    BaseAddress = ApiEndpoints.BaseAddress
 });
 
 // 1. ÎNREGISTREAZĂ PACHETUL DE LOCAL STORAGE

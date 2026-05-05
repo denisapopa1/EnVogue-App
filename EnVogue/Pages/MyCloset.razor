@@ -2409,6 +2409,11 @@
             margin-bottom: 0 !important;
         }
 
+            .closet-page-wrapper .header-actions .profile-action,
+            .closet-page-wrapper .header-actions .profile-avatar-button {
+                order: 1 !important;
+            }
+
             .closet-page-wrapper .header-actions .profile-circle.fav-circle {
                 order: 2 !important;
             }
@@ -2846,7 +2851,7 @@
         var fileName = System.IO.Path.GetFileName(imagePath);
 
         // Returnăm URL-ul care tocmai ți-a mers în browser!
-        return $"https://localhost:7081/uploads/images/{fileName}";
+        return ApiEndpoints.ImageUrl(fileName);
     }
     private void HandleInstantSearch(ChangeEventArgs e)
     {
