@@ -43,7 +43,6 @@
         @if (!favoriteOutfits.Any())
         {
             <div class="empty-state-full-favorites animate-fade-in">
-                @* BOX REPARAT PENTRU MOBILE *@
                 <div class="empty-box-dashed-favorites animate-fade-in"
                      @onclick='() => NavigationManager.NavigateTo("/create-outfit")'>
                     <span class="plus-large-favorites">♡</span>
@@ -197,10 +196,6 @@
             height: 22px;
         }
 
-    .profile-svg {
-        fill: #d946ef;
-    }
-
 
     /* CONTENT LAYOUT */
     .content-overlay-editorial {
@@ -235,7 +230,6 @@
         margin-bottom: 20px;
     }
 
-    /* REPARAȚIE CENTRARE BOX */
     .empty-state-full-favorites {
         display: flex;
         justify-content: center;
@@ -540,7 +534,6 @@
         }
     }
 
-    /* --- REGLAJE FINALE PENTRU MOBILE --- */
     @@media (max-width: 768px) {
 
         .favorites-page-wrapper .editorial-header-unified {
@@ -582,7 +575,7 @@
             align-items: flex-start !important;
             margin-top: 0 !important;
         }
-        /* 👇 IMPORTANT: aici nu ai .header-actions, dar poți controla direct butonul */
+        /* Control direct pentru butonul de profil din header. */
         .favorites-page-wrapper .profile-circle {
             position: relative !important;
             top: 0 !important;
@@ -648,12 +641,9 @@
     [Inject] WardrobeServices WardrobeService { get; set; } = default!;
 
     private List<Outfit> favoriteOutfits = new();
-    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true;
-
         // 1. Ne asigurăm că datele sunt încărcate din baza de date
         await WardrobeService.InitializeAsync();
 
@@ -661,8 +651,6 @@
 
         // Ne abonăm la evenimentul de schimbare (dacă se modifică datele în altă parte)
         WardrobeService.OnChange += HandleOnChange;
-
-        isLoading = false;
     }
 
     private void HandleOnChange() => InvokeAsync(RefreshData);
@@ -690,47 +678,11 @@
         NavigationManager.NavigateTo($"/outfit-details/{outfitId}");
     }
 
-    private List<ClothingItem> GetSortedItems(List<ClothingItem> items)
-    {
-        var order = new List<string> { "Outerwear", "Tops", "Dress", "Bottoms", "Shoes", "Accessories" };
-        return items.OrderBy(i =>
-        {
-            var idx = order.IndexOf(i.CategoryName ?? "");
-            return idx == -1 ? 99 : idx;
-        }).ToList();
-    }
-
-    private string GetPreviewGridClass(int itemCount)
-    {
-        if (itemCount <= 1)
-        {
-            return "preview-grid one-item";
-        }
-
-        if (itemCount == 2)
-        {
-            return "preview-grid two-items";
-        }
-
-        if (itemCount == 3)
-        {
-            return "preview-grid three-items";
-        }
-
-        if (itemCount == 4)
-        {
-            return "preview-grid four-items";
-        }
-
-        return "preview-grid many-items";
-    }
-
     private string GetPreviewShellClass(int itemCount)
     {
         return "look-preview";
     }
 
-    // --- REPARAȚIE IMAGINI: Sursa de pe Backend ---
     private string GetImageSource(string? imagePath)
     {
         if (string.IsNullOrWhiteSpace(imagePath) || imagePath == "du")

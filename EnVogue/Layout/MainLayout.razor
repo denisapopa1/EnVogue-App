@@ -2,12 +2,10 @@
 @using EnVogue.Shared
 @inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
-@inject UserState UserState
 @inject WardrobeServices WardrobeService
 
 @if (isInitialized)
 {
-    @* --- PARTEA 1: TOP BAR (Vizibilă doar pe anumite pagini) --- *@
     @if (ShowTopBar)
     {
         <div class="top-bar">
@@ -36,7 +34,6 @@ else
     </div>
 }
 
-@* --- NOTIFICĂRILE TREBUIE SĂ FIE ÎN AFARA ORICĂRUI IF PENTRU SIGURANȚĂ --- *@
 <ToastContainer />
 
 <style>

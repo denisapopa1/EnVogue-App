@@ -294,16 +294,6 @@
         margin-top: 4px;
     }
 
-    @@media (max-width: 768px) {
-        /* Previne auto-zoom pe iOS prin setarea fontului la minim 16px */
-        .input-block-fit input,
-        .input-block-fit select,
-        .brand-input-luxury,
-        .luxury-input,
-        .luxury-select {
-            font-size: 16px !important;
-        }
-    }
 </style>
 
 @code {
@@ -328,8 +318,19 @@
         isLoading = true;
         StateHasChanged();
 
-        // Apelăm API-ul prin serviciul nostru
-        var success = await WardrobeService.LoginAsync(loginModel.Email!, loginModel.Password!);
+        bool success;
+        try
+        {
+            // Apelăm API-ul prin serviciul nostru
+            success = await WardrobeService.LoginAsync(loginModel.Email!, loginModel.Password!);
+        }
+        catch (HttpRequestException)
+        {
+            isLoading = false;
+            errorMessage = "Cannot connect to the EnVogue server. Please make sure the API is running and try again.";
+            StateHasChanged();
+            return;
+        }
 
         if (success)
         {

@@ -6,11 +6,9 @@ namespace EnVogue.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = "";
-        // Schimbă în "CategoryName" (cu C mare) pentru a se potrivi cu DTO-ul din API
         public string? CategoryName { get; set; }
         public int? CategoryId { get; set; }
         public string? SubcategoryName { get; set; }
-        // ACEASTA ESTE LINIA CARE LIPSEȘTE ȘI CAUZEAZĂ EROAREA:
         public int? SubcategoryId { get; set; }
         public string? Brand { get; set; }
         public string? Season { get; set; }
@@ -19,11 +17,11 @@ namespace EnVogue.Models
         public string? ImagePath { get; set; }
         public bool IsFavorite { get; set; }
         public string UserId { get; set; } = "";
-    } // <-- Aici se închide ClothingItem
+    }
 
     public class Outfit
     {
-        public int Id { get; set; } // Backend-ul folosește int
+        public int Id { get; set; }
         public string Name { get; set; } = "";
         public DateTime CreatedDate { get; set; }
         public bool IsFavorite { get; set; }
@@ -43,4 +41,4 @@ namespace EnVogue.Models
             string.Equals(CreationSource, "AI", StringComparison.OrdinalIgnoreCase);
     }
 
-} // <-- Aici se închide Namespace-ul (Dacă lipsește asta, dă erori peste tot)
+}

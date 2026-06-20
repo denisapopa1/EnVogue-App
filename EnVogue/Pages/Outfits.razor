@@ -287,10 +287,6 @@
             height: 22px;
         }
 
-    .profile-svg {
-        fill: #d946ef;
-    }
-
     .outfits-content {
         position: relative;
         z-index: 5;
@@ -477,15 +473,6 @@
             text-align: left;
         }
 
-    .filters-active-dot,
-    .sort-panel-title-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #a855f7;
-        flex: 0 0 auto;
-    }
-
     .sort-panel {
         display: grid;
         gap: 12px;
@@ -494,34 +481,6 @@
         align-items: center;
         justify-content: start;
         position: relative;
-    }
-
-    .sort-panel-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-    }
-
-    .sort-panel-title-wrap {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .sort-panel-title {
-        font-size: 15px;
-        font-weight: 900;
-        color: #7a3cf0;
-    }
-
-    .clear-filters-btn {
-        border: none;
-        background: transparent;
-        color: #7a5c68;
-        font-size: 13px;
-        font-weight: 800;
-        cursor: pointer;
     }
 
     .filter-group-block {
@@ -563,10 +522,6 @@
 
     .style-pill {
         min-width: 0;
-    }
-
-    .compact-pill {
-        white-space: nowrap;
     }
 
     .clear-link-inline {
@@ -1550,7 +1505,6 @@
     private bool isLoading = true;
     private readonly List<string> StyleOptions = new() { "All", "Casual Style", "Elegant Style", "Formal Wear", "Sporty Look" };
 
-    private bool HasActivePanelFilters => SelectedStyle != "All" || ShowOnlyFavorites || SortBy != "Newest";
     private bool HasActiveSearch => !string.IsNullOrWhiteSpace(SearchTerm);
 
     protected override async Task OnInitializedAsync()
@@ -1703,16 +1657,6 @@
         Nav.NavigateTo($"/outfit-details/{outfitId}");
     }
 
-    private List<ClothingItem> GetSortedItems(List<ClothingItem> items)
-    {
-        var order = new List<string> { "Outerwear", "Tops", "Dress", "Bottoms", "Shoes", "Accessories" };
-        return items.OrderBy(i =>
-        {
-            var idx = order.IndexOf(i.CategoryName ?? "");
-            return idx == -1 ? 99 : idx;
-        }).ToList();
-    }
-
     private static bool OutfitMatchesKeywords(Outfit outfit, string[] keywords)
     {
         return keywords.All(keyword =>
@@ -1753,31 +1697,6 @@
                (string.IsNullOrWhiteSpace(outfit.CreationSource) ||
                 string.Equals(outfit.CreationSource, "Manual", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(outfit.CreationSource, "AI", StringComparison.OrdinalIgnoreCase));
-    }
-
-    private string GetPreviewGridClass(int itemCount)
-    {
-        if (itemCount <= 1)
-        {
-            return "preview-grid one-item";
-        }
-
-        if (itemCount == 2)
-        {
-            return "preview-grid two-items";
-        }
-
-        if (itemCount == 3)
-        {
-            return "preview-grid three-items";
-        }
-
-        if (itemCount == 4)
-        {
-            return "preview-grid four-items";
-        }
-
-        return "preview-grid many-items";
     }
 
     private string GetPreviewShellClass(int itemCount)

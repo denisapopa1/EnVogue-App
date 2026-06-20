@@ -159,6 +159,10 @@
                         {
                             <span class="ai-form-helper-message">Complete all fields before generating your look.</span>
                         }
+                        @if (!string.IsNullOrWhiteSpace(wardrobeValidationMessage))
+                        {
+                            <span class="ai-form-helper-message">@wardrobeValidationMessage</span>
+                        }
                         <button class="ai-generate-btn-black" @onclick="GenerateOutfit" disabled="@isGenerating">
                             @(isGenerating ? "GENERATING..." : "GENERATE LOOK →")
                         </button>
@@ -224,7 +228,6 @@
     }
     .profile-circle:hover { transform: scale(1.1); }
     .profile-circle svg { width: 22px; height: 22px; }
-    .profile-svg { fill: #d946ef; }
 
     /* WRAPPER CU CENTRARE VERTICALĂ PE MOBILE */
     .add-item-page-wrapper {
@@ -357,9 +360,6 @@
         color: #b42318;
     }
 
-    .ai-form-helper-message.is-valid {
-        color: #1f7a1f;
-    }
     .ai-light-select {
         appearance: none;
         cursor: pointer;
@@ -503,48 +503,7 @@
         gap: 10px;
     }
 
-    .result-item-card {
-        opacity: 0;
-        animation: itemPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        aspect-ratio: 1;
-        border-radius: 12px;
-        overflow: hidden;
-        background: rgba(255,255,255,0.05);
-    }
-    .result-item-card img { width: 100%; height: 100%; object-fit: cover; }
     .text-reset-link { background: none; border: none; color: #d946ef; font-weight: 800; cursor: pointer; font-size: 11px; }
-
-    .result-item-card:nth-child(1) {
-        animation-delay: 0.1s;
-    }
-
-    .result-item-card:nth-child(2) {
-        animation-delay: 0.2s;
-    }
-
-    .result-item-card:nth-child(3) {
-        animation-delay: 0.3s;
-    }
-
-    .result-item-card:nth-child(4) {
-        animation-delay: 0.4s;
-    }
-    @@keyframes
-
-    itemPopIn {
-        from
-
-    {
-        opacity: 0;
-        transform: scale(0.5);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    }
     /* MOBILE REGLAJE FINALE */
     @@media (max-width: 768px) {
         .add-item-page-wrapper .editorial-header-unified {
@@ -727,6 +686,7 @@
     private bool isGenerating = false;
     private bool hasAttemptedAiGenerate = false;
     private Outfit? generatedOutfit = null;
+    private int aiGenerationVariant = 0;
     private string NormalizedOccasion => occasion.Trim();
     private bool IsOccasionValid => NormalizedOccasion.Length >= MinOutfitNameLength;
     private bool IsStyleValid => !string.IsNullOrWhiteSpace(selectedStyle);
@@ -734,7 +694,8 @@
     private bool IsWeatherValid => !string.IsNullOrWhiteSpace(selectedWeather);
     private bool IsAiFormValid => IsOccasionValid && IsStyleValid && IsSeasonValid && IsWeatherValid;
     private bool ShouldShowAiValidation => hasAttemptedAiGenerate && !IsAiFormValid;
-    private bool ShouldExpandAiCard => !isManual && ShouldShowAiValidation;
+    private bool ShouldExpandAiCard => !isManual && (ShouldShowAiValidation || !string.IsNullOrWhiteSpace(wardrobeValidationMessage));
+    private string? wardrobeValidationMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -747,6 +708,7 @@
         if (isGenerating) return;
 
         hasAttemptedAiGenerate = true;
+        wardrobeValidationMessage = null;
         if (!IsAiFormValid)
         {
             StateHasChanged();
@@ -757,27 +719,28 @@
         generatedOutfit = null;
         StateHasChanged();
 
-        var hasCustomPreferences =
-            !string.IsNullOrWhiteSpace(NormalizedOccasion) ||
-            !string.IsNullOrWhiteSpace(selectedStyle) ||
-            !string.IsNullOrWhiteSpace(selectedSeason) ||
-            !string.IsNullOrWhiteSpace(selectedWeather);
-
-        if (!hasCustomPreferences)
-        {
-            // GET /api/outfit-generator/generate este doar preview; nu salvează în DB.
-            generatedOutfit = await WardrobeService.GenerateOutfitPreviewAsync();
-        }
-
-        if (generatedOutfit == null)
-        {
-            // Folosim regulile locale atunci când backend-ul nu răspunde sau când utilizatorul a ales preferințe explicite.
-            generatedOutfit = WardrobeService.GenerateOutfitWithRules(NormalizedOccasion, selectedStyle, selectedSeason, selectedWeather);
-        }
+        var requestedVariant = aiGenerationVariant++;
+        generatedOutfit = await WardrobeService.GenerateOutfitPreviewAsync(selectedStyle, selectedSeason, selectedWeather, requestedVariant);
 
         if (generatedOutfit != null)
         {
-            generatedOutfit.CreationSource = "AI";
+            if (generatedOutfit.Items == null || !generatedOutfit.Items.Any())
+            {
+                generatedOutfit = null;
+                wardrobeValidationMessage = "Nu s-a putut crea un outfit din piesele salvate. Adauga cel putin un top si un bottom.";
+                Toast.Show(wardrobeValidationMessage, "error");
+            }
+            else
+            {
+                generatedOutfit.CreationSource = "AI";
+                generatedOutfit.Name = NormalizedOccasion;
+            }
+        }
+        else
+        {
+            wardrobeValidationMessage = WardrobeService.LastAiGenerationError
+                ?? "Modelul AI nu a putut genera un outfit. Verifica daca garderoba este sincronizata pentru contul tau.";
+            Toast.Show(wardrobeValidationMessage, "error");
         }
 
         hasAttemptedAiGenerate = false;
@@ -785,7 +748,6 @@
         StateHasChanged();
     }
 
-    // --- REPARAȚIE IMAGINI: Sursa de pe Backend (7081) ---
     private string GetImageSource(string? imagePath)
     {
         if (string.IsNullOrWhiteSpace(imagePath))
@@ -805,6 +767,14 @@
     {
         if (generatedOutfit != null)
         {
+            if (generatedOutfit.Items == null || !generatedOutfit.Items.Any())
+            {
+                Toast.Show("Outfitul nu poate fi salvat fara piese vestimentare.", "error");
+                generatedOutfit = null;
+                StateHasChanged();
+                return;
+            }
+
             generatedOutfit.IsFavorite = false;
 
             // POST /api/outfits salvează exact preview-ul afișat în lista de looks.
@@ -819,4 +789,5 @@
             NavigationManager.NavigateTo("/my-outfits");
         }
     }
+
 }

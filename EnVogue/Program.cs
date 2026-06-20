@@ -11,12 +11,11 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 var frontendAddress = new Uri(builder.HostEnvironment.BaseAddress);
-const string lanApiHost = "192.168.1.3";
 var frontendHost = frontendAddress.Host;
 var apiHost = string.Equals(frontendHost, "localhost", StringComparison.OrdinalIgnoreCase)
     || string.Equals(frontendHost, "127.0.0.1", StringComparison.OrdinalIgnoreCase)
     || string.Equals(frontendHost, "0.0.0.0", StringComparison.OrdinalIgnoreCase)
-        ? lanApiHost
+        ? "localhost"
         : frontendHost;
 
 ApiEndpoints.BaseAddress = new Uri($"http://{apiHost}:5203/");
@@ -26,10 +25,8 @@ builder.Services.AddScoped(sp => new HttpClient
     BaseAddress = ApiEndpoints.BaseAddress
 });
 
-// 1. ÎNREGISTREAZĂ PACHETUL DE LOCAL STORAGE
 builder.Services.AddBlazoredLocalStorage();
 
-// 2. ÎNREGISTREAZĂ SERVICIILE TALE
 builder.Services.AddScoped<WardrobeServices>();
 builder.Services.AddScoped<DatasetImportService>();
 builder.Services.AddScoped<UserState>();
@@ -37,7 +34,6 @@ builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<ProfilePhotoService>();
 builder.Services.AddScoped<AccountProfileService>();
 
-// 3. CONFIGURARE AUTENTIFICARE
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, SimpleAuthStateProvider>();
 builder.Services.AddCascadingAuthenticationState();

@@ -15,19 +15,18 @@ namespace EnVogue.Services
 
         private readonly HttpClient _http;
         private readonly ILocalStorageService _localStorage;
-        private readonly UserState _userState; // <--- Adaugă asta
+        private readonly UserState _userState;
         private readonly IJSRuntime _js;
 
-        // Cache-ul local pentru UI
         private List<ClothingItem> _clothingItems = new();
         private List<Outfit> _outfits = new();
 
-        // Variabilă pentru email-ul utilizatorului
         private string? _loggedInUserEmail;
         private bool _isInitialized;
         private string? _initializedForUser;
 
         public event Action? OnChange;
+        public string? LastAiGenerationError { get; private set; }
 
         public WardrobeServices(HttpClient http, ILocalStorageService localStorage, UserState userState, IJSRuntime js)
         {
@@ -36,8 +35,6 @@ namespace EnVogue.Services
             _userState = userState;
             _js = js;
         }
-
-        // --- AUTENTIFICARE ȘI IDENTITATE ---
 
         public async Task<bool> LoginAsync(string email, string password)
         {
@@ -49,15 +46,12 @@ namespace EnVogue.Services
                 var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
                 if (result != null && !string.IsNullOrEmpty(result.Token))
                 {
-                    // Salvăm în LocalStorage (Aici se face legătura cu ce am verificat în browser)
                     await _localStorage.SetItemAsync("authToken", result.Token);
                     await _localStorage.SetItemAsync("userEmail", email);
 
-                    // Setăm header-ul pentru HttpClient
                     _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
                     _loggedInUserEmail = email;
 
-                    // ANUNȚĂM UserState că ne-am logat (foarte important!)
                     _userState.Login(email);
 
                     await InitializeAsync();
@@ -66,16 +60,12 @@ namespace EnVogue.Services
             }
             return false;
         }
-        public void SetLoggedInUser(string email) => _loggedInUserEmail = email;
         public string GetLoggedInUserEmail() => _loggedInUserEmail ?? "Guest";
-
-        // --- LOGICĂ DE PERSISTENȚĂ (API) ---
 
         public async Task InitializeAsync(bool forceReload = false)
         {
             try
             {
-                // 1. Încercăm să luăm datele salvate din browser
                 var token = await _localStorage.GetItemAsync<string>("authToken");
                 var savedEmail = await _localStorage.GetItemAsync<string>("userEmail");
 
@@ -88,22 +78,19 @@ namespace EnVogue.Services
                         return;
                     }
 
-                    // 2. Setăm header-ul pentru ca toate cererile viitoare către API să fie autorizate
                     _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-
-                    // 3. Re-populăm variabilele locale
                     _loggedInUserEmail = savedEmail;
 
                     _userState.Login(savedEmail);
-                    // 4. (OPȚIONAL dar RECOMANDAT) Verificăm dacă token-ul este încă valid făcând o cerere mică la API
-                    // Dacă API-ul returnează 401 Unauthorized, înseamnă că token-ul a expirat
-                    var checkResponse = await _http.GetAsync("api/clothing/count"); // presupunând că ai un endpoint simplu
+                    var checkResponse = await _http.GetAsync("api/clothing/count");
 
                     if (checkResponse.IsSuccessStatusCode)
                     {
-                        // Totul e ok, datele se încarcă în continuare...
                         var items = await _http.GetFromJsonAsync<List<ClothingItem>>("api/clothing");
-                        if (items != null) _clothingItems = items;
+                        if (items != null)
+                        {
+                            _clothingItems = items;
+                        }
 
                         await LoadOutfitsAsync();
                         _isInitialized = true;
@@ -111,12 +98,9 @@ namespace EnVogue.Services
                     }
                     else
                     {
-                        // Token-ul a expirat sau e invalid -> curățăm tot
                         await LogoutAsync();
                     }
                 }
-
-                //NotifyStateChanged();
             }
             catch (Exception ex)
             {
@@ -126,16 +110,7 @@ namespace EnVogue.Services
 
         public void NotifyStateChanged() => OnChange?.Invoke();
 
-        // --- HAINE (API) ---
-
         public List<ClothingItem> GetAllClothes() => _clothingItems;
-
-        public List<ClothingItem> GetClothesByCategory(string category)
-        {
-            if (string.IsNullOrEmpty(category)) return _clothingItems;
-            return _clothingItems.Where(c => c.CategoryName != null &&
-                c.CategoryName.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
 
         public async Task AddClothingItem(ClothingItem item)
         {
@@ -149,7 +124,6 @@ namespace EnVogue.Services
             }
             else
             {
-                // ASTA te va ajuta să vezi în Consola browserului (F12) de ce NU se salvează
                 var errorMsg = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"SERVER ERROR: {errorMsg}");
             }
@@ -227,8 +201,6 @@ namespace EnVogue.Services
                 return AccountActionResult.Fail("Account could not be deleted.");
             }
         }
-        // --- OUTFITS (API) ---
-
         public List<Outfit> GetAllOutfits() => _outfits;
 
         public Outfit? GetOutfitById(int outfitId) => _outfits.FirstOrDefault(o => o.Id == outfitId);
@@ -254,6 +226,12 @@ namespace EnVogue.Services
 
             if (!clothingItemIds.Any())
             {
+                if (string.Equals(outfit.CreationSource, "AI", StringComparison.OrdinalIgnoreCase) &&
+                    outfit.Items.Any(item => !string.IsNullOrWhiteSpace(item.ImagePath)))
+                {
+                    return await SaveGeneratedAiOutfitAsync(outfit);
+                }
+
                 const string noItemsMessage = "Outfitul nu poate fi salvat fara itemuri valide.";
                 return SaveOutfitResult.Fail(noItemsMessage);
             }
@@ -365,28 +343,101 @@ namespace EnVogue.Services
             return SaveOutfitResult.Fail(userMessage, (int)response.StatusCode);
         }
 
-        public async Task<Outfit?> GenerateOutfitPreviewAsync()
+        public async Task<Outfit?> GenerateOutfitPreviewAsync(string style, string season, string weather, int variant)
         {
+            LastAiGenerationError = null;
+
             try
             {
-                return await _http.GetFromJsonAsync<Outfit>("api/outfit-generator/generate");
+                var url =
+                    $"api/outfit-generator/generate?style={Uri.EscapeDataString(style)}" +
+                    $"&season={Uri.EscapeDataString(season)}" +
+                    $"&weather={Uri.EscapeDataString(weather)}" +
+                    $"&variant={variant}";
+
+                var response = await _http.GetAsync(url);
+                var rawResponseBody = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return string.IsNullOrWhiteSpace(rawResponseBody)
+                        ? null
+                        : System.Text.Json.JsonSerializer.Deserialize<Outfit>(rawResponseBody, ApiJsonOptions);
+                }
+
+                LastAiGenerationError = response.StatusCode switch
+                {
+                    System.Net.HttpStatusCode.Unauthorized => "Sesiunea a expirat. Te rog autentifica-te din nou si incearca generarea outfitului.",
+                    System.Net.HttpStatusCode.ServiceUnavailable => "Serviciul AI nu este pornit. Porneste modelul preantrenat si incearca din nou.",
+                    System.Net.HttpStatusCode.BadRequest => ExtractApiError(rawResponseBody) ?? "Modelul AI nu poate genera un outfit cu filtrele selectate.",
+                    System.Net.HttpStatusCode.NotFound => ExtractApiError(rawResponseBody) ?? "Modelul AI nu a gasit suficiente piese pentru filtrele selectate.",
+                    _ => ExtractApiError(rawResponseBody) ?? "Modelul AI nu a putut genera un outfit."
+                };
+
+                await LogToBrowserConsoleAsync("error", $"AI outfit generation failed: {(int)response.StatusCode} {response.StatusCode}. {rawResponseBody}");
+                return null;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to generate outfit preview: {ex.Message}");
+                LastAiGenerationError = "Modelul AI nu a putut genera un outfit. Verifica daca garderoba este sincronizata pentru contul tau.";
+                await LogToBrowserConsoleAsync("error", $"Failed to generate AI outfit preview: {ex.Message}");
                 return null;
             }
         }
 
+        private async Task<SaveOutfitResult> SaveGeneratedAiOutfitAsync(Outfit outfit)
+        {
+            var request = new SaveAiOutfitRequest
+            {
+                Name = string.IsNullOrWhiteSpace(outfit.Name) ? "AI Styled Look" : outfit.Name,
+                Occasion = string.IsNullOrWhiteSpace(outfit.Occasion) ? "AI Stylist" : outfit.Occasion,
+                Items = outfit.Items.Select(item => new AiGeneratedClothingItemRequest
+                {
+                    Name = string.IsNullOrWhiteSpace(item.Name) ? item.CategoryName ?? "AI wardrobe item" : item.Name,
+                    CategoryName = item.CategoryName,
+                    SubcategoryName = item.SubcategoryName,
+                    ImagePath = item.ImagePath
+                }).ToList()
+            };
+
+            var response = await _http.PostAsJsonAsync("api/outfit-generator/save", request);
+            var rawResponseBody = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                Outfit? savedOutfit = null;
+                if (!string.IsNullOrWhiteSpace(rawResponseBody))
+                {
+                    try
+                    {
+                        savedOutfit = System.Text.Json.JsonSerializer.Deserialize<Outfit>(rawResponseBody, ApiJsonOptions);
+                    }
+                    catch
+                    {
+                        // The save succeeded; refresh below keeps the UI consistent.
+                    }
+                }
+
+                if (savedOutfit != null)
+                {
+                    savedOutfit.CreationSource = "AI";
+                    _outfits.Add(savedOutfit);
+                }
+
+                await LoadOutfitsAsync();
+                NotifyStateChanged();
+                return SaveOutfitResult.Ok("Outfitul AI a fost salvat in wardrobe.");
+            }
+
+            return SaveOutfitResult.Fail(BuildOutfitSaveErrorMessage(response.StatusCode, rawResponseBody), (int)response.StatusCode);
+        }
+
         public async Task UpdateClothingItem(ClothingItem updatedItem)
         {
-            // Trimitem obiectul modificat către API (ClothingController din Backend)
-            // Ruta va fi probabil api/clothing/{id}
             var response = await _http.PutAsJsonAsync($"api/clothing/{updatedItem.Id}", updatedItem);
 
             if (response.IsSuccessStatusCode)
             {
-                // Actualizăm și lista noastră locală (cache-ul) pentru a vedea schimbarea imediat
                 var index = _clothingItems.FindIndex(i => i.Id == updatedItem.Id);
                 if (index != -1)
                 {
@@ -396,7 +447,6 @@ namespace EnVogue.Services
             }
             else
             {
-                // Poți loga eroarea dacă API-ul refuză update-ul
                 Console.WriteLine("Failed to update item in API.");
             }
         }
@@ -478,17 +528,6 @@ namespace EnVogue.Services
 
             return false;
         }
-        // --- METODĂ NOUĂ: Toggle Favorite (folosită în pagină) ---
-        public async Task<bool> ToggleOutfitFavorite(int outfitId)
-        {
-            var outfit = _outfits.FirstOrDefault(o => o.Id == outfitId);
-            if (outfit != null)
-            {
-                return await ToggleFavorite(outfitId);
-            }
-
-            return false;
-        }
         public async Task LogoutAsync()
         {
             await _localStorage.RemoveItemAsync("authToken");
@@ -528,146 +567,8 @@ namespace EnVogue.Services
 
             return false;
         }
-        // --- LOGICA DE GENERATOR ---
-
-        public Outfit GenerateOutfitWithRules(
-            string? occasion = null,
-            string? preferredStyle = null,
-            string? preferredSeason = null,
-            string? preferredWeather = null)
-        {
-            var trimmedOccasion = occasion?.Trim();
-            var trimmedStyle = preferredStyle?.Trim();
-            var trimmedSeason = preferredSeason?.Trim();
-            var trimmedWeather = preferredWeather?.Trim();
-
-            var outfit = new Outfit
-            {
-                Name = BuildGeneratedOutfitName(trimmedOccasion),
-                Occasion = !string.IsNullOrWhiteSpace(trimmedStyle)
-                    ? trimmedStyle
-                    : !string.IsNullOrWhiteSpace(trimmedOccasion) ? trimmedOccasion : "Casual Style",
-                Items = new List<ClothingItem>()
-            };
-
-            // Luăm categoriile din cache-ul local (care a fost populat din API)
-            var allTops = GetClothesByCategory("tops");
-            var allBottoms = GetClothesByCategory("bottoms");
-            var allDresses = GetClothesByCategory("dress"); // Atenție: Verifică dacă e "dress" sau "dresses" în baza de date
-            var allOuterwear = GetClothesByCategory("outerwear");
-            var allShoes = GetClothesByCategory("shoes");
-            var allAccessories = GetClothesByCategory("accessories");
-
-            var tops = ApplyOptionalFilters(allTops, trimmedStyle, trimmedSeason);
-            var bottoms = ApplyOptionalFilters(allBottoms, trimmedStyle, trimmedSeason);
-            var dresses = ApplyOptionalFilters(allDresses, trimmedStyle, trimmedSeason);
-            var shoes = ApplyWeatherPreferences(ApplyOptionalFilters(allShoes, trimmedStyle, trimmedSeason), trimmedWeather);
-            var outerwear = ApplyOptionalFilters(allOuterwear, trimmedStyle, trimmedSeason);
-            var accessories = ApplyOptionalFilters(allAccessories, trimmedStyle, trimmedSeason);
-
-            // --- LOGICA DE SELECȚIE (Reguli de modă) ---
-            var preferLayeredLook = string.Equals(trimmedWeather, "Cloudy", StringComparison.OrdinalIgnoreCase) ||
-                                    string.Equals(trimmedWeather, "Rainy", StringComparison.OrdinalIgnoreCase) ||
-                                    string.Equals(trimmedWeather, "Cold", StringComparison.OrdinalIgnoreCase);
-
-            // Decidem: Rochie sau (Top + Bottom)?
-            bool chooseDress = dresses.Any() && !(preferLayeredLook && tops.Any() && bottoms.Any()) && Random.Shared.Next(2) == 0;
-
-            if (chooseDress)
-            {
-                outfit.Items.Add(dresses[Random.Shared.Next(dresses.Count)]);
-            }
-            else
-            {
-                if (tops.Any()) outfit.Items.Add(tops[Random.Shared.Next(tops.Count)]);
-                if (bottoms.Any()) outfit.Items.Add(bottoms[Random.Shared.Next(bottoms.Count)]);
-            }
-
-            // Adăugăm încălțăminte
-            if (shoes.Any()) outfit.Items.Add(shoes[Random.Shared.Next(shoes.Count)]);
-
-            if (ShouldAddOuterwear(trimmedWeather) && outerwear.Any())
-            {
-                outfit.Items.Add(outerwear[Random.Shared.Next(outerwear.Count)]);
-            }
-
-            // Adăugăm accesorii cu șanse adaptate vremii.
-            if (accessories.Any() && ShouldAddAccessory(trimmedWeather))
-            {
-                outfit.Items.Add(accessories[Random.Shared.Next(accessories.Count)]);
-            }
-
-            return outfit.Items.Count > 0 ? outfit : new Outfit { Name = "Empty", Occasion = outfit.Occasion };
-        }
-
-        private static List<ClothingItem> ApplyOptionalFilters(
-            List<ClothingItem> items,
-            string? preferredStyle,
-            string? preferredSeason)
-        {
-            IEnumerable<ClothingItem> query = items;
-
-            if (!string.IsNullOrWhiteSpace(preferredStyle))
-            {
-                query = query.Where(item => string.Equals(item.Style, preferredStyle, StringComparison.OrdinalIgnoreCase));
-            }
-
-            if (!string.IsNullOrWhiteSpace(preferredSeason))
-            {
-                query = query.Where(item => string.Equals(item.Season, preferredSeason, StringComparison.OrdinalIgnoreCase));
-            }
-
-            var filteredItems = query.ToList();
-            return filteredItems.Any() ? filteredItems : items;
-        }
-
-        private static List<ClothingItem> ApplyWeatherPreferences(List<ClothingItem> shoes, string? preferredWeather)
-        {
-            if (!shoes.Any() || string.IsNullOrWhiteSpace(preferredWeather))
-            {
-                return shoes;
-            }
-
-            IEnumerable<ClothingItem> query = preferredWeather.ToLowerInvariant() switch
-            {
-                "sunny" => shoes.Where(item => MatchesSubcategory(item, "Sandals") || MatchesSubcategory(item, "Sneakers")),
-                "cloudy" => shoes.Where(item => MatchesSubcategory(item, "Sneakers") || MatchesSubcategory(item, "Boots")),
-                "rainy" => shoes.Where(item => MatchesSubcategory(item, "Boots") || MatchesSubcategory(item, "Sneakers")),
-                "cold" => shoes.Where(item => MatchesSubcategory(item, "Boots")),
-                _ => shoes
-            };
-
-            var filteredShoes = query.ToList();
-            return filteredShoes.Any() ? filteredShoes : shoes;
-        }
-
-        private static bool MatchesSubcategory(ClothingItem item, string subcategory)
-            => string.Equals(item.SubcategoryName, subcategory, StringComparison.OrdinalIgnoreCase);
-
-        private static bool ShouldAddOuterwear(string? preferredWeather) => preferredWeather?.ToLowerInvariant() switch
-        {
-            "cold" => true,
-            "rainy" => true,
-            "cloudy" => Random.Shared.Next(100) < 55,
-            _ => false
-        };
-
-        private static bool ShouldAddAccessory(string? preferredWeather) => preferredWeather?.ToLowerInvariant() switch
-        {
-            "sunny" => Random.Shared.Next(100) < 55,
-            "rainy" => Random.Shared.Next(100) < 15,
-            _ => Random.Shared.Next(100) < 30
-        };
-
-        private string BuildGeneratedOutfitName(string? occasion)
-            => !string.IsNullOrWhiteSpace(occasion)
-                ? occasion
-                : $"Outfit {_outfits.Count + 1}";
-
-        // --- MODELE AUXILIARE ---
         public class LoginResponse
         {
-            // Folosim acest atribut pentru a fi siguri că prinde "token" din JSON
             [System.Text.Json.Serialization.JsonPropertyName("token")]
             public string Token { get; set; } = "";
         }
@@ -709,6 +610,33 @@ namespace EnVogue.Services
 
             [System.Text.Json.Serialization.JsonPropertyName("newPassword")]
             public string NewPassword { get; set; } = "";
+        }
+
+        private class SaveAiOutfitRequest
+        {
+            [System.Text.Json.Serialization.JsonPropertyName("name")]
+            public string Name { get; set; } = "";
+
+            [System.Text.Json.Serialization.JsonPropertyName("occasion")]
+            public string Occasion { get; set; } = "";
+
+            [System.Text.Json.Serialization.JsonPropertyName("items")]
+            public List<AiGeneratedClothingItemRequest> Items { get; set; } = new();
+        }
+
+        private class AiGeneratedClothingItemRequest
+        {
+            [System.Text.Json.Serialization.JsonPropertyName("name")]
+            public string Name { get; set; } = "";
+
+            [System.Text.Json.Serialization.JsonPropertyName("categoryName")]
+            public string? CategoryName { get; set; }
+
+            [System.Text.Json.Serialization.JsonPropertyName("subcategoryName")]
+            public string? SubcategoryName { get; set; }
+
+            [System.Text.Json.Serialization.JsonPropertyName("imagePath")]
+            public string? ImagePath { get; set; }
         }
 
         private class DeleteAccountRequest

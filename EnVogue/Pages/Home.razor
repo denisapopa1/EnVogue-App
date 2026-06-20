@@ -188,17 +188,6 @@
     flex-direction: column;
     justify-content: space-between;
     }
-    .hero-img-element {
-    width: 100%;
-    height: 100%;
-    /* Pe desktop lăsăm să umple ecranul ca și până acum */
-    object-fit: cover;
-    object-position: center top;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-}
     .bottom-fade-gradient {
         position: absolute;
         bottom: 0;
@@ -222,9 +211,6 @@
         animation: fadeInDown 0.8s ease-out;
     }
 
-    .brand-nav-group-home {
-        margin-left: 53px; /* 48px (cerc) + 15px (gap) */
-    }
     /* Stilul unificat pentru tag */
     .collection-tag-unified {
         font-size: 10px;
@@ -272,23 +258,6 @@
         color: #7a5c68;
     }
 
-    .brand-name {
-        display: block;
-        font-size: 26px;
-        font-weight: 800;
-        color: #2d1b24;
-        line-height: 1;
-    }
-
-    .brand-tag {
-        font-size: 11px;
-        font-weight: 700;
-        color: #7a5c68; /* Aceeași culoare ca brand-tag */
-        letter-spacing: 3px;
-        display: block;
-        margin-bottom: 5px;
-    }
-
     .profile-circle {
         width: 48px;
         height: 48px;
@@ -311,12 +280,6 @@
         .profile-circle:active {
             transform: scale(0.95); /* Efect de apăsare */
         }
-    .profile-svg {
-        width: 24px;
-        height: 24px;
-        fill: #d946ef;
-    }
-
     .hero-body {
        max-width: 500px;
     margin-top: auto;
@@ -707,27 +670,6 @@
         box-shadow: inset 0 0 0 1px rgba(244, 224, 235, 0.65);
     }
 
-    .home-outfit-preview-cell {
-        min-height: 0;
-        border-radius: 18px;
-        background: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        box-shadow: inset 0 0 0 1px rgba(244, 224, 235, 0.65);
-    }
-
-        .home-outfit-preview-cell.is-empty {
-            background: rgba(255, 255, 255, 0.55);
-        }
-
-        .home-outfit-preview-cell img {
-            width: 84%;
-            height: 84%;
-            object-fit: contain;
-        }
-
     .home-outfit-card-body {
         display: flex;
         flex-direction: column;
@@ -839,38 +781,29 @@
             margin-top: 2px !important;
         }
         /* Ajustăm header-ul să nu ocupe prea mult spațiu vertical pe mobil */
-        .header-nav, .editorial-header, .editorial-header-unified {
+        .header-nav {
             display: flex !important;
-            align-items: center !important; /* Aceasta garantează că Logo și Profil sunt la același nivel */
+            align-items: center !important;
             margin-top: 0 !important;
             padding-bottom: 0 !important;
-        }
-        /* Reducem spațiul de lângă logo dacă cercul de profil s-a micșorat */
-        .brand-nav-group-home {
-            margin-left: 0; /* Eliminăm margin-ul fix dacă nu e necesar */
         }
         .profile-circle {
             width: 38px !important; /* Dimensiune micșorată mobile */
             height: 38px !important;
         }
 
-        .editorial-header, .header-nav {
+        .header-nav {
             margin-bottom: clamp(20px, 4vh, 35px) !important;
         }
             .profile-circle svg {
                 width: 18px !important;
                 height: 18px !important;
             }
-        /* Compensare margin-left pentru mobile */
-        .brand-nav-group-home {
-            margin-left: 48px; /* 38px (cerc mobil) + 10px (gap mobil) */
-        }
-
         .brand-title-unified {
             font-size: 38px; /* Păstrăm dimensiunea mare pentru look editorial */
         }
 
-        .hero-overlay, .content-overlay, .editorial-header-unified {
+        .hero-overlay {
             padding-top: clamp(12px, 3.5vh, 25px) !important;
         }
     .hero-body {
@@ -891,7 +824,7 @@
     }
 
         .user-greet-black {
-            font-size: clamp(22px, 5vw, 36px); /* ← înlocuiește font-size: 36px */
+            font-size: clamp(22px, 5vw, 36px);
             font-weight: 800;
             color: #000000;
             margin-bottom: 5px;
@@ -967,10 +900,6 @@
             border-radius: 18px;
         }
 
-        .home-outfit-preview-cell {
-            border-radius: 14px;
-        }
-
         .home-outfit-card-title {
             font-size: 18px;
             height: 40px;
@@ -1003,12 +932,6 @@
     .hero-section {
         height: 90vh; /* mai mare decât 75vh ca să nu pară tăiată */
         min-height: 600px;
-    }
-
-    .hero-img-element {
-        object-fit: cover;  
-        object-position: 70% center; 
-        /* 70% mută focusul spre dreapta unde e modelul */
     }
 
 }
@@ -1102,12 +1025,9 @@
     private string userName = "User";
     private List<ClothingItem> recentItems = new List<ClothingItem>();
     private List<Outfit> recentOutfits = new List<Outfit>();
-    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        isLoading = true;
-
         var userEmail = WardrobeService.GetLoggedInUserEmail();
         if (userEmail == "Guest")
         {
@@ -1133,8 +1053,6 @@
             var rawName = parts[0];
             userName = char.ToUpper(rawName[0]) + (rawName.Length > 1 ? rawName.Substring(1) : "");
         }
-
-        isLoading = false;
     }
 
     private void HandleWardrobeChanged() => InvokeAsync(() =>
@@ -1149,7 +1067,6 @@
         var all = WardrobeService.GetAllClothes();
         var allOutfits = WardrobeService.GetAllOutfits();
 
-        // --- REPARARE DATE (Pentru afișare corectă în "New In") ---
         foreach (var item in all)
         {
             if (string.IsNullOrEmpty(item.CategoryName) && item.CategoryId.HasValue)
@@ -1180,7 +1097,6 @@
             .Take(12)
             .ToList();
     }
-    // --- REPARAȚIE IMAGINI: Calea de pe Backend (7081) ---
     private string GetImageSource(string? imagePath)
     {
         if (string.IsNullOrWhiteSpace(imagePath) || imagePath == "du")
@@ -1194,21 +1110,6 @@
 
         // CONSTRUCȚIA CORECTĂ A URL-ULUI (trebuie să includă folderul de pe server)
         return ApiEndpoints.ImageUrl(fileName);
-    }
-
-    private static IEnumerable<ClothingItem?> GetOutfitPreviewItems(Outfit outfit)
-    {
-        var items = (outfit.ClothingItems ?? new List<ClothingItem>())
-            .Take(4)
-            .Cast<ClothingItem?>()
-            .ToList();
-
-        while (items.Count < 4)
-        {
-            items.Add(null);
-        }
-
-        return items;
     }
 
     private static string GetOutfitDisplayName(Outfit outfit)

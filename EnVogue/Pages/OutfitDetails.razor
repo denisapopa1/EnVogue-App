@@ -94,11 +94,11 @@
                             <label>Outfit Name</label>
                             @if (isEditing)
                             {
-                                <input class="brand-input-luxury" @bind="outfit.Name" placeholder="Smart Ensemble" />
+                                <input class="brand-input-luxury" @bind="outfit!.Name" placeholder="Smart Ensemble" />
                             }
                             else
                             {
-                                <h2 class="brand-title">@(string.IsNullOrWhiteSpace(outfit.Name) ? "Styled Look" : outfit.Name)</h2>
+                                <h2 class="brand-title">@(string.IsNullOrWhiteSpace(outfit!.Name) ? "Styled Look" : outfit.Name)</h2>
                             }
                         </div>
 
@@ -344,10 +344,6 @@
         color: #d946ef;
     }
 
-    .profile-svg {
-        fill: #d946ef;
-    }
-
     .action-circle svg {
         fill: none;
         stroke: currentColor;
@@ -426,11 +422,6 @@
         background: rgba(255, 255, 255, 0.92);
         padding: 14px;
         box-sizing: border-box;
-    }
-
-    .look-preview {
-        width: 100%;
-        min-height: 100%;
     }
 
     .preview-grid {
@@ -1037,15 +1028,6 @@
             var idx = order.IndexOf(i.CategoryName ?? "");
             return idx == -1 ? 99 : idx;
         }).ToList();
-    }
-
-    private string GetPreviewGridClass(int itemCount)
-    {
-        if (itemCount <= 1) return "preview-grid one-item";
-        if (itemCount == 2) return "preview-grid two-items";
-        if (itemCount == 3) return "preview-grid three-items";
-        if (itemCount == 4) return "preview-grid four-items";
-        return "preview-grid many-items";
     }
 
     private string GetSeasonSummary()

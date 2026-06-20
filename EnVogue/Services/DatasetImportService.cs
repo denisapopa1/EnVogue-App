@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Blazored.LocalStorage;
 using EnVogue.Models;
-using Microsoft.AspNetCore.Components;
 
 namespace EnVogue.Services
 {
@@ -19,7 +18,6 @@ namespace EnVogue.Services
 
         public DatasetImportService(
             HttpClient apiHttp,
-            NavigationManager navigationManager,
             ILocalStorageService localStorage)
         {
             _apiHttp = apiHttp;
